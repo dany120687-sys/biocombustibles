@@ -1,44 +1,76 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Portal Unificado LBIO</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 40px;
-            text-align: center;
-        }
-        h1 {
-            color: #003366;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 20px 0;
-        }
-        a {
-            background: #005baa;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 18px;
-        }
-        a:hover {
-            background: #003f7d;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Unificado - Ley de Biocombustibles</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e6f2ff, #ffffff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      width: 100%;
+      background-color: #003366;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+    }
+    .container {
+      margin-top: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+    }
+    .link-button {
+      background-color: #007acc;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .link-button:hover {
+      background-color: #005f99;
+      transform: translateY(-2px);
+    }
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-    <h1>Portal Unificado - Ley de Biocombustibles</h1>
-    <ul>
-        <li><a href="Portal_LBIO_Resumen_Articulos_Subtemas.html" target="_blank">Resumen de Artículos</a></li>
-        <li><a href="Relacion_Tramites_ConNotas.html" target="_blank">Relación con Notas</a></li>
-        <li><a href="Tramites_Articulos_Hipervinculado_LBIO.html" target="_blank">Hipervínculos Completos</a></li>
-    </ul>
+  <header>
+    <h1>Portal Unificado<br> Ley de Biocombustibles</h1>
+  </header>
+
+  <div class="container">
+    <a class="link-button" href="Portal_LBIO_Resumen_Articulos_Subtemas.html" target="_blank">📘 Resumen de Artículos</a>
+    <a class="link-button" href="Relacion_Tramites_ConNotas.html" target="_blank">📝 Relación con Notas</a>
+    <a class="link-button" href="Tramites_Articulos_Hipervinculado_LBIO.html" target="_blank">🔗 Hipervínculos Completos</a>
+  </div>
+
+  <footer>
+    © 2025 Gobierno de México — Proyecto Informativo de Biocombustibles
+  </footer>
 </body>
 </html>
