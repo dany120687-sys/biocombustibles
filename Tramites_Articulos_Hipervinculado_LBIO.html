@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Trámites LBIO - Hipervínculos Completos</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; padding: 40px; color: #333; }
+  h1 { text-align: center; color: #0B3D91; margin-bottom: 40px; }
+  .tabla-container { width: 90%; margin: auto; }
+  .entry { background-color: #ffffff; border-left: 5px solid #0B3D91; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); }
+  .entry-header { padding: 15px 20px; font-size: 18px; font-weight: bold; color: #0B3D91; cursor: pointer; }
+  .entry-content { display: none; padding: 0 20px 20px 20px; font-size: 15px; color: #444; }
+  .entry-content strong { color: #0074D9; }
+  .articulo-link { color: #0074D9; font-weight: bold; cursor: pointer; text-decoration: underline; }
+  .modal {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    z-index: 1000;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .modal-close { float: right; cursor: pointer; font-weight: bold; color: #d00; }
+  .overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+<h1>Trámites y Servicios con Todos los Artículos Vinculados - Reglamento LBIO</h1>
+<div class="tabla-container">
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry0')">Permiso de Producción de Biocombustibles</div>
+<div class="entry-content" id="entry0">
+<strong>Descripción:</strong> Autoriza la producción de biocombustibles cumpliendo trazabilidad, seguridad, volumen y normativa técnica.<br/>
+<strong>Entidad:</strong> SENER<br/>
+<strong>Vigencia:</strong> Hasta 10 años, prorrogable<br/>
+<strong>Plazo:</strong> Resolución en 20 días hábiles desde la admisión<br/>
+<strong>Fundamento:</strong> Artículos 25, 28, 60-64
+    </div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry1')">Permiso de Transporte de Biocombustibles</div>
+<div class="entry-content" id="entry1">
+<strong>Descripción:</strong> Para ductos o medios alternativos (camión, ferrocarril).<br/>
+<strong>Requisitos:</strong> Infraestructura, pólizas, personal calificado.<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_44')">Artículo 44</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_45')">Artículo 45</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry2')">Permiso de Almacenamiento</div>
+<div class="entry-content" id="entry2">
+<strong>Uso:</strong> Para almacenar biocombustibles intermedios o finales.<br/>
+<strong>Condición:</strong> Debe cumplir normas técnicas.<br/>
+<strong>Fundamento:</strong> Artículo 25, <span class="articulo-link" onclick="toggleModal('modal_Artículo_26')">Artículo 26</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_27')">Artículo 27</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_28')">Artículo 28</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_29')">Artículo 29</span>, 61-62
+    </div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry3')">Permiso de Comercialización</div>
+<div class="entry-content" id="entry3">
+<strong>Uso:</strong> Venta mayorista o intermedia.<br/>
+<strong>Obligación:</strong> Reportar volumen, origen y destino.<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_50')">Artículo 50</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_51')">Artículo 51</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_52')">Artículo 52</span>, 84
+    </div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry4')">Permiso de Expendio al Público</div>
+<div class="entry-content" id="entry4">
+<strong>Uso:</strong> Venta minorista al consumidor final.<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_53')">Artículo 53</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_54')">Artículo 54</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_55')">Artículo 55</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry5')">Permiso de Exportación / Importación</div>
+<div class="entry-content" id="entry5">
+<strong>Exportación:</strong> Requiere control de trazabilidad, registro y autorización.<br/>
+<strong>Importación:</strong> Solo biocombustibles permitidos por la regulación nacional.<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_56')">Artículo 56</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_57')">Artículo 57</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_58')">Artículo 58</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_59')">Artículo 59</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry6')">Permiso de Siembra para Producción de Biomasa</div>
+<div class="entry-content" id="entry6">
+<strong>Entidad:</strong> SADER<br/>
+<strong>Vigencia:</strong> 1 a 5 años<br/>
+<strong>Plazo:</strong> Resolución en 20 días hábiles<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_70')">Artículo 70</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_71')">Artículo 71</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_72')">Artículo 72</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_73')">Artículo 73</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_74')">Artículo 74</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry7')">Prórroga de Permisos</div>
+<div class="entry-content" id="entry7">
+<strong>Solicitud:</strong> 6 meses (SENER) o 3 meses (SADER) antes del vencimiento<br/>
+<strong>Evaluación:</strong> En 25 días hábiles<br/>
+<strong>Fundamento:</strong> Artículos 63, 74
+    </div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry8')">Modificación / Suspensión / Revocación / Cesión</div>
+<div class="entry-content" id="entry8">
+<strong>Motivos:</strong> Incumplimiento, falsedad, daño ambiental, cesión indebida.<br/>
+<strong>Plazo:</strong> Hasta 30 días hábiles tras audiencia<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_78')">Artículo 78</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_79')">Artículo 79</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_80')">Artículo 80</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_81')">Artículo 81</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_82')">Artículo 82</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry9')">Aviso de Inicio de Operaciones</div>
+<div class="entry-content" id="entry9">
+<strong>Plazo:</strong> 30 días hábiles antes del inicio de operaciones<br/>
+<strong>Requisitos:</strong> Pólizas de seguro, responsabilidad ambiental<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_65')">Artículo 65</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_66')">Artículo 66</span>
+</div>
+</div>
+<div class="entry">
+<div class="entry-header" onclick="toggleEntry('entry10')">Bitácora de Actividades</div>
+<div class="entry-content" id="entry10">
+<strong>Obligatorio para:</strong> Todos los titulares de permisos<br/>
+<strong>Periodicidad:</strong> Trimestral (enero, abril, julio, octubre)<br/>
+<strong>Fundamento:</strong> <span class="articulo-link" onclick="toggleModal('modal_Artículo_83')">Artículo 83</span>, <span class="articulo-link" onclick="toggleModal('modal_Artículo_84')">Artículo 84</span>
+</div>
+</div>
+</div>
+<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+<div class="modal" id="modal_Artículo_28">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_28')">[Cerrar]</span>
+<h2>Artículo 28</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_29">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_29')">[Cerrar]</span>
+<h2>Artículo 29</h2>
+<p>Recepción de la Biomasa destinada para provechamiento energético o, en su caso, para la Producción de Biocombustibles, asociados a la Autorización y Producción de Biocombustibles:
+La identidad del proveedor de Biomasa;
+Cantidad y tipo de insumos recibidos;
+Cuando proceda, datos del proyecto y hoja de datos de seguridad de los insumos;
+La identidad del productor del Biocombustible;
+Volumen de Biocombustibles producidos y aprovechados, y
+Cuando proceda, datos del proyecto y hoja de datos de seguridad del Biocombustible.
+Compra venta de Biocombustibles, asociados con la Distribución, Comercialización, Almacenamiento, Transporte y Expendio al Público de Biocombustibles:
+La identidad del productor del Biocombustible;
+Volumen de Biocombustibles comercializados y de autoconsumo;
+Cuando proceda, la documentación que ampare la Importación de Biocombustibles;
+La identidad del comercializador encargado de la enajenación y entrega de los Biocombustibles;
+Volumen de Biocombustibles enajenados a cada cliente;
+Dirección de las instalaciones de cada cliente;
+La identidad del transportista o distribuidor encargado de la recepción, traslado y entrega de Biocombustibles;
+Nombre y número de permiso de Transporte del permisionario que realiza la actividad;
+Volumen y destino de Biocombustibles a entregar;
+Cuando proceda, la identidad y volumen de almacenista intermedio de Biocombustibles;
+La identidad del receptor de Biocombustibles;
+Cuando proceda, la documentación que ampare la Exportación de Biocombustibles;
+La identidad de permisionario de Expendio al Público de Biocombustibles, y
+La identidad de los consumidores finales de Biocombustibles.
+SENER puede solicitar a las personas titulares de un ermiso o utorización y otras dependencias de la Administración Pública Federal la información y demás documentación que considere relevantes para garantizar la Trazabilidad de los Biocombustibles.</p>
+</div>
+<div class="modal" id="modal_Artículo_44">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_44')">[Cerrar]</span>
+<h2>Artículo 44</h2>
+<p>Las personas titulares de Permisos de Transporte de Biogás o Biometano por medios distintos a Ductos no pueden prestar servicios a otras personas titulares de Permisos de Transporte o Distribución por medios distintos a Ductos, ni permitir el Traslado del Biogás por un tercero.</p>
+</div>
+<div class="modal" id="modal_Artículo_45">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_45')">[Cerrar]</span>
+<h2>Artículo 45</h2>
+<p>A. Por medios distintos a ductos.
+Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente información:
+Descripción detallada de las características de los vehículos con los que se pretende llevar a cabo el objeto del permiso, así como de la ubicación y características de las instalaciones donde se resguardarán los vehículos, la cual debe incluir lo siguiente:
+Tipo y número de vehículos utilizados para el Transporte;
+Capacidad total de carga por vehículo de transporte a utilizarse;
+Descripción de los vehículos de Transporte a utilizarse;
+Identificación georreferenciada de las instalaciones donde se guardarán los vehículos;
+Características de las instalaciones donde se guardarán los vehículos;
+Vías de comunicación que permitirán el acceso y movilidad de los vehículos con los que se Transporten los productos;
+Plantilla del personal que participará en la actividad, en la que se señale el número estimado de puestos de trabajo y tareas asociadas a cada puesto;
+Descripción de los equipos que tengan contacto con el Biocombustible a transportar, y
+Autorizaciones requeridas conforme a las disposiciones jurídicas aplicables que emita la Secretaría de Infraestructura, Comunicaciones y Transportes u otras autoridades competentes;
+Datos del proyecto que incluya, de manera enunciativa más no limitativa, lo siguiente: inversión destinada para la ejecución de las actividades, número de empleos generados, planes de expansión en el corto, mediano y largo plazo, certificaciones nacionales e internacionales aplicables por obtener.
+Manuales:
+De procedimientos sobre la operación segura de la carga y descarga de los vehículos;
+De procedimientos en caso de emergencias provocadas por volcaduras, derrames e incendio de los vehículos;
+Hoja de especificaciones técnicas de los Biocombustibles que se pretenden transportar;
+Póliza vigente de seguro de responsabilidad civil que cubra daños a terceros en caso de un siniestro que pueda derivarse de la realización de las actividades objeto de permiso, o en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que la Persona Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones, y
+Póliza vigente de responsabilidad ambiental que cubra daños al medio ambiente en caso de siniestros que puedan derivarse de la realización de las actividades objeto de permiso o, en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que el Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones, y
+B. Por medio de ductos.
+Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente información:
+Descripción detallada de las características de los ductos con los que se pretende llevar a cabo el objeto del permiso;
+Capacidad total del ducto a utilizarse;
+Plantilla del personal que participará en la actividad, en la que se señale el número estimado de puestos de trabajo y tareas asociadas a cada puesto;
+Descripción de los procedimientos para salvaguardar la calidad del biocombustible al momento de la inyección;
+Datos del proyecto en el que se incluya, de manera enunciativa más no limitativa, lo siguiente: inversión destinada para la ejecución de las actividades, número de empleos generados, planes de expansión en el corto, mediano y largo plazo;
+Autorizaciones emitidas por la autoridad competente en función de las disposiciones y lineamientos que la SENER emita para la inyección de Biocombustibles a la red existente de ductos;
+Manuales:
+Manual de procedimientos sobre la operación segura de la inyección a ductos;
+Manual de procedimientos en caso de emergencias;
+Plan de apacitación del personal que participará en la actividad;
+Hoja de especificaciones técnicas de los Biocombustibles que se pretenden transportar;
+Póliza vigente de seguro de responsabilidad civil que cubra daños a terceros en caso de un siniestro que pueda derivarse de la realización de las actividades objeto de permiso, o en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que la Persona Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones;
+Póliza vigente de responsabilidad ambiental que cubra daños al medio ambiente en caso de siniestros que puedan derivarse de la realización de las actividades objeto de permiso o, en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que la Persona Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones, y</p>
+</div>
+<div class="modal" id="modal_Artículo_50">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_50')">[Cerrar]</span>
+<h2>Artículo 50</h2>
+<p>En caso que el titular de un Permiso de Comercialización de Biocombustibles pretenda desarrollar las actividades de Almacenamiento, Transporte, Distribución, Expendio al Público, Importación o Exportación debe cumplir con las disposiciones aplicables a la actividad correspondiente y solicitar, en un trámite independiente, el permiso para dicha actividad.</p>
+</div>
+<div class="modal" id="modal_Artículo_51">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_51')">[Cerrar]</span>
+<h2>Artículo 51</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_52">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_52')">[Cerrar]</span>
+<h2>Artículo 52</h2>
+<p>Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente información:
+Descripción de los productos o tipo de Biocombustibles que se Comercializarán, y
+Datos del proyecto que incluya, de manera enunciativa más no limitativa, lo siguiente: inversión destinada para la ejecución de las actividades, número de empleos generados, certificaciones nacionales e internacionales aplicables, listado de potenciales clientes y otros que considere relevantes;
+Listado de productores que suministrarán los Biocombustibles que se pretenden Comercializar:
+A. En caso de que la procedencia del Biocombustible sea nacional se debe presentar:
+El nombre o razón social del Permisionario o Permisionarios para la Producción del Biocombustible, así como una carta intención de venta firmada por el productor;
+Tipo de insumo de origen y lugar de obtención de este;
+Acreditación del cumplimiento de las especificaciones de calidad de los Biocombustibles producidos;
+Nombre o razón social del Permisionario que se encargará del transporte de los Biocombustibles a Comercializar, así como una carta intención firmada por el transportista o distribuidor;
+Volumen estimado de Comercialización anual del Biocombustible; y
+B. En caso de que la procedencia de los Biocombustibles sea de Importación, se debe presentar:
+Nombre o razón social del productor o la empresa productora del Biocombustible en el extranjero, así como ubicación de sus instalaciones y datos fiscales o equivalentes;
+Documento con el que acredite la relación con el productor o la empresa productora, como el contrato de suministro, carta intención o la factura de compra, en donde se señale el volumen que planea adquirir y producto correspondiente;
+Tipo de insumo de origen;
+Acreditación del cumplimiento de las especificaciones de calidad de los Biocombustibles Producidos;
+En su caso, nombre o Razón Social de la persona o empresa que estará a cargo de la Importación del Biocombustible;
+Nombre o razón social del Permisionario que se encargará del transporte de los Biocombustibles a comercializar, así como una carta intención firmada por el transportista o distribuidor;
+Volumen estimado de Comercialización anual de Biocombustible, y
+Descripción de la logística de transporte del Biocombustible, desde las instalaciones del productor en el extranjero hasta las instalaciones del cliente final, en la que se señale y describa cualquier etapa intermedia.
+Acreditar su relación comercial con al menos dos de sus de sus principales clientes, señalándose un estimado del volumen que planea entregar.</p>
+</div>
+<div class="modal" id="modal_Artículo_53">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_53')">[Cerrar]</span>
+<h2>Artículo 53</h2>
+<p>ermiso  Expendio al Público  entregado por la SENER, a través de la Comisión Nacional de Energía, y debe garantizar la Trazabilidad de los Biocombustibles en estado puro, y en su caso contar con los permisos y autorizaciones requeridos por otras autoridades competentes en virtud de otra.</p>
+</div>
+<div class="modal" id="modal_Artículo_54">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_54')">[Cerrar]</span>
+<h2>Artículo 54</h2>
+<p>se pretenda expender al público  de acuerdo con lo establecido en la Ley del Sector Hidrocarburos, se debe el permiso de ormulación correspondiente.</p>
+</div>
+<div class="modal" id="modal_Artículo_55">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_55')">[Cerrar]</span>
+<h2>Artículo 55</h2>
+<p>Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente:
+Información de la operación que incluya al menos lo siguiente:
+Descripción de los productos o tipos de Biocombustibles utilizados para el Expendio al Público, en su caso, identificando el nombre comercial de los productos;
+Descripción de las instalaciones con las que se pretenden llevar a cabo el almacenamiento y Expendio al Público de Biocombustibles;
+Descripción de los procesos con las que se pretenden llevar a cabo el almacenamiento y Expendio al Público de Biocombustibles;
+En su caso, señalar la modalidad de Expendio al Público, de acuerdo con las disposiciones emitidas por la SENER;
+Datos del proyecto en el que se incluya, de manera enunciativa mas no limitativa, lo siguiente: inversión destinada para la ejecución de las actividades, número de empleos generados, planes de expansión en el corto, mediano y largo plazo, certificaciones nacionales e internacionales aplicables por obtener;
+Ingeniería del proyecto, incluyéndose al menos los siguientes:
+Memoria técnico-descriptiva, incluyéndose planos de ingeniería;
+Dictamen aprobatorio emitido por una Unidad de Verificación acreditada y aprobada en la materia, que señale que el proyecto cuenta con un diseño de instalaciones y equipos adecuados para desarrollar la actividad conforme a la normatividad aplicable;
+Indicar el número y tipo de despachadores con los que contará la instalación;
+Descripción detallada de los sistemas de seguridad que se requieran durante la operación normal de las instalaciones, equipos y procesos;
+Contrato de suministro de biocombustible o carta intención con un permisionario autorizado por la SENER para dicho fin;
+En su caso, acreditación del cumplimiento de las especificaciones de calidad de los Biocombustibles;
+Póliza vigente de seguro de responsabilidad civil que cubra daños a terceros en caso de un siniestro que pueda derivarse de la realización de las actividades objeto de permiso, o en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que la Persona Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones, y
+Póliza vigente de responsabilidad ambiental que cubra daños al medio ambiente en caso de siniestros que puedan derivarse de la realización de las actividades objeto de permiso o, en su caso, incluir en el formato de solicitud autorizado por la SENER la manifestación en la que el Solicitante del permiso se comprometa a presentar la póliza de seguro vigente a más tardar en el momento en que entregue el Aviso de Inicio de Operaciones.
+Previo al inicio de operación la persona titular del ermiso debe cumplir con las aplicables en materia laboral y ambiental.</p>
+</div>
+<div class="modal" id="modal_Artículo_56">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_56')">[Cerrar]</span>
+<h2>Artículo 56</h2>
+<p>El volumen establecido para el ermiso de Exportación de Biocombustibles determinado por la SENER en función del volumen promedio histórico de Exportación y del cumplimiento de los criterios de Trazabilidad descritos en el artículo 29 del Reglamento y de la autosuficiencia nacional.
+El otorgamiento de un ermiso de Exportación de Biocombustibles no conlleva la autorización para llevar a cabo las demás actividades permisionadas conforme a la Ley y el Reglamento, las cuales requieren de los permisos correspondientes o la contratación de los servicios de una persona titular de un ermiso.</p>
+</div>
+<div class="modal" id="modal_Artículo_57">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_57')">[Cerrar]</span>
+<h2>Artículo 57</h2>
+<p>Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente:
+Descripción del uso y aplicaciones que se le dará al Biocombustible;
+Proyección del volumen y costos de Exportación del Biocombustible;
+Ubicación física del sitio de entrega en el extranjero de los Biocombustibles, y
+Especificaciones técnicas del Biocombustible a Exportar.
+Razón o denominación social y la clave del Registro Federal de Contribuyentes de la persona o personas que suministrarán el Biocombustible para su xportación y que deben contar con un permiso vigente expedido por la SENER. Para dichos efectos, además se debe acreditar su relación comercial con tales personas mediante el contrato correspondiente o, en su caso, debe indicar si llevará acabo dichas actividades de forma directa para lo cual debe obtener y presentar el permiso vigente emitido por la SENER.</p>
+</div>
+<div class="modal" id="modal_Artículo_58">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_58')">[Cerrar]</span>
+<h2>Artículo 58</h2>
+<p>El volumen establecido para el ermiso de Importación de Biocombustibles debe ser determinado por la SENER en función del volumen promedio histórico de Importación, de demanda de algún sector en específico y del cumplimiento de los criterios de Trazabilidad descritos en el artículo 29 del Reglamento y de la fluctuación de los precios del mercado.
+Para el análisis de las solicitudes de ermisos de Importación de Biocombustibles, la Persona Solicitante debe presentar a la SENER información sobre el uso final.  el objeto de la Importación sea su ormulación de acuerdo con lo establecido en la Ley del Sector Hidrocarburos, se debe presentar el permiso de ormulación correspondiente.
+El otorgamiento de un permiso de Importación de Biocombustibles no conlleva la autorización para llevar a cabo las demás actividades permisionadas conforme a la Ley y el Reglamento, las cuales requieren de los permisos correspondientes o la contratación de los servicios de una persona titular de un ermiso.</p>
+</div>
+<div class="modal" id="modal_Artículo_59">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_59')">[Cerrar]</span>
+<h2>Artículo 59</h2>
+<p>Requisitar debidamente el formato de solicitud autorizado por la SENER, mismo que debe contener al menos la siguiente:
+Descripción del uso que se le dará al Biocombustible;
+Proyección del volumen y costos de Importación del Biocombustible;
+En el caso de proveedores extranjeros, la relación que contenga el nombre, domicilio, datos fiscales o equivalente de los productores o proveedores de los Biocombustibles a Importar, así como el documento con el que acredite la relación con estos, como el contrato de suministro, carta de intención o la factura de compra, en la que se señale el volumen que planea adquirir durante el ejercicio fiscal y el tipo de Biocombustible correspondiente;
+Especificaciones técnicas del Biocombustible Importado, y
+En caso de que el objeto de la Importación sea su ormulación de acuerdo con lo establecido en la Ley del Sector Hidrocarburos, se debe presentar el permiso correspondiente.
+Constancia de Situación Fiscal que acredite la razón o denominación social y la clave del Registro Federal de Contribuyentes de la persona o personas que cuenten con el permiso vigente expedido por la SENER relacionadas con las actividades de Almacenamiento, Comercialización, Distribución, Expendio al Público, Producción y Transporte de los Biocombustibles a importar, según sea el caso.
+Para dichos efectos, además se debe acreditar su relación comercial con tales personas mediante el contrato correspondiente, carta de intención o, en su caso, debe indicar si llevará a cabo dichas actividades de forma directa para lo cual debe obtener y presentar el permiso vigente emitido por la SENER;
+Constancia de Situación Fiscal que acredite la denominación o razón social y la clave del Registro Federal de Contribuyentes de al menos dos de sus principales clientes, además de acreditar la relación con dichos clientes con el contrato o carta intención correspondiente, en el que se señale el volumen que planea vender durante el ejercicio fiscal y el producto correspondiente, y
+Certificación del Biocombustible importado emitida por laboratorios acreditados y aprobados en materia de calidad.</p>
+</div>
+<div class="modal" id="modal_Artículo_60">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_60')">[Cerrar]</span>
+<h2>Artículo 60</h2>
+<p>Para estar en posibilidad de determinar la admisión de la solicitud y si su contenido se ajusta a los requisitos de la Ley, el Reglamento, las Normas Oficiales Mexicanas, los lineamientos y demás disposiciones aplicables, la SENER dentro del plazo de quince días hábiles a partir de recibida la solicitud debe integrar el expediente correspondiente y analizar su contenido, incluidos sus anexos;
+la solicitud presente insuficiencias o no cumpla con los requisitos y formalidades exigidos en la Ley, el Reglamento, las Normas Oficiales Mexicanas, los lineamientos y demás disposiciones aplicables, la SENER dentro del plazo de veinte días hábiles a partir de la recepción de la solicitud, debe prevenir a la Persona Solicitante por escrito y, por , para que dentro del término de veinte días hábiles, contados a partir de la notificación de la prevención, subsane la omisión o aclare y rectifique su solicitud;
+otificada la prevención, la Persona Solicitante cuenta con el término señalado en la fracción II del presente artículo para desahogar la prevención, durante este periodo el término para que la SENER resuelva se suspende y se reanuda a partir del día hábil inmediato siguiente ala Persona Solicitante.  la Persona Solicitante omita desahogar la prevención en el término señalado, o habiéndose desahogado no subsane la omisión correspondiente, la SENER debe desechar el trámite en términos de la Ley Federal de Procedimiento Administrativo;
+de la evaluación de la solicitud de ermiso o utorización se desprend que cumple con los requisitos de la Ley, el Reglamento, las Normas Oficiales Mexicanas, los lineamientos y demás disposiciones aplicables, la SENER debe tenerla por admitida y emitir el cuerdo correspondiente, y.
+La SENER debe emitir, dentro de los veinte días hábiles siguientes a que la solicitud haya sido admitida o que se haya desahogado la prevención, la resolución correspondiente, debidamente fundada y motivada, en la que puede:
+Conceder el ermiso o utorización para la actividad de que se trate, en los términos solicitados;
+Conceder el ermiso o utorización para la actividad de que se trate de manera condicionada, en función de la planeación vinculante establecida en los artículos 1; 2, fracción II; 3, fracción X, inciso f); y 8, fracción IX de la Ley de Planeación y Transición Energética, sus disposiciones reglamentarias y de los términos y condiciones que deban observarse en la realización de dicha actividad, o
+Negar el permiso solicitado, cuando:
+Se contravenga o no se cumpla con lo establecido en la Ley y el Reglamento, las Normas Oficiales Mexicanas, lineamientos y demás disposiciones aplicables;
+La obra o actividad de que se trate pueda propiciar degradación ambiental, de suelos, que una o más especies sean declaradas como amenazadas o en peligro de extinción, cuando se afecte a una de dichas especies o cuando una o más especies amenacen la soberanía alimentaria nacional, y
+Exista falsedad en la información proporcionada por las personas interesadas, respecto de la actividad de que se trate.
+El plazo previsto para emitir la resolución al que se refiere la fracción V del presente artículo se suspende una vez que dicha resolución sea sometida a consideración del Comité de Asignaciones, Contratos y Permisos de la  y se reanuda una vez que dicho Comité emita el acuerdo correspondiente en el que instruya a la formalización de la resolución correspondiente.
+La resolución de la SENER sólo hace referencia a los aspectos energéticos de la actividad regulada, sin prejuzgar sobre otras autorizaciones requeridas por distintas autoridades. El otorgamiento de permisos o autorizaciones por parte de la SENER no está condicionado a la obtención de dichas autorizaciones; sin embargo, su cumplimiento es necesario para el inicio de operaciones.
+Las autoridades de los tres órdenes de gobierno deben procurar la coordinación e implementación de medidas de simplificación administrativa para la obtención de las autorizaciones necesarias para el inicio de operaciones de la actividad de la que se trate.
+Transcurrido el plazo señalado en el presente artículo sin que la SENER haya emitido respuesta alguna, debe entenderse que el permiso fue negado en términos del artículo 17 de la Ley Federal de Procedimiento Administrativo.</p>
+</div>
+<div class="modal" id="modal_Artículo_61">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_61')">[Cerrar]</span>
+<h2>Artículo 61</h2>
+<p>El nombre, denominación o razón social y domicilio en el territorio nacional del ermisionario o autorizado, así como cualquier marca comercial con la que éste se identifique;
+El objeto del permiso o autorización y las actividades a realizar;
+La vigencia del permiso o autorización;
+La descripción de las instalaciones o equipos a través de los cuales se llevarán a cabo las actividades objeto del permiso o autorización;
+Las causas de revocación y extinción del permiso o autorización;
+Las obligaciones de los titulares, de conformidad con el Capítulo VII, Título Segundo del presente ordenamiento;
+Tratándose de permisos de transporte de Biocombustibles, se debe señalar, además de lo indicado en las fracciones , el número, tipo, modelo, año, capacidad, datos de identificación de los vehículos en los que se transportará el Biocombustible, tales como propietario, número de serie y número de placas, así como la ubicación y características de las instalaciones donde se van a guardar dichos vehículos.
+Los ermisos de ransporte por Ductos deben especificar,
+de Permisos de Distribución de Biocombustibles, se debe señalar, además de lo indicado en las fracciones I, II, III, IV, V y VI, lo siguiente:
+Descripción de los elementos y etapas involucradas en la Distribución, en la que se identifique la Zona Geográfica, el trayecto, la capacidad de conducción y la capacidad de las instalaciones de recepción, uarda y entrega del biocombustible conducido;
+Las condiciones generales bajo las cuales se llevarán a cabo las actividades objeto del permiso, y
+Puntos de recepción y entrega de los Biocombustibles.</p>
+</div>
+<div class="modal" id="modal_Artículo_62">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_62')">[Cerrar]</span>
+<h2>Artículo 62</h2>
+<p>Los permisos que otorga la SENER son prorrogables por períodos iguales a la vigencia originalmente otorgada, previa resolución favorable de la SENER.</p>
+</div>
+<div class="modal" id="modal_Artículo_63">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_63')">[Cerrar]</span>
+<h2>Artículo 63</h2>
+<p>a solicitud de prórroga  cumplimiento dado por parte de la Persona Solicitante a los términos y condiciones establecidos en el permiso o autorización originalmente otorgada y en las modificaciones de que haya sido objeto, así como el cumplimiento de la Ley, el Reglamento, las Normas Oficiales Mexicanas, lineamientos y demás disposiciones administrativas de carácter general que resulten aplicables al momento de la solicitud de la prórroga.
+El procedimiento para la evaluación de las solicitudes de prórroga se debe realizar de la siguiente forma:
+La SENER, en un plazo no mayor a veinticinco días hábiles contados a partir de que reciba la solicitud y sus anexos, debe proceder a su análisis y revisión para verificar su procedencia y si cumple con lo establecido en la Ley, el Reglamento, las Normas Oficiales Mexicanas, lineamientos y demás disposiciones aplicables;
+Si la solicitud no cumple con los requisitos previstos en la Ley y el Reglamento, la SENER dentro de los veinte días hábiles señalados en la fracción anterior, debe prevenir a la Persona Solicitante por escrito y, por una sola vez, para que, dentro del término de veinte días hábiles, contados a partir de la notificación de la prevención, subsane la omisión o aclare y rectifique su solicitud;
+Notificada la prevención, la Persona Solicitante cuenta con el término señalado en la fracción II para desahogar la prevención. Durante este periodo el término para que la SENER se suspende y se reanuda a partir del día hábil inmediato siguiente a aquél en que el interesado conteste. En el supuesto de que la Persona Solicitante omita desahogar la prevención en el término señalado, o habiéndose desahogado no subsane la omisión correspondiente, la SENER puede desechar el trámite en los términos de la Ley Federal de Procedimiento Administrativo;
+la evaluación de la solicitud prórroga correspondiente se desprende que esta cumple con los requisitos de la Ley, el Reglamento, las Normas Oficiales Mexicanas, los lineamientos y demás disposiciones aplicables, la SENER debe tenerla por admitida y emitir el Acuerdo correspondiente y
+El plazo para resolver la solicitud de prórroga no debe ser mayor a treinta días hábiles posteriores a que haya sido admitida la solicitud o que se haya desahogado la prevención.
+El plazo previsto para emitir la resolución al que se refiere la fracción V del presente artículo se suspende una vez que dicha resolución sea sometida a consideración del Comité de Asignaciones, Contratos y Permisos de la  y se reanuda una vez que dicho Comité emita el acuerdo correspondiente en el que instruya a la formalización de la resolución correspondiente.</p>
+</div>
+<div class="modal" id="modal_Artículo_64">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_64')">[Cerrar]</span>
+<h2>Artículo 64</h2>
+<p>, la SENER debe contar con un registro de las verificaciones que realice a los ermisionarios y utorizados, así como de los procedimientos administrativos que inicie con motivo de dichas verificaciones, su resultado y las sanciones impuestas.
+La información contenida en el registro antes mencionado debe ser clasificada conforme a lo dispuesto por la Ley  de Transparencia y Acceso a la Información Pública.</p>
+</div>
+<div class="modal" id="modal_Artículo_65">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_65')">[Cerrar]</span>
+<h2>Artículo 65</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_66">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_66')">[Cerrar]</span>
+<h2>Artículo 66</h2>
+<p>Póliza vigente de seguro de responsabilidad civil que cubra daños a terceros que pudieran derivarse del desarrollo de las actividades objeto del permiso o autorización;
+Póliza vigente de responsabilidad ambiental que cubra daños al medio ambiente en caso de siniestros que puedan derivarse de la realización de las actividades objeto de permiso;
+Dictámenes técnicos que acrediten que las instalaciones, vehículos, equipos y programas de mantenimiento, seguridad y contingencias para el desarrollo de las actividades objeto del permiso cumplen con las Normas Oficiales Mexicanas, que resulten aplicables;
+En el caso de los Permisos de Transporte de Biocombustibles no se requiere la presentación de los dictámenes referidos en la fracción anterior cuando éstos hayan sido presentados para el otorgamiento del permiso correspondiente, y
+Aquellos que, en su caso, se señalen en los criterios y lineamientos a que se refiere el artículo 5, fracción XIII de la Ley.
+El cotejo de la documentación solo debe realizarse sí la autoridad lo considera necesario, notificándose a la Persona Solicitante de forma previa. Los documentos deben ser devueltos al concluir el cotejo.</p>
+</div>
+<div class="modal" id="modal_Artículo_70">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_70')">[Cerrar]</span>
+<h2>Artículo 70</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_74">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_74')">[Cerrar]</span>
+<h2>Artículo 74</h2>
+<p>La solicitud de prórroga debe presentarse ante las oficinas de representación en las de la SADER en las entidades federativas por lo menos tres meses antes del vencimiento del permiso. La solicitud debe indicar nombre, denominación o razón social de quien promueve; número de permiso correspondiente; nombre del representante legal; domicilio para oír y recibir notificaciones y dirección electrónica.
+Previo a resolver sobre la solicitud de prórroga, la SADER debe verificar el cumplimiento dado por la Persona Solicitante a los términos y condiciones establecidos en el permiso originalmente otorgado, en las modificaciones de que haya sido objeto, así como a la Ley, al Reglamento y demás disposiciones administrativas de carácter general que resulten aplicables.
+La SADER, a través de sus oficinas de representación en las entidades federativas correspondientes, debe evaluar la solicitud de prórroga y resolver lo conducente en un plazo que no debe exceder del establecido para el otorgamiento del permiso. Transcurrido dicho plazo sin que se haya emitido resolución, la prórroga debe entenderse negada en términos del artículo 17 de la Ley Federal de Procedimiento Administrativo.</p>
+</div>
+<div class="modal" id="modal_Artículo_78">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_78')">[Cerrar]</span>
+<h2>Artículo 78</h2>
+<p>La modificación, actualización y suspensión de los permisos o autorizaciones que emite la SENER, debe atender el siguiente procedimiento:
+Para estar en posibilidad de determinar la admisión de la solicitud, si su contenido se refiere el aumento o la disminución de la capacidad en las instalaciones, equipos y procesos previstos en el permiso o autorización correspondiente y si cumple con los requisitos previstos en la Ley, el Reglamento y demás disposiciones aplicables, la SENER dentro del plazo de diez días hábiles a partir de recibida la solicitud debe integrar el expediente correspondiente y analizar su contenido, incluidos sus anexos;
+la solicitud presente insuficiencias o no cumpla con los requisitos y formalidades exigidos en la Ley, el Reglamento y demás disposiciones aplicables, la SENER dentro del plazo de quince días hábiles a partir de la recepción de la solicitud, debe prevenir a la Persona Solicitante por escrito y, por una sola vez, para que, dentro del término de veinte días hábiles, contados a partir de la notificación de la prevención, subsane la omisión o aclare y rectifique su solicitud;
+Notificada la prevención, la Persona Solicitante cuenta con el término señalado en la fracción II del presente artículo para desahogar la prevención, durante este periodo el término para que la SENER resuelva se suspende y se reanuda a partir del día hábil inmediato siguiente a aquél en que la Persona Solicitante desahogue la prevención. En el supuesto de que la Persona Solicitante omita desahogar la prevención en el término señalado, o habiéndose desahogado no subsane la omisión correspondiente, la SENER debe desechar el trámite en términos de la Ley Federal de Procedimiento Administrativo;
+de la evaluación de la solicitud correspondiente se desprend que esta cumple con los requisitos de la Ley, el Reglamento, las Normas Oficiales Mexicanas, los lineamientos y demás disposiciones aplicables, la SENER debe tenerla por admitida y emitir el Acuerdo correspondiente;
+Una vez evaluada y admitida la solicitud de modificación, actualización y suspensión del permios o autorización, la SENER debe emitir, dentro de los veinte días hábiles siguientes a que la solicitud haya sido admitida o que haya sido desahogada la prevención, la resolución correspondiente, debidamente fundada y motivada, y en la que puede:
+Conceder la modificación, actualización y suspensión del ermiso o utorización de que se trate, en los términos solicitados, y
+Conceder la modificación, actualización y suspensión del ermiso o utorización de que se trate de manera condicionada a los términos y condiciones a los que deba someterse la actividad en atención al aumento o la disminución de la capacidad en las instalaciones, equipos y procesos;
+Negar la solicitud de modificación, actualización y suspensión del ermiso o utorización, cuando:
+Se contravenga o no se cumpla con lo establecido en la Ley, el Reglamento, lineamientos y demás disposiciones aplicables, y
+Exista falsedad en la información proporcionada por las personas interesadas, respecto de la actividad de que se trate.
+El plazo previsto para emitir la resolución al que se refiere la fracción V del presente artículo se suspende una vez que dicha resolución sea sometida a consideración del Comité de Asignaciones, Contratos y Permisos de la  y se reanuda una vez que dicho Comité emita el acuerdo correspondiente en el que instruya a la formalización de la resolución correspondiente.</p>
+</div>
+<div class="modal" id="modal_Artículo_82">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_82')">[Cerrar]</span>
+<h2>Artículo 82</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_83">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_83')">[Cerrar]</span>
+<h2>Artículo 83</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_84">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_84')">[Cerrar]</span>
+<h2>Artículo 84</h2>
+<p>Tipos, origen y volumen de los Biocombustibles que se comercializan,  nombre y razón social del productor o importador;
+Comprobante de domicilio vigente de las instalaciones.
+Comprobantes de transacciones y fechas relacionadas con la adquisición de los Biocombustibles comercializados;
+Comprobantes de transacciones y fechas relacionadas con la venta de los Biocombustibles comercializados;
+Volumen de comercialización promedio diario;
+Volumen comercializado del Biocombustible por trimestre reportado;
+Nombre y razón social de los transportistas o distribuidores contratados para la entrega de los Biocombustibles;
+Nombre y razón social, en su caso, de los clientes a los que se les abastece el biocombustible, ordenado por municipio y entidad federativa, y
+En su caso, actualización de plantilla del personal que participa en la actividad, en la que se señalen los puestos de trabajo y tareas asociadas a cada puesto.</p>
+</div>
+<div class="modal" id="modal_Artículo_26">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_26')">[Cerrar]</span>
+<h2>Artículo 26</h2>
+<p>Formato debidamente requisitado con la siguiente
+Nombre, denominación o razón social de la Persona Solicitante;
+Domicilio para oír y recibir notificaciones, incluyéndose una dirección de correo electrónico;
+Nombre(s), domicilio y dirección de correo electrónico de las personas autorizadas para recibir notificaciones;
+Manifestación bajo protesta de decir verdad de la Persona Solicitante en los siguientes sentidos, que:
+No se encuentra en el Directorio de licitantes, proveedores o contratistas sancionados por autoridad competente;
+No se encuentra incluido en la relación de contribuyentes con operaciones presuntamente inexistentes al que se refiere el artículo 69-B del Código Fiscal de la Federación;
+No participa ni ejerce actividades ilícitas, y que no realiza ni ha sido sancionada por actos de corrupción, y
+Tiene conocimiento del marco regulatorio aplicable a la actividad a desarrollar, y se compromete a cumplirlo.
+El consentimiento para recibir notificaciones, requerimientos, y las comunicaciones derivadas del trámite por medios electrónicos.
+La información técnica y operativa del proyecto:
+Domicilio del proyecto, instalación o infraestructura, así como las Coordenadas Geodésicas en un plano georreferenciado;
+Monto estimado de inversión;
+Uso, aplicaciones y destino que se le dará al producto o servicio, en su caso;
+Procesos y fases operativas que se llevarán a cabo para el desarrollo de la actividad regulada, según corresponda;
+Tipo de tecnología que se utilizará;
+Recursos energéticos empleados, incluyéndose combustibles, flujos térmicos, biomasa u otros;
+Sistema, equipos, instalaciones e infraestructura asociada;
+Proyección de volumen, capacidad y costos estimados en la operación, expresada en las unidades técnicas aplicables y,
+Descripción detallada de la logística operativa que se implementará para el manejo de las mercancías objeto del permiso, incluyéndose la interrelación con otras actividades reguladas aplicables en su caso, puntos de recepción, descarga, almacenamiento y transporte, hasta su destino final; identificando los medios utilizados, las instalaciones involucradas, su ubicación georreferenciada y los prestadores de servicios participantes en cada etapa del proceso, así como los permisos respectivos. Lo anterior con el objeto de permitir la razabilidad del recurso energético o producto desde su origen, y
+Cronograma calendarizado del desarrollo técnico y financiero del proyecto.
+Acreditar la Personalidad Jurídica:
+Para personas morales
+Acta constitutiva y, en su caso, las modificaciones inscritas en el Registro Público de Comercio, con las que acredite su existencia legal y que el objeto social de la Persona Solicitante se encuentre directamente vinculada con su actividad económica conforme a su régimen fiscal, y
+Diagrama de la estructura accionaria y corporativa que incluya los porcentajes de participación en el capital social y la identificación de las personas físicas o morales que ejerzan control directo o indirecto sobre la sociedad.
+Para personas físicas:
+Identificación oficial, y
+Acreditar que la actividad regulada a desarrollar se encuentre directamente vinculada con la actividad económica de la Persona Solicitante conforme a su régimen fiscal.
+Para el Representante legal o apoderado de la Persona Solicitante:
+Identificación oficial, e
+Instrumento notarial para acreditar la personalidad del representante legal o apoderado, así como sus facultades.
+Acreditar la propiedad, posesión legítima, uso o goce del predio, infraestructura o sistema correspondiente, que se mantendrán durante la vigencia del permiso, autorización o cualquier otro acto otorgado por la SENER;
+Acreditación del pago de derechos o aprovechamientos correspondientes;
+Acreditar la recepción o resolución de los siguientes trámites, y en ningún caso iniciar la construcción, desarrollo o ejecución de la infraestructura asociada al permiso, hasta en tanto se cuente con los resolutivos definitivos favorables y se haya dado aviso formalmente de su obtención a la SENER:
+El acuse de recepción o, en su caso, resolutivo definitivo positivo en materia de impacto ambiental, emitido por la autoridad ambiental competente, así como cualquier documento que lo modifique o sustituya.
+La demás información y documentación que, de acuerdo con el objeto del permiso o autorización se señalen en el presente capítulo y la que la SENER determine en las disposiciones normativas que para tal efecto emita.
+La SENER puede implementar plataformas y herramientas tecnológicas para la recepción y gestión de notificaciones, avisos, informes, solicitudes de utorizaciones o ermisos, u otros actos administrativos, garantiza accesibilidad, eficiencia ytransparencia.
+El cotejo de la documentación solo debe realizarse sí la autoridad lo considera necesario, a la Persona Solicitante de forma previa. Los documentos deben ser devueltos al concluir el cotejo.</p>
+</div>
+<div class="modal" id="modal_Artículo_27">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_27')">[Cerrar]</span>
+<h2>Artículo 27</h2>
+<p>Una persona puede ser titular de permisos de distintos tipos de actividades a los que se refiere el artículo 25, fracción II de la Ley, los cuales se otorgan en su caso, por un solo tipo de Biocombustible. Lo anterior con objeto de asegurar la Trazabilidad de los Biocombustibles, así como promover el desarrollo sustentable, eficiente y competitivo de los mercados.
+La SENER puede emitir permisos para más de un tipo de Biocombustibles siempre y cuando estos formen parte intermedia del proceso de Producción para la obtención del producto final.</p>
+</div>
+<div class="modal" id="modal_Artículo_71">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_71')">[Cerrar]</span>
+<h2>Artículo 71</h2>
+<p>Superficie georreferenciada correspondiente a los excedentes y agroindustria en donde se procesará la Biomasa, en el caso de la caña de azúcar, esta debe estar previamente registrada en el Registro Nacional Agropecuario de la SADER y en el caso del sorgo el registro debe hacerse sobre los excedentes obtenidos, y
+Declaración de volumen excedentario a aprovechar y estimado de Biocombustible a obtener correspondiente al punto previo. En el caso de la caña de azúcar la declaración debe ser obtenida ante la Comisión Nacional para el Desarrollo Sustentable de la Caña de Azúcar y en el caso del sorgo ante la Coordinación General de Información Inteligencia y Evaluación de SADER.</p>
+</div>
+<div class="modal" id="modal_Artículo_72">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_72')">[Cerrar]</span>
+<h2>Artículo 72</h2>
+<p>Superficie georreferenciada, y agroindustria en donde se procesará la Biomasa;
+Declaración de volumen a aprovechar y estimado a obtener correspondiente al punto previo, y
+Con base en la información señalada en las fracciones I y II del presente artículo, las oficinas de representación de la SADER en las entidades federativas deben evaluar la emisión del permiso de siembra y remitir, en caso de otorgar dicho permiso, al Registro Nacional Agropecuario de la SADER. Una vez que se inicie el establecimiento de las plantaciones la SADER debe emitir el aviso de siembra a petición del productor y remitirlo al Registro Nacional Agropecuario.</p>
+</div>
+<div class="modal" id="modal_Artículo_73">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_73')">[Cerrar]</span>
+<h2>Artículo 73</h2>
+<p>Transcurrido el plazo sin que la SADER haya emitido respuesta, la solicitud se considera negada en términos del artículo 17 de la Ley Federal de Procedimiento Administrativo.</p>
+</div>
+<div class="modal" id="modal_Artículo_79">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_79')">[Cerrar]</span>
+<h2>Artículo 79</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_80">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_80')">[Cerrar]</span>
+<h2>Artículo 80</h2>
+<p>La cesión de derechos y obligaciones derivados de los ermisos o utorizaciones puede ser autorizada por la SENER siempre y cuando se cumplan los siguientes requisitos:
+Que la persona cedente hubiere cumplido con las obligaciones señaladas en el ermiso o utorización otorgado;
+Que la persona cesionaria reúna los mismos requisitos que se tuvieron en cuenta para el otorgamiento del ermiso o utorización respectiva;
+Que la persona cesionaria acredite ante la SENER su capacidad jurídica;
+Que ambas partes presenten íntegramente el proyecto de contrato de cesión de derechos y obligaciones, y
+Que la persona cesionaria no se encuentre en los supuestos previstos en el artículo 25 de este Reglamento.
+Una vez acreditados los requisitos a los que se refiere el párrafo anterior, la SENER debe dictar, en el plazo de tres meses, la resolución correspondiente, debidamente fundada y motivada y en términos de lo señalado en la Ley Federal de Procedimiento Administrativo.
+El plazo previsto para emitir la resolución al que se refiere el párrafo anterior se suspende una vez que dicha resolución sea sometida a consideración del Comité de Asignaciones, Contratos y Permisos de la  y se reanuda una vez que dicho Comité emita el acuerdo correspondiente en el que instruya a la formalización de la resolución correspondiente.</p>
+</div>
+<div class="modal" id="modal_Artículo_81">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_81')">[Cerrar]</span>
+<h2>Artículo 81</h2>
+<p>abre el expediente correspondiente, en cuyo contenido se deben hacen constar las causales de revocación a las que se refiere el artículo 36 de la Ley;
+notifica al titular del ermiso o utorización el inicio del procedimiento, señalándole los hechos que constituyan las causales que se le imputan, otorgándole un plazo de quince días hábiles, contados a partir de que surta efectos la notificación, para que exprese lo que a su derecho convenga.
+En el ejercicio del derecho al que se refiere la fracción anterior, el titular del ermiso o utorización debe ofrecer las pruebas que acrediten su dicho.
+Son admisibles todas las pruebas a excepción de la confesional a cargo de servidores públicos. No se considera comprendida en esta prohibición la petición de informes a las autoridades administrativas, respecto de hechos que consten en sus expedientes;
+Transcurrido el plazo la fracción II de este artículo, la SENER debe otorgar al titular del ermiso o utorización un plazo de diez días hábiles para presentar sus alegatos;
+Transcurrido el periodo de alegatos, la SENER debe dictar en un plazo no mayor a treinta días hábiles la resolución correspondiente, y
+La resolución debe notificarse personalmente al titular del ermiso o utorización en términos de lo establecido en la Ley Federal de Procedimiento Administrativo.
+El plazo previsto para emitir la resolución al que se refiere la fracción VI del presente artículo se suspende una vez que dicha resolución sea sometida a consideración del Comité de Asignaciones, Contratos y Permisos de la  y se reanuda una vez que dicho Comité emita el acuerdo correspondiente en el que instruya a la formalización de la resolución correspondiente.</p>
+</div>
+<div class="modal" id="modal_Artículo_5">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_5')">[Cerrar]</span>
+<h2>Artículo 5</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_10">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_10')">[Cerrar]</span>
+<h2>Artículo 10</h2>
+<p>Las acciones y programas pueden incorporar acciones transversales en coordinación con otras dependencias de la Administración Pública Federal los gobiernos de las entidades federativas, los municipios y las demarcaciones territoriales.
+Los programas deben estar sustentados en estudios de factibilidad con base en las necesidades del país y con los escenarios de mediano y largo plazo.</p>
+</div>
+<div class="modal" id="modal_Artículo_6">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_6')">[Cerrar]</span>
+<h2>Artículo 6</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_30">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_30')">[Cerrar]</span>
+<h2>Artículo 30</h2>
+<p>Establecer medidas y procedimientos para prevenir y detectar actos, omisiones u operaciones que pueden constituir los delitos en materia de Hidrocarburos, Petrolíferos y Petroquímicos previstos en el Título Segundo de la Ley Federal para Prevenir y Sancionar los Delitos Cometidos en materia de Hidrocarburos;
+Implementar controles necesarios que les permitan garantizar que las personas con quienes realicen operaciones comerciales o la contratación de los servicios inherentes a las actividades en materia de Biocombustibles cuenten con un permiso vigente;
+Abstenerse de entablar relaciones comerciales o prestar servicios inherentes a las actividades en materia de Biocombustibles, cuando las personas con quienes realicen operaciones comerciales o la contratación de los servicios se nieguen a proporcionarles la información o documentación referida en la fracción anterior;
+Custodiar, proteger resguardar la información y documentación que le sea solicitada  las autoridades,  la identificación de sus clientes y proveedores;
+Ejecutar y llevar el control de la información relacionada con la medición y conservación de las características, calidad y cantidad del tipo de Biocombustibles objeto de los permisos respectivos, conforme al sistema que establezca la SENER en las Normas Oficiales Mexicanas, lineamientos y demás disposiciones que para tal efecto emita, y
+Manifestar, bajo protesta de decir verdad, que la información proporcionada es verídica, genuina, completa y que corresponde a hechos de su conocimiento directo. , debe reconocer que es responsable del contenido de la información proporcionada a la SENER, por lo que cualquier falsedad u omisión es de su exclusiva responsabilidad, sin perjuicio de las consecuencias legales a las que haya lugar de conformidad la aplicable.</p>
+</div>
+<div class="modal" id="modal_Artículo_20">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_20')">[Cerrar]</span>
+<h2>Artículo 20</h2>
+<p>Con el fin de que la SE esté en posibilidad de verificar a una empresa de la industria de Biocombustibles, la SENER debe solicitarlo por escrito, señalándose el título de permiso, proyecto y empresa, así como el período a verificar, el cual en ningún caso podrá rebasar los cinco años de antigüedad. Una vez que la SE concluya dicha verificación, debe informar a la SENER dentro de los diez días hábiles siguientes el cumplimiento o incumplimiento del porcentaje mínimo de contenido nacional.
+La SE en colaboración con la SENER puede celebrar convenios o acuerdos para establecer mecanismos que permitan formalizar proyectos para el fomento industrial y de inversión en la industria de los Biocombustibles.</p>
+</div>
+<div class="modal" id="modal_Artículo_1">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_1')">[Cerrar]</span>
+<h2>Artículo 1</h2>
+<p></p>
+</div>
+<div class="modal" id="modal_Artículo_3">
+<span class="modal-close" onclick="toggleModal('modal_Artículo_3')">[Cerrar]</span>
+<h2>Artículo 3</h2>
+<p>Aguas esiduales: Son las aguas de composición variada provenientes de las descargas de usos público urbano, doméstico, industrial, comercial, de servicios, agrícola, pecuario, de las plantas de tratamiento y en general, de cualquier uso, así como la mezcla de ellas;
+Alterar o Adulterar: Actividad ilícita que consiste en cambiar o modificar la composición química o condiciones fisicoquímicas de los Biocombustibles, para la obtención de otros productos que no cumplan con las especificaciones de calidad establecidas en las normas oficiales mexicanas o disposiciones normativas aplicables;
+Aprovechamiento: Uso de Biomasa proveniente de plantaciones en suelos marginales o de Residuos orgánicos que son transformados o usados directamente para producir energía;
+Astillas: Pequeños fragmentos irregulares de material proveniente de madera;
+Autorización de Producción o Aprovechamiento: Autorización otorgada por la SENER para desarrollar actividades Producción de Biocombustibles o Aprovechamiento de estos y que no comprende las actividades reguladas por el Permiso de Producción de Biocombustibles;
+Biodiésel: Biocombustible en estado líquido que se obtiene a partir de aceites vegetales y grasas animales sometidos a un proceso químico;
+Bioetanol: Biocombustible en estado líquido producido a partir de la fermentación de carbohidratos presentes en la Biomasa procedente de cultivos con alto contenido de azúcares o almidones, y a partir de materiales lignocelulósicos;
+Biogás: Biocombustible en estado gaseoso compuesto por metano, dióxido de carbono y trazas de otros compuestos, generado por la descomposición anaerobia de la Biomasa.
+Biometano: Bicombustible en estado gaseoso compuesto principalmente de metano obtenido a partir de la purificación del Biogás;
+Bioturbosina: Biocombustible en estado líquido sintetizado para la aviación a partir de Biomasa, compuesto por una mezcla sencilla de parafinas e isoparafinas que cumple con criterios de sostenibilidad y certificaciones;
+Briquetas: Bloques comprimidos secos de Biomasa comprimida que pueden utilizarse como Biocombustibles en estado sólido;
+Capacitación: Conjunto de instrumentos y herramientas para desarrollar o proporcionar los conocimientos, habilidades, destrezas, y comportamientos que requiere una persona para realizar actividades a lo largo de las cadenas de valor con un alto nivel de desempeño, tales como Capacitación Especializada y Certificación reconocida por la industria a nivel nacional o internacional;
+Calor Verde: Energía obtenida mediante la combustión controlada de Biomasa;
+Carbón Vegetal: Material combustible que se produce al calentar madera u otros materiales vegetales en ausencia de oxígeno;
+Exportación: Actividad que al amparo de un ermiso permite enviar Biomasa o Biocombustibles fuera del país;
+Guarda: Proceso operativo que se desarrolla como parte de las actividades en materia de Biocombustibles, distintas al Transporte o Almacenamiento, que tiene como fin el resguardo de Biocombustibles, sin que pueda ser prestado como un servicio y no debe exceder la capacidad ni la temporalidad de conformidad con las mejores prácticas de la industria y a lo que establezca la SENER;
+Innovación: un producto o proceso nuevo o mejorado (o una combinación de ambos) que difiere significativamente de los productos o procesos previos y que se ha puesto a disposición de los usuarios;
+Importación: Actividad que al amparo de un ermiso permite introducir Biocombustibles al país;
+Leña: Materia prima en rollo o raja proveniente de Vegetación forestal maderable que se utiliza como combustible, celulosa, tableros o carbón;
+Ley: Ley de Biocombustibles;
+Pellets: Pequeños cilindros densificados a partir de Biomasa, con o sin aditivos, de longitud aleatoria y con extremos romos, que pueden ser utilizados como biocombustible en estado sólido;
+Reglamento: Reglamento de la Ley de Biocombustibles;
+Residuos Orgánicos: Todo residuo de origen biológico capaces de biodegradarse, incluyendo aquellos considerados como de manejo especial y excluyendo los residuos peligrosos;
+SADER: La Secretaría de Agricultura y Desarrollo Rural;
+SE: La Secretaría de Economía;
+SECIHTI: La Secretaría de Ciencia, Humanidades, Tecnología e Innovación;
+SEMARNAT: La Secretaría de Medio Ambiente y Recursos Naturales;
+SENER: La Secretaría de Energía;
+SICT: La Secretaría de Infraestructura, Comunicaciones y Transportes;
+Persona Solicitante: Persona física o moral interesada en presentar solicitudes relacionadas con permisos, autorizaciones, avisos u otros actos administrativos previstos en la Ley y el Reglamento para llevar a cabo actividades de Producción, Importación, Exportación, Almacenamiento, Transporte, Comercialización, Distribución y Expendio al Público de Biocombustibles;
+Transferencia de Tecnología: conjunto de instrumentos y mecanismos para acceder, desarrollar, asimilar, innovar, adoptar, habilitar o transferir de manera sistemática a la industria mexicana sus cadenas productivas y a la mano de obra nacional, conocimientos técnicos de vanguardia y especializados, así como mejores prácticas y tecnologías críticas para la industria de biocombustibles, con el objetivo de desarrollar una base tecnológica sólida de capacidades nacionales.
+Trazabilidad: Capacidad de identificar la procedencia de los insumos para el provechamiento, la Producción de Biocombustibles, así como su origen y destino a lo largo de las actividades de Importación, Exportación, Almacenamiento, Transporte, Comercialización, Distribución y Expendio al Público, y
+Valorización Energética de Residuos: Aprovechamiento de Residuos Orgánicos para producir energía.</p>
+</div>
+<script>
+function toggleEntry(id) {
+  const el = document.getElementById(id);
+  el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
+function toggleModal(id) {
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById(id);
+  const isVisible = modal.style.display === 'block';
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+  overlay.style.display = isVisible ? 'none' : 'block';
+  modal.style.display = isVisible ? 'none' : 'block';
+}
+function closeAllModals() {
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+  document.getElementById('overlay').style.display = 'none';
+}
+</script>
+</body>
+</html>
