@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -117,7 +118,61 @@
         renderMarkers(data);
     });
 
-    // Gráfica Bioenergético
+    
+    let bioChart, estadoChart;
+
+    function actualizarGraficas(data) {
+        const bioContador = {};
+        const estadoContador = {};
+
+        data.forEach(p => {
+            bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
+            estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+        });
+
+        const bioData = {
+            labels: Object.keys(bioContador),
+            datasets: [{
+                label: 'Cantidad',
+                data: Object.values(bioContador),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        };
+
+        const estadoData = {
+            labels: Object.keys(estadoContador),
+            datasets: [{
+                label: 'Cantidad',
+                data: Object.values(estadoContador),
+                backgroundColor: 'rgba(255, 99, 132, 0.6)'
+            }]
+        };
+
+        if (bioChart) bioChart.destroy();
+        if (estadoChart) estadoChart.destroy();
+
+        bioChart = new Chart(document.getElementById('bioChart'), {
+            type: 'bar',
+            data: bioData
+        });
+
+        estadoChart = new Chart(document.getElementById('estadoChart'), {
+            type: 'bar',
+            data: estadoData
+        });
+    }
+
+    // Reemplazar renderMarkers para también actualizar gráficas
+    function renderMarkers(data) {
+        markers.clearLayers();
+        data.forEach(p => {
+            L.marker([parseFloat(p.lat), parseFloat(p.lon)])
+                .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`)
+                .addTo(markers);
+        });
+        actualizarGraficas(data);
+    }
+
     fetch('graf_bio.json')
     .then(response => response.json())
     .then(data => {
