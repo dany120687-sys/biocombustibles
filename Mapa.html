@@ -69,7 +69,7 @@
   <div id="map"></div>
 
   <div class="chart-container">
-    <h2>Distribución por Tipo de Biocombustible</h2>
+    <h2>Distribución por Tipo de Bioenergético</h2>
     <canvas id="bioChart"></canvas>
   </div>
   <div class="chart-container">
@@ -81,14 +81,26 @@
     <h2>Tabla de Contenido</h2>
     <table id="tabla-contenido">
       <thead>
-        <tr><th>Estado</th><th>Tipo de Biocombustible</th><th>Permisos</th></tr>
+        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
 <script>
-  let map = L.map('map').setView([23.6345, -102.5528], 5);
+  let map = 
+const map = L.map('map', {
+  center: [23.6345, -102.5528],
+  zoom: 5,
+  minZoom: 4,
+  maxZoom: 10,
+  maxBounds: [
+    [5.0, -120.0],
+    [33.0, -85.0]
+  ],
+  maxBoundsViscosity: 1.0
+});
+
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
   let markers = L.layerGroup().addTo(map);
   let allData = [];
@@ -99,7 +111,7 @@
     data.forEach(p => {
       L.marker([parseFloat(p.lat), parseFloat(p.lon)])
         .addTo(markers)
-        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.Biocombustible}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
     });
   }
 
@@ -108,7 +120,7 @@
     const estadoContador = {};
 
     data.forEach(p => {
-      bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
+      bioContador[p.Biocombustible] = (bioContador[p.Biocombustible] || 0) + 1;
       estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
     });
 
@@ -143,7 +155,7 @@
   function actualizarTabla(data) {
     const grouped = {};
     data.forEach(p => {
-      const key = p.estado + '||' + p.bioenergetico;
+      const key = p.estado + '||' + p.Biocombustible;
       grouped[key] = (grouped[key] || 0) + 1;
     });
 
@@ -160,7 +172,7 @@
     const filtroBio = document.getElementById("filtro-bio").value;
     const filtroEstado = document.getElementById("filtro-estado").value;
     const filtrados = allData.filter(p =>
-      (filtroBio === "" || p.bioenergetico === filtroBio) &&
+      (filtroBio === "" || p.Biocombustible === filtroBio) &&
       (filtroEstado === "" || p.estado === filtroEstado)
     );
     renderMarkers(filtrados);
@@ -175,7 +187,7 @@
       const bioSet = new Set();
       const estadoSet = new Set();
       data.forEach(p => {
-        bioSet.add(p.bioenergetico);
+        bioSet.add(p.Biocombustible);
         estadoSet.add(p.estado);
       });
 
