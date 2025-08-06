@@ -68,16 +68,16 @@
 
   <div id="map"></div>
 
-  <div class="chart-container">
+  <div class="chart-grid" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin: 40px auto;">
     <h2>Distribución por Tipo de Bioenergético</h2>
-    <canvas id="bioChart"></canvas>
+    <div style="flex: 1; min-width: 300px;"><h2>Distribución por Tipo de Bioenergético</h2><canvas id="bioChart"></canvas></div>
   </div>
   <div class="chart-container">
     <h2>Permisos por Estado</h2>
-    <canvas id="estadoChart"></canvas>
+    <div style="flex: 1; min-width: 300px;"><h2>Permisos por Estado</h2><canvas id="estadoChart"></canvas></div>
   </div>
 
-  <div class="chart-container">
+  <div class="chart-container" style="margin-top: 50px;">
     <h2>Tabla de Contenido</h2>
     <table id="tabla-contenido">
       <thead>
@@ -116,6 +116,15 @@
     if (estadoChart) estadoChart.destroy();
 
     bioChart = new Chart(document.getElementById('bioChart'), {
+        options: {
+          onClick: (evt, item) => {
+            if (item.length) {
+              const label = item[0].element.$context.raw.label;
+              document.getElementById("filtro-bio").value = label;
+              aplicarFiltros();
+            }
+          }
+        },
       type: 'bar',
       data: {
         labels: Object.keys(bioContador),
@@ -128,6 +137,15 @@
     });
 
     estadoChart = new Chart(document.getElementById('estadoChart'), {
+        options: {
+          onClick: (evt, item) => {
+            if (item.length) {
+              const label = item[0].element.$context.raw.label;
+              document.getElementById("filtro-estado").value = label;
+              aplicarFiltros();
+            }
+          }
+        },
       type: 'bar',
       data: {
         labels: Object.keys(estadoContador),
