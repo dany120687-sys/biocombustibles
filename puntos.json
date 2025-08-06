@@ -3,414 +3,550 @@
     "estado": "Tamaulipas",
     "municipio": "Ciudad Madero",
     "permisionario": "Geo Estratos, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
-    "respuesta": null,
-    "lat": 23.66885438445373,
-    "lon": -99.13407553498114
+    "biocombustible": "Biodiésel",
+    "respuesta": "",
+    "lat": 23.7369,
+    "lon": -99.1411,
+    "tipo_permiso": "Transporte",
+    "anio_autorizacion": 2010.0
   },
   {
     "estado": "Oaxaca",
     "municipio": "Tuxtepec",
     "permisionario": "Joel Nicolás Gallego Palma",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron información el 03 de octubre ",
-    "lat": 17.092343483528133,
-    "lon": -96.67633866210862
+    "lat": 17.0732,
+    "lon": -96.7266,
+    "tipo_permiso": "",
+    "anio_autorizacion": ""
   },
   {
     "estado": "Jalisco",
     "municipio": "Zapopan",
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.646737282413554,
-    "lon": -103.2552179874346
+    "lat": 20.6597,
+    "lon": -103.3496,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Estado de México",
     "municipio": "Ecatepec de Morelos",
     "permisionario": "Transportes Especializados Antonio De La Torre E Hijos, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro y Biodiésel",
+    "biocombustible": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 19 de septiembre",
-    "lat": 19.342966090121827,
-    "lon": -99.85690686073458
+    "lat": 19.3266,
+    "lon": -99.8961,
+    "tipo_permiso": "Transporte",
+    "anio_autorizacion": 2018.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Ferrocarril Mexicano, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro y Biodiésel",
+    "biocombustible": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 27 de septiembre",
-    "lat": 19.47349941127467,
-    "lon": -99.14909684230044
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Transporte",
+    "anio_autorizacion": 2018.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Ferrosur, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro y Biodiésel",
+    "biocombustible": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 27 de septiembre",
-    "lat": 19.501923336587183,
-    "lon": -99.1255610512821
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Transporte",
+    "anio_autorizacion": 2018.0
   },
   {
     "estado": "Chihuahua",
     "municipio": "Ciudad Juarez",
     "permisionario": "Transportadora Atón, S.A De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 28.710011695230737,
-    "lon": -106.02761485145734
+    "lat": 28.6353,
+    "lon": -106.0889,
+    "tipo_permiso": "",
+    "anio_autorizacion": ""
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Coyoacan",
     "permisionario": "Instituto Nacional De Investigaciones Forestales, Agrícolas Y Pecuarias (Inifap)",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 19.44016641020317,
-    "lon": -99.12511873440157
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2010.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Benito Juárez",
     "permisionario": "Biofuels De México, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.469980496897506,
-    "lon": -99.11768490745834
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2010.0
+  },
+  {
+    "estado": "Ciudad de México",
+    "municipio": "Benito Juárez",
+    "permisionario": "Biofuels De México, S.A. De C.V.",
+    "biocombustible": "Biodiésel",
+    "respuesta": "Sus 15 días vencen el 26 sept",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2010.0
   },
   {
     "estado": "Colima",
     "municipio": "Colima",
     "permisionario": "Destilados La Ideal, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.301880616393507,
-    "lon": -103.67011955415876
+    "lat": 19.2433,
+    "lon": -103.725,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2011.0
   },
   {
     "estado": "Querétaro",
     "municipio": "Querétaro",
     "permisionario": "Universidad Autónoma De Querétaro (Uaq)",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 12/09/2024 por correo",
-    "lat": 20.5872684988198,
-    "lon": -100.3147548953978
+    "lat": 20.5888,
+    "lon": -100.3899,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Oaxaca",
     "municipio": "San Jacinto Amilpas",
     "permisionario": "Abelardo Hernández Núñez",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 17.165787948868076,
-    "lon": -96.72916470593711
+    "lat": 17.0732,
+    "lon": -96.7266,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2015.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Benito Juárez",
     "permisionario": "Planta De Biodiésel Yaotec, S.C. De P. De R.L. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.52334693752549,
-    "lon": -99.23311488700661
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2014.0
   },
   {
     "estado": "Yucatán",
     "municipio": "Merida",
     "permisionario": "Energías Girón, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 04/10/2024 por DHL",
-    "lat": 21.030543228514993,
-    "lon": -89.65028113175556
+    "lat": 20.9674,
+    "lon": -89.5926,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2015.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Lomas de Circunvalación",
     "permisionario": "Tecnologías Disruptivas, S.A.P.I. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.336949281614377,
-    "lon": -99.18837285382945
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2016.0
   },
   {
     "estado": "Aguscalientes",
     "municipio": "Aguscalientes",
     "permisionario": "Recoreusecompany, S.A De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 21.855837819956154,
-    "lon": -102.2005155887075
+    "lat": 21.8853,
+    "lon": -102.2916,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2017.0
   },
   {
     "estado": "Quintana Roo",
     "municipio": "Cancún Benito Juárez",
     "permisionario": "Uga Soluciones Ambientales, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 18.47825713631854,
-    "lon": -88.38185521262001
+    "lat": 18.4931,
+    "lon": -88.2962,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2017.0
   },
   {
     "estado": "Morelos",
     "municipio": "Yautepec",
     "permisionario": "Rafael Solano Ramírez",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.015346084945055,
-    "lon": -99.31560900641183
+    "lat": 18.9242,
+    "lon": -99.2216,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2017.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Gustavo A. Madero",
     "permisionario": "Centro Mexicano Para La Producción Más Limpia Del Instituto Politécnico Nacional (Cmp+L)",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 19.37918848067071,
-    "lon": -99.07905894875971
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2017.0
   },
   {
     "estado": "Zacatecas",
     "municipio": "Fresnillo",
     "permisionario": "Carlos Ignacio Aguilar Solís",
-    "bioenergetico": "Biodiésel",
-    "respuesta": null,
-    "lat": 22.712679079530645,
-    "lon": -102.63306912955059
+    "biocombustible": "Biodiésel",
+    "respuesta": "",
+    "lat": 22.7709,
+    "lon": -102.5832,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2018.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Aceites Especiales Th, S.A. De C.V.",
-    "bioenergetico": "Biomasa",
+    "biocombustible": "Biomasa",
     "respuesta": "Remitió información el 26 de septiembre",
-    "lat": 19.408531314797873,
-    "lon": -99.12796395569958
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2023.0
   },
   {
     "estado": "Oaxaca",
     "municipio": "Oaxaca de Juarez",
     "permisionario": "Abelardo Hernández Núñez",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 17.004708944030735,
-    "lon": -96.63029659828406
+    "lat": 17.0732,
+    "lon": -96.7266,
+    "tipo_permiso": "",
+    "anio_autorizacion": ""
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Iztapalapa",
     "permisionario": "Fideicomiso Para La Construcción Y Operación\nDe La Central De Abasto De La Ciudad De México (Ficeda)",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 19.411003273814508,
-    "lon": -99.08273504221795
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2023.0
   },
   {
     "estado": "Jalisco",
     "municipio": "Zapopan",
     "permisionario": "Diageo Mexico Comercializadora S.A. De C.V.",
-    "bioenergetico": "Biomasa",
+    "biocombustible": "Biomasa",
     "respuesta": "Remitió información el 20 de septiembre",
-    "lat": 20.724930467160483,
-    "lon": -103.38623945966121
+    "lat": 20.6597,
+    "lon": -103.3496,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2024.0
   },
   {
     "estado": "Sinaloa",
     "municipio": "Culiacán",
     "permisionario": "Destilmex, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
-    "respuesta": null,
-    "lat": 24.85792325342084,
-    "lon": -107.33752378331165
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "",
+    "lat": 24.8091,
+    "lon": -107.394,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2009.0
   },
   {
     "estado": "Sinaloa",
     "municipio": "Culiacán",
     "permisionario": "Avance Regional Agroindustrial, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
-    "respuesta": null,
-    "lat": 24.82511908489964,
-    "lon": -107.35628624769103
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "",
+    "lat": 24.8091,
+    "lon": -107.394,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2009.0
   },
   {
     "estado": "Sinaloa",
     "municipio": "Culiacán",
     "permisionario": "Cía. Azucarera La Fe, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron su informe el 23 de septiembre",
-    "lat": 24.737353229670948,
-    "lon": -107.43191099087723
+    "lat": 24.8091,
+    "lon": -107.394,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2009.0
   },
   {
     "estado": "Tamaulipas",
     "municipio": "Ciudad Valle hermoso",
     "permisionario": "Bioenergéticos Mexicanos, S.A.P.I. De C.V.",
-    "bioenergetico": "Etanol anhidro",
-    "respuesta": null,
-    "lat": 23.818743173479003,
-    "lon": -99.17433333880449
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "",
+    "lat": 23.7369,
+    "lon": -99.1411,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2009.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Benito Juárez",
     "permisionario": "Biofuels De México, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.43277745924584,
-    "lon": -99.1134423752812
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2010.0
+  },
+  {
+    "estado": "Ciudad de México",
+    "municipio": "Benito Juárez",
+    "permisionario": "Biofuels De México, S.A. De C.V.",
+    "biocombustible": "Biodiésel",
+    "respuesta": "Sus 15 días vencen el 30 sept",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2010.0
   },
   {
     "estado": "Colima",
     "municipio": "Colima",
     "permisionario": "Destilados La Ideal, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro y Biodiésel",
-    "respuesta": null,
-    "lat": 19.340998246609622,
-    "lon": -103.77308094791391
+    "biocombustible": "Etanol anhidro y Biodiésel",
+    "respuesta": "",
+    "lat": 19.2433,
+    "lon": -103.725,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2011.0
   },
   {
     "estado": "Jalisco",
     "municipio": "Zapopan",
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.70182249867051,
-    "lon": -103.38390141507196
+    "lat": 20.6597,
+    "lon": -103.3496,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Guanajuato",
     "municipio": "Irapuato",
     "permisionario": "Global Marketing Corporation, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 21.09138508013582,
-    "lon": -101.20671347524416
+    "lat": 21.0181,
+    "lon": -101.2583,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Nuevo León",
     "municipio": "Apocada",
     "permisionario": "Ecoen, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
-    "respuesta": null,
-    "lat": 25.768344156749215,
-    "lon": -100.38503865726197
+    "biocombustible": "Biodiésel",
+    "respuesta": "",
+    "lat": 25.6866,
+    "lon": -100.3161,
+    "tipo_permiso": "No disponible",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Colonia del Valle",
     "permisionario": "Soluciones Tecnológicas En Bioenergía, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
-    "respuesta": null,
-    "lat": 19.383962064105884,
-    "lon": -99.21193464929193
+    "biocombustible": "Biodiésel",
+    "respuesta": "",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2013.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.387129198071786,
-    "lon": -99.05702826818802
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2014.0
+  },
+  {
+    "estado": "Ciudad de México",
+    "municipio": "Miguel Hidalgo",
+    "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "Sus 15 días vencen el 30 sept",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Producción",
+    "anio_autorizacion": 2015.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Biocombustibles Tomatlán, S.A.P.I. De C.V. ",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.41258317886698,
-    "lon": -99.22067459249043
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2014.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Cuajimalpa de Morelos",
     "permisionario": "Ingenio La Gloria, S.A.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitió información el 24 de sept",
-    "lat": 19.421508085529343,
-    "lon": -99.08302587888342
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2014.0
   },
   {
     "estado": "Querétaro",
     "municipio": "Santiago de Querétaro",
     "permisionario": "M&L Enterprises, S. De R.L. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 20.59283426139824,
-    "lon": -100.43132674089668
+    "lat": 20.5888,
+    "lon": -100.3899,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2016.0
   },
   {
     "estado": "Yucatán",
     "municipio": "Merida",
     "permisionario": "Energía Girón, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 04/10/2024 por DHL",
-    "lat": 20.892300270350443,
-    "lon": -89.52128952644466
+    "lat": 20.9674,
+    "lon": -89.5926,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2017.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Tlalpan",
     "permisionario": "Mexican Commodities, S.A. De C.V.",
-    "bioenergetico": "Biodiésel",
+    "biocombustible": "Biodiésel",
     "respuesta": "Remitieron información el 30 de septiembre ",
-    "lat": 19.462429447571342,
-    "lon": -99.07132232070084
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2018.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.333530541983063,
-    "lon": -99.09150403033371
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2014.0
+  },
+  {
+    "estado": "Ciudad de México",
+    "municipio": "Miguel Hidalgo",
+    "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "Sus 15 días vencen el 30 sept",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Producción",
+    "anio_autorizacion": 2015.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Miguel Hidalgo",
     "permisionario": "Biocombustibles Tomatlán, S.A.P.I. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.454788296900535,
-    "lon": -99.12604550572934
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Producción",
+    "anio_autorizacion": 2015.0
   },
   {
     "estado": "Jalisco",
     "municipio": "Zapopan",
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
-    "bioenergetico": "Etanol anhidro",
+    "biocombustible": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.67098700622554,
-    "lon": -103.25721057393802
+    "lat": 20.6597,
+    "lon": -103.3496,
+    "tipo_permiso": "Comercialización",
+    "anio_autorizacion": 2012.0
   },
   {
     "estado": "Tamaulipas",
     "municipio": "Valle hermoso",
     "permisionario": "Bioenergéticos Mexicanos, S.A.P.I.",
-    "bioenergetico": "Etanol anhidro",
-    "respuesta": null,
-    "lat": 23.678052160120306,
-    "lon": -99.12313552303178
+    "biocombustible": "Etanol anhidro",
+    "respuesta": "",
+    "lat": 23.7369,
+    "lon": -99.1411,
+    "tipo_permiso": "",
+    "anio_autorizacion": ""
   },
   {
     "estado": "Coahuila",
     "municipio": "Torreón",
     "permisionario": "Carlos García Vara",
-    "bioenergetico": "Biogás",
+    "biocombustible": "Biogás",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 25.430020561539113,
-    "lon": -100.93231153429598
+    "lat": 25.438,
+    "lon": -100.9739,
+    "tipo_permiso": "Producción",
+    "anio_autorizacion": 2023.0
   },
   {
     "estado": "Ciudad de México",
     "municipio": "Cuauhtémoc",
     "permisionario": "Brimex Energy, S.A. De C.V.",
-    "bioenergetico": "Biogás",
+    "biocombustible": "Biogás",
     "respuesta": "Remitieron informe el 20 de septiembre",
-    "lat": 19.50620538222255,
-    "lon": -99.17058448986411
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "tipo_permiso": "Producción",
+    "anio_autorizacion": 2024.0
   }
 ]
