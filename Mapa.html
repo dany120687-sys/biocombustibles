@@ -2,153 +2,205 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Mapa de Biocombustibles por Estado</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #efefef;
-            text-align: center;
-        }
-        #map {
-            height: 500px;
-            margin: 20px auto;
-            width: 90%;
-        }
-        canvas {
-            margin: 20px auto;
-        }
-        .filters {
-            margin: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Biocombustibles en México</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+    #map { height: 500px; margin-bottom: 30px; }
+    .chart-container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+    }
+    h2 { text-align: center; }
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto 50px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #007acc;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <h2>Mapa de Biocombustibles por Estado</h2>
-    <div class="filters">
-        Tipo: 
-        <select id="tipoSelect">
-            <option value="Todos">Todos</option>
-        </select>
-        Estado: 
-        <select id="estadoSelect">
-            <option value="Todos">Todos</option>
-        </select>
-    </div>
-    <div id="map"></div>
-    <h3>Distribución por Tipo de Bioenergético</h3>
-    <canvas id="tipoChart" width="400" height="200"></canvas>
-    <h3>Permisos por Estado</h3>
-    <canvas id="estadoChart" width="400" height="200"></canvas>
+  <h1 style="text-align: center;">Mapa de Biocombustibles por Estado</h1>
 
-    <script>
-        let map = L.map('map', {
-            minZoom: 4,
-            maxBounds: [[14, -120], [34, -85]]
-        }).setView([23.5, -102], 5);
+  <div class="filters">
+    <label>Tipo:
+      <select id="filtro-bio">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Estado:
+      <select id="filtro-estado">
+        <option value="">Todos</option>
+      </select>
+    </label>
+  </div>
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+  <div id="map"></div>
 
-        let tipoSelect = document.getElementById("tipoSelect");
-        let estadoSelect = document.getElementById("estadoSelect");
-        let tipoChart, estadoChart;
-        let markers = [];
+  <div class="chart-container">
+    <h2>Distribución por Tipo de Bioenergético</h2>
+    <canvas id="bioChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <h2>Permisos por Estado</h2>
+    <canvas id="estadoChart"></canvas>
+  </div>
 
-        fetch("puntos.json")
-            .then(response => response.json())
-            .then(data => {
-                let tipos = [...new Set(data.map(p => p.tipo))];
-                let estados = [...new Set(data.map(p => p.estado))];
+  <div class="chart-container">
+    <h2>Tabla de Contenido</h2>
+    <table id="tabla-contenido">
+      <thead>
+        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-                tipos.forEach(t => {
-                    let opt = document.createElement("option");
-                    opt.value = t;
-                    opt.text = t;
-                    tipoSelect.appendChild(opt);
-                });
+<script>
+  let map = L.map('map').setView([23.6345, -102.5528], 5);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+  let markers = L.layerGroup().addTo(map);
+  let allData = [];
+  let bioChart, estadoChart;
 
-                estados.forEach(e => {
-                    let opt = document.createElement("option");
-                    opt.value = e;
-                    opt.text = e;
-                    estadoSelect.appendChild(opt);
-                });
+  function renderMarkers(data) {
+    markers.clearLayers();
+    data.forEach(p => {
+      L.marker([parseFloat(p.lat), parseFloat(p.lon)])
+        .addTo(markers)
+        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+    });
+  }
 
-                function updateMap() {
-                    markers.forEach(m => map.removeLayer(m));
-                    markers = [];
+  function actualizarGraficas(data) {
+    const bioContador = {};
+    const estadoContador = {};
 
-                    let tipo = tipoSelect.value;
-                    let estado = estadoSelect.value;
+    data.forEach(p => {
+      bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
+      estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+    });
 
-                    let filtered = data.filter(p =>
-                        (tipo === "Todos" || p.tipo === tipo) &&
-                        (estado === "Todos" || p.estado === estado)
-                    );
+    if (bioChart) bioChart.destroy();
+    if (estadoChart) estadoChart.destroy();
 
-                    let tipoCounts = {};
-                    let estadoCounts = {};
+    bioChart = new Chart(document.getElementById('bioChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(bioContador),
+        datasets: [{
+          label: 'Cantidad',
+          data: Object.values(bioContador),
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      }
+    });
 
-                    filtered.forEach(p => {
-                        let marker = L.marker([p.lat, p.lng], {
-                            icon: L.icon({
-                                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-                                iconSize: [20, 20],
-                                iconAnchor: [10, 20],
-                                popupAnchor: [0, -20]
-                            })
-                        }).addTo(map)
-                        .bindPopup(`<b>${p.nombre}</b><br>${p.tipo}<br>${p.estado}`);
-                        markers.push(marker);
+    estadoChart = new Chart(document.getElementById('estadoChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(estadoContador),
+        datasets: [{
+          label: 'Cantidad',
+          data: Object.values(estadoContador),
+          backgroundColor: 'rgba(255, 99, 132, 0.6)'
+        }]
+      }
+    });
+  }
 
-                        tipoCounts[p.tipo] = (tipoCounts[p.tipo] || 0) + 1;
-                        estadoCounts[p.estado] = (estadoCounts[p.estado] || 0) + 1;
-                    });
+  function actualizarTabla(data) {
+    const grouped = {};
+    data.forEach(p => {
+      const key = p.estado + '||' + p.bioenergetico;
+      grouped[key] = (grouped[key] || 0) + 1;
+    });
 
-                    // Chart por tipo
-                    let tipoLabels = Object.keys(tipoCounts);
-                    let tipoData = Object.values(tipoCounts);
+    const tbody = document.querySelector("#tabla-contenido tbody");
+    tbody.innerHTML = '';
+    Object.entries(grouped).forEach(([key, count]) => {
+      const [estado, tipo] = key.split('||');
+      const row = `<tr><td>${estado}</td><td>${tipo}</td><td>${count}</td></tr>`;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+  }
 
-                    if (tipoChart) tipoChart.destroy();
-                    tipoChart = new Chart(document.getElementById("tipoChart"), {
-                        type: "bar",
-                        data: {
-                            labels: tipoLabels,
-                            datasets: [{
-                                label: "Cantidad",
-                                backgroundColor: "#4a90e2",
-                                data: tipoData
-                            }]
-                        }
-                    });
+  function aplicarFiltros() {
+    const filtroBio = document.getElementById("filtro-bio").value;
+    const filtroEstado = document.getElementById("filtro-estado").value;
+    const filtrados = allData.filter(p =>
+      (filtroBio === "" || p.bioenergetico === filtroBio) &&
+      (filtroEstado === "" || p.estado === filtroEstado)
+    );
+    renderMarkers(filtrados);
+    actualizarGraficas(filtrados);
+    actualizarTabla(filtrados);
+  }
 
-                    // Chart por estado
-                    let estadoLabels = Object.keys(estadoCounts);
-                    let estadoData = Object.values(estadoCounts);
+  fetch('puntos.json')
+    .then(response => response.json())
+    .then(data => {
+      allData = data;
+      const bioSet = new Set();
+      const estadoSet = new Set();
+      data.forEach(p => {
+        bioSet.add(p.bioenergetico);
+        estadoSet.add(p.estado);
+      });
 
-                    if (estadoChart) estadoChart.destroy();
-                    estadoChart = new Chart(document.getElementById("estadoChart"), {
-                        type: "bar",
-                        data: {
-                            labels: estadoLabels,
-                            datasets: [{
-                                label: "Cantidad",
-                                backgroundColor: "#7ed957",
-                                data: estadoData
-                            }]
-                        }
-                    });
-                }
+      const bioSelect = document.getElementById("filtro-bio");
+      const estadoSelect = document.getElementById("filtro-estado");
 
-                tipoSelect.addEventListener("change", updateMap);
-                estadoSelect.addEventListener("change", updateMap);
-                updateMap();
-            });
-    </script>
+      Array.from(bioSet).sort().forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b;
+        opt.textContent = b;
+        bioSelect.appendChild(opt);
+      });
+
+      Array.from(estadoSet).sort().forEach(e => {
+        const opt = document.createElement("option");
+        opt.value = e;
+        opt.textContent = e;
+        estadoSelect.appendChild(opt);
+      });
+
+      bioSelect.addEventListener("change", aplicarFiltros);
+      estadoSelect.addEventListener("change", aplicarFiltros);
+
+      aplicarFiltros();
+    });
+</script>
 </body>
 </html>
