@@ -69,7 +69,7 @@
   <div id="map"></div>
 
   <div class="chart-container">
-    <h2>Distribución por Tipo de Biocombustible</h2>
+    <h2>Distribución por Tipo de Bioenergético</h2>
     <canvas id="bioChart"></canvas>
   </div>
   <div class="chart-container">
@@ -77,24 +77,15 @@
     <canvas id="estadoChart"></canvas>
   </div>
 
- function actualizarTabla(data) {
-  const tbody = document.querySelector("#tabla-contenido tbody");
-  tbody.innerHTML = '';
-
-  data.forEach(p => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${p.estado}</td>
-      <td>${p.municipio}</td>
-      <td>${p.bioenergetico}</td>
-      <td>${p.permisionario}</td>
-      <td>${p.tipo_permiso}</td>
-      <td>${p.anio_autorizacion || 'N/A'}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
+  <div class="chart-container">
+    <h2>Tabla de Contenido</h2>
+    <table id="tabla-contenido">
+      <thead>
+        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
 <script>
   
