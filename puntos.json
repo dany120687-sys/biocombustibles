@@ -5,8 +5,8 @@
     "permisionario": "Geo Estratos, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": null,
-    "lat": 23.7369,
-    "lon": -99.1411
+    "lat": 23.66885438445373,
+    "lon": -99.13407553498114
   },
   {
     "estado": "Oaxaca",
@@ -14,8 +14,8 @@
     "permisionario": "Joel Nicolás Gallego Palma",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron información el 03 de octubre ",
-    "lat": 17.0732,
-    "lon": -96.7266
+    "lat": 17.092343483528133,
+    "lon": -96.67633866210862
   },
   {
     "estado": "Jalisco",
@@ -23,8 +23,8 @@
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.6597,
-    "lon": -103.3496
+    "lat": 20.646737282413554,
+    "lon": -103.2552179874346
   },
   {
     "estado": "Estado de México",
@@ -32,8 +32,8 @@
     "permisionario": "Transportes Especializados Antonio De La Torre E Hijos, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 19 de septiembre",
-    "lat": 19.3266,
-    "lon": -99.8961
+    "lat": 19.342966090121827,
+    "lon": -99.85690686073458
   },
   {
     "estado": "Ciudad de México",
@@ -41,8 +41,8 @@
     "permisionario": "Ferrocarril Mexicano, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 27 de septiembre",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.47349941127467,
+    "lon": -99.14909684230044
   },
   {
     "estado": "Ciudad de México",
@@ -50,8 +50,8 @@
     "permisionario": "Ferrosur, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro y Biodiésel",
     "respuesta": "Remitió información el 27 de septiembre",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.501923336587183,
+    "lon": -99.1255610512821
   },
   {
     "estado": "Chihuahua",
@@ -59,8 +59,8 @@
     "permisionario": "Transportadora Atón, S.A De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 28.6353,
-    "lon": -106.0889
+    "lat": 28.710011695230737,
+    "lon": -106.02761485145734
   },
   {
     "estado": "Ciudad de México",
@@ -68,8 +68,8 @@
     "permisionario": "Instituto Nacional De Investigaciones Forestales, Agrícolas Y Pecuarias (Inifap)",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.44016641020317,
+    "lon": -99.12511873440157
   },
   {
     "estado": "Ciudad de México",
@@ -77,8 +77,8 @@
     "permisionario": "Biofuels De México, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.469980496897506,
+    "lon": -99.11768490745834
   },
   {
     "estado": "Colima",
@@ -86,8 +86,8 @@
     "permisionario": "Destilados La Ideal, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.2433,
-    "lon": -103.725
+    "lat": 19.301880616393507,
+    "lon": -103.67011955415876
   },
   {
     "estado": "Querétaro",
@@ -95,8 +95,8 @@
     "permisionario": "Universidad Autónoma De Querétaro (Uaq)",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 12/09/2024 por correo",
-    "lat": 20.5888,
-    "lon": -100.3899
+    "lat": 20.5872684988198,
+    "lon": -100.3147548953978
   },
   {
     "estado": "Oaxaca",
@@ -104,8 +104,8 @@
     "permisionario": "Abelardo Hernández Núñez",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 17.0732,
-    "lon": -96.7266
+    "lat": 17.165787948868076,
+    "lon": -96.72916470593711
   },
   {
     "estado": "Ciudad de México",
@@ -113,8 +113,8 @@
     "permisionario": "Planta De Biodiésel Yaotec, S.C. De P. De R.L. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.52334693752549,
+    "lon": -99.23311488700661
   },
   {
     "estado": "Yucatán",
@@ -122,8 +122,8 @@
     "permisionario": "Energías Girón, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 04/10/2024 por DHL",
-    "lat": 20.9674,
-    "lon": -89.5926
+    "lat": 21.030543228514993,
+    "lon": -89.65028113175556
   },
   {
     "estado": "Ciudad de México",
@@ -131,8 +131,8 @@
     "permisionario": "Tecnologías Disruptivas, S.A.P.I. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.336949281614377,
+    "lon": -99.18837285382945
   },
   {
     "estado": "Aguscalientes",
@@ -140,8 +140,8 @@
     "permisionario": "Recoreusecompany, S.A De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 21.8853,
-    "lon": -102.2916
+    "lat": 21.855837819956154,
+    "lon": -102.2005155887075
   },
   {
     "estado": "Quintana Roo",
@@ -149,8 +149,8 @@
     "permisionario": "Uga Soluciones Ambientales, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 18.4931,
-    "lon": -88.2962
+    "lat": 18.47825713631854,
+    "lon": -88.38185521262001
   },
   {
     "estado": "Morelos",
@@ -158,8 +158,8 @@
     "permisionario": "Rafael Solano Ramírez",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 26 sept",
-    "lat": 18.9242,
-    "lon": -99.2216
+    "lat": 19.015346084945055,
+    "lon": -99.31560900641183
   },
   {
     "estado": "Ciudad de México",
@@ -167,8 +167,8 @@
     "permisionario": "Centro Mexicano Para La Producción Más Limpia Del Instituto Politécnico Nacional (Cmp+L)",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.37918848067071,
+    "lon": -99.07905894875971
   },
   {
     "estado": "Zacatecas",
@@ -176,8 +176,8 @@
     "permisionario": "Carlos Ignacio Aguilar Solís",
     "bioenergetico": "Biodiésel",
     "respuesta": null,
-    "lat": 22.7709,
-    "lon": -102.5832
+    "lat": 22.712679079530645,
+    "lon": -102.63306912955059
   },
   {
     "estado": "Ciudad de México",
@@ -185,8 +185,8 @@
     "permisionario": "Aceites Especiales Th, S.A. De C.V.",
     "bioenergetico": "Biomasa",
     "respuesta": "Remitió información el 26 de septiembre",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.408531314797873,
+    "lon": -99.12796395569958
   },
   {
     "estado": "Oaxaca",
@@ -194,8 +194,8 @@
     "permisionario": "Abelardo Hernández Núñez",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 27 sept",
-    "lat": 17.0732,
-    "lon": -96.7266
+    "lat": 17.004708944030735,
+    "lon": -96.63029659828406
   },
   {
     "estado": "Ciudad de México",
@@ -203,8 +203,8 @@
     "permisionario": "Fideicomiso Para La Construcción Y Operación\nDe La Central De Abasto De La Ciudad De México (Ficeda)",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.411003273814508,
+    "lon": -99.08273504221795
   },
   {
     "estado": "Jalisco",
@@ -212,8 +212,8 @@
     "permisionario": "Diageo Mexico Comercializadora S.A. De C.V.",
     "bioenergetico": "Biomasa",
     "respuesta": "Remitió información el 20 de septiembre",
-    "lat": 20.6597,
-    "lon": -103.3496
+    "lat": 20.724930467160483,
+    "lon": -103.38623945966121
   },
   {
     "estado": "Sinaloa",
@@ -221,8 +221,8 @@
     "permisionario": "Destilmex, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": null,
-    "lat": 24.8091,
-    "lon": -107.394
+    "lat": 24.85792325342084,
+    "lon": -107.33752378331165
   },
   {
     "estado": "Sinaloa",
@@ -230,8 +230,8 @@
     "permisionario": "Avance Regional Agroindustrial, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": null,
-    "lat": 24.8091,
-    "lon": -107.394
+    "lat": 24.82511908489964,
+    "lon": -107.35628624769103
   },
   {
     "estado": "Sinaloa",
@@ -239,8 +239,8 @@
     "permisionario": "Cía. Azucarera La Fe, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron su informe el 23 de septiembre",
-    "lat": 24.8091,
-    "lon": -107.394
+    "lat": 24.737353229670948,
+    "lon": -107.43191099087723
   },
   {
     "estado": "Tamaulipas",
@@ -248,8 +248,8 @@
     "permisionario": "Bioenergéticos Mexicanos, S.A.P.I. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": null,
-    "lat": 23.7369,
-    "lon": -99.1411
+    "lat": 23.818743173479003,
+    "lon": -99.17433333880449
   },
   {
     "estado": "Ciudad de México",
@@ -257,8 +257,8 @@
     "permisionario": "Biofuels De México, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.43277745924584,
+    "lon": -99.1134423752812
   },
   {
     "estado": "Colima",
@@ -266,8 +266,8 @@
     "permisionario": "Destilados La Ideal, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro y Biodiésel",
     "respuesta": null,
-    "lat": 19.2433,
-    "lon": -103.725
+    "lat": 19.340998246609622,
+    "lon": -103.77308094791391
   },
   {
     "estado": "Jalisco",
@@ -275,8 +275,8 @@
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.6597,
-    "lon": -103.3496
+    "lat": 20.70182249867051,
+    "lon": -103.38390141507196
   },
   {
     "estado": "Guanajuato",
@@ -284,8 +284,8 @@
     "permisionario": "Global Marketing Corporation, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 21.0181,
-    "lon": -101.2583
+    "lat": 21.09138508013582,
+    "lon": -101.20671347524416
   },
   {
     "estado": "Nuevo León",
@@ -293,8 +293,8 @@
     "permisionario": "Ecoen, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": null,
-    "lat": 25.6866,
-    "lon": -100.3161
+    "lat": 25.768344156749215,
+    "lon": -100.38503865726197
   },
   {
     "estado": "Ciudad de México",
@@ -302,8 +302,8 @@
     "permisionario": "Soluciones Tecnológicas En Bioenergía, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": null,
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.383962064105884,
+    "lon": -99.21193464929193
   },
   {
     "estado": "Ciudad de México",
@@ -311,8 +311,8 @@
     "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.387129198071786,
+    "lon": -99.05702826818802
   },
   {
     "estado": "Ciudad de México",
@@ -320,8 +320,8 @@
     "permisionario": "Biocombustibles Tomatlán, S.A.P.I. De C.V. ",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.41258317886698,
+    "lon": -99.22067459249043
   },
   {
     "estado": "Ciudad de México",
@@ -329,8 +329,8 @@
     "permisionario": "Ingenio La Gloria, S.A.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitió información el 24 de sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.421508085529343,
+    "lon": -99.08302587888342
   },
   {
     "estado": "Querétaro",
@@ -338,8 +338,8 @@
     "permisionario": "M&L Enterprises, S. De R.L. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 27 de septiembre ",
-    "lat": 20.5888,
-    "lon": -100.3899
+    "lat": 20.59283426139824,
+    "lon": -100.43132674089668
   },
   {
     "estado": "Yucatán",
@@ -347,8 +347,8 @@
     "permisionario": "Energía Girón, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 04/10/2024 por DHL",
-    "lat": 20.9674,
-    "lon": -89.5926
+    "lat": 20.892300270350443,
+    "lon": -89.52128952644466
   },
   {
     "estado": "Ciudad de México",
@@ -356,8 +356,8 @@
     "permisionario": "Mexican Commodities, S.A. De C.V.",
     "bioenergetico": "Biodiésel",
     "respuesta": "Remitieron información el 30 de septiembre ",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.462429447571342,
+    "lon": -99.07132232070084
   },
   {
     "estado": "Ciudad de México",
@@ -365,8 +365,8 @@
     "permisionario": "Biocombustibles Juanita, S.A.P.I. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.333530541983063,
+    "lon": -99.09150403033371
   },
   {
     "estado": "Ciudad de México",
@@ -374,8 +374,8 @@
     "permisionario": "Biocombustibles Tomatlán, S.A.P.I. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Sus 15 días vencen el 30 sept",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.454788296900535,
+    "lon": -99.12604550572934
   },
   {
     "estado": "Jalisco",
@@ -383,8 +383,8 @@
     "permisionario": "Alcoholera De Zapopan, S.A. De C.V.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 20.6597,
-    "lon": -103.3496
+    "lat": 20.67098700622554,
+    "lon": -103.25721057393802
   },
   {
     "estado": "Tamaulipas",
@@ -392,8 +392,8 @@
     "permisionario": "Bioenergéticos Mexicanos, S.A.P.I.",
     "bioenergetico": "Etanol anhidro",
     "respuesta": null,
-    "lat": 23.7369,
-    "lon": -99.1411
+    "lat": 23.678052160120306,
+    "lon": -99.12313552303178
   },
   {
     "estado": "Coahuila",
@@ -401,8 +401,8 @@
     "permisionario": "Carlos García Vara",
     "bioenergetico": "Biogás",
     "respuesta": "Remitieron información el 24 de septiembre ",
-    "lat": 25.438,
-    "lon": -100.9739
+    "lat": 25.430020561539113,
+    "lon": -100.93231153429598
   },
   {
     "estado": "Ciudad de México",
@@ -410,7 +410,7 @@
     "permisionario": "Brimex Energy, S.A. De C.V.",
     "bioenergetico": "Biogás",
     "respuesta": "Remitieron informe el 20 de septiembre",
-    "lat": 19.4326,
-    "lon": -99.1332
+    "lat": 19.50620538222255,
+    "lon": -99.17058448986411
   }
 ]
