@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Biocombustibles en México</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+        #map { height: 500px; margin-bottom: 30px; }
+        .chart-container { width: 100%; max-width: 700px; margin: 0 auto 40px auto; }
+        h2 { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Mapa de Biocombustibles por Estado</h1>
+    <div id="map"></div>
+
+    <div class="chart-container">
+        <h2>Distribución por Tipo de Bioenergético</h2>
+        <canvas id="bioChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <h2>Permisos por Estado</h2>
+        <canvas id="estadoChart"></canvas>
+    </div>
+
+<script>
+    // Crear mapa
+    var map = L.map('map').setView([23.6345, -102.5528], 5);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    fetch('resumen_biocombustibles.csv')
+    .then(response => response.text())
+    .then(csv => {
+        const lines = csv.split('\n').slice(1);
+        lines.forEach(line => {
+            const [permisionario, bio, estado, municipio, lat, lon, desahogo, respuesta] = line.split(',');
+            if (lat && lon) {
+                L.marker([parseFloat(lat), parseFloat(lon)])
+                    .addTo(map)
+                    .bindPopup(`<b>${permisionario}</b><br><b>${bio}</b><br>${estado}, ${municipio}<br><b>Respuesta:</b> ${respuesta}`);
+            }
+        });
+    });
+
+    // Gráfica Bioenergético
+    fetch('graf_bio.json')
+    .then(response => response.json())
+    .then(data => {
+        new Chart(document.getElementById('bioChart'), {
+            type: 'bar',
+            data: {
+                labels: data.map(e => e.Tipo),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: data.map(e => e.Cantidad),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                }]
+            }
+        });
+    });
+
+    // Gráfica Estado
+    fetch('graf_estado.json')
+    .then(response => response.json())
+    .then(data => {
+        new Chart(document.getElementById('estadoChart'), {
+            type: 'bar',
+            data: {
+                labels: data.map(e => e.Estado),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: data.map(e => e.Cantidad),
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                }]
+            }
+        });
+    });
+</script>
+</body>
+</html>
