@@ -69,19 +69,13 @@
 
   <div id="map"></div>
 
-  <div class="chart-grid" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin: 40px auto;">
+  <div class="chart-container">
     <h2>Distribución por Tipo de Bioenergético</h2>
-    <div style="flex: 1; min-width: 300px;">
-      <h2>Distribución por Tipo de Bioenergético</h2>
-      <canvas id="bioChart"></canvas>
-    </div>
+    <canvas id="bioChart"></canvas>
   </div>
   <div class="chart-container">
     <h2>Permisos por Estado</h2>
-    <div style="flex: 1; min-width: 300px;">
-      <h2>Permisos por Estado</h2>
-      <canvas id="estadoChart"></canvas>
-    </div>
+    <canvas id="estadoChart"></canvas>
   </div>
 
   <div class="chart-container">
@@ -123,21 +117,6 @@
     if (estadoChart) estadoChart.destroy();
 
     bioChart = new Chart(document.getElementById('bioChart'), {
-        options: {
-          onClick: (e, elements) => {
-            if (elements.length > 0) {
-              const label = bioChart.data.labels[elements[0].index];
-              const select = document.getElementById("filtro-bio");
-              for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === label) {
-                  select.selectedIndex = i;
-                  break;
-                }
-              }
-              aplicarFiltros();
-            }
-          }
-        },
       type: 'bar',
       data: {
         labels: Object.keys(bioContador),
@@ -150,21 +129,6 @@
     });
 
     estadoChart = new Chart(document.getElementById('estadoChart'), {
-        options: {
-          onClick: (e, elements) => {
-            if (elements.length > 0) {
-              const label = estadoChart.data.labels[elements[0].index];
-              const select = document.getElementById("filtro-estado");
-              for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === label) {
-                  select.selectedIndex = i;
-                  break;
-                }
-              }
-              aplicarFiltros();
-            }
-          }
-        },
       type: 'bar',
       data: {
         labels: Object.keys(estadoContador),
