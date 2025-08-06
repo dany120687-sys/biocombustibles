@@ -110,8 +110,7 @@
         coordCount[key]++;
       }
 
-      // Desplazamiento visual para evitar solapamiento
-      const offset = coordCount[key] * 0.0005;
+      const offset = coordCount[key] * 0.002; // Mayor separación
       const angle = coordCount[key] * 45;
       const rad = angle * (Math.PI / 180);
       const latOffset = lat + offset * Math.cos(rad);
