@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal Unificado - Mapa Biocombustibles</title>
+  <script src="https://unpkg.com/@panzoom/panzoom@9.4.0/dist/panzoom.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #zoom-container {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+    }
+    #content {
+      max-width: 95%;
+      max-height: 95%;
+      overflow: auto;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="zoom-container">
+    <div id="content">
+      <img id="diagrama" src="diagrama.svg" alt="Diagrama de Biocombustibles">
+    </div>
+  </div>
+
+  <script>
+    const panzoom = Panzoom(document.getElementById('content'), {
+      maxScale: 5,
+      minScale: 0.5,
+      contain: 'outside'
+    });
+    document.getElementById('zoom-container').addEventListener('wheel', panzoom.zoomWithWheel);
+  </script>
+</body>
+</html>
