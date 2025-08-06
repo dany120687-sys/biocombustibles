@@ -101,7 +101,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     data.forEach(p => {
       L.marker([parseFloat(p.lat), parseFloat(p.lon)])
         .addTo(markers)
-        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.biocombustible}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
     });
   }
 
@@ -110,7 +110,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     const estadoContador = {};
 
     data.forEach(p => {
-      bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
+      bioContador[p.biocombustible] = (bioContador[p.biocombustible] || 0) + 1;
       estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
     });
 
@@ -145,7 +145,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
   function actualizarTabla(data) {
     const grouped = {};
     data.forEach(p => {
-      const key = p.estado + '||' + p.bioenergetico;
+      const key = p.estado + '||' + p.biocombustible;
       grouped[key] = (grouped[key] || 0) + 1;
     });
 
@@ -162,7 +162,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     const filtroBio = document.getElementById("filtro-bio").value;
     const filtroEstado = document.getElementById("filtro-estado").value;
     const filtrados = allData.filter(p =>
-      (filtroBio === "" || p.bioenergetico === filtroBio) &&
+      (filtroBio === "" || p.biocombustible === filtroBio) &&
       (filtroEstado === "" || p.estado === filtroEstado)
     );
     renderMarkers(filtrados);
@@ -177,7 +177,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
       const bioSet = new Set();
       const estadoSet = new Set();
       data.forEach(p => {
-        bioSet.add(p.bioenergetico);
+        bioSet.add(p.biocombustible);
         estadoSet.add(p.estado);
       });
 
