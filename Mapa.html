@@ -94,12 +94,75 @@
   let allData = [];
   let bioChart, estadoChart;
 
+  
+  
   function renderMarkers(data) {
+    console.log('Mostrando marcadores:', data.length);
     markers.clearLayers();
+    const coordCount = {};
+
+    const smallIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+      iconSize: [15, 25],
+      iconAnchor: [7, 25],
+      popupAnchor: [1, -24]
+    });
+
     data.forEach(p => {
-      L.marker([parseFloat(p.lat), parseFloat(p.lon)])
-        .addTo(markers)
-        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+      const lat = parseFloat(p.lat);
+      const lon = parseFloat(p.lon);
+      const key = lat.toFixed(6) + "," + lon.toFixed(6);
+
+      if (!coordCount[key]) {
+        coordCount[key] = 0;
+      } else {
+        coordCount[key]++;
+      }
+
+      const offset = coordCount[key] * 0.002;
+      const angle = coordCount[key] * 45;
+      const rad = angle * (Math.PI / 180);
+      const latOffset = lat + offset * Math.cos(rad);
+      const lonOffset = lon + offset * Math.sin(rad);
+
+      if (!isNaN(latOffset) && !isNaN(lonOffset)) {
+        L.marker([latOffset, lonOffset], { icon: smallIcon })
+          .addTo(markers)
+          .bindPopup(
+            `<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta || 'Sin respuesta'}`
+          );
+      }
+    });
+  }
+;
+
+    data.forEach(p => {
+      const lat = parseFloat(p.lat);
+      const lon = parseFloat(p.lon);
+      const key = lat.toFixed(6) + "," + lon.toFixed(6);
+
+      if (!coordCount[key]) {
+        coordCount[key] = 0;
+      } else {
+        coordCount[key]++;
+      }
+
+      const offset = coordCount[key] * 0.002; // Mayor separación
+      const angle = coordCount[key] * 45;
+      const rad = angle * (Math.PI / 180);
+      const latOffset = lat + offset * Math.cos(rad);
+      const lonOffset = lon + offset * Math.sin(rad);
+
+      if (!isNaN(latOffset) && !isNaN(lonOffset)) {
+        L.marker([latOffset, lonOffset])
+          .addTo(markers)
+          .bindPopup(
+            `<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta || 'Sin respuesta'}`
+          );
+      }
+    });
+  }
+</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
     });
   }
 
