@@ -81,7 +81,14 @@
     <h2>Tabla de Contenido</h2>
     <table id="tabla-contenido">
       <thead>
-        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
+        <tr>
+          <th>Estado</th>
+          <th>Municipio</th>
+          <th>Biocombustible</th>
+          <th>Operador</th>
+          <th>Tipo de Permiso</th>
+          <th>Año Autorización</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -168,9 +175,15 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     renderMarkers(filtrados);
     actualizarGraficas(filtrados);
     actualizarTabla(filtrados);
+
+    if (filtrados.length > 0) {
+      const bounds = L.latLngBounds(filtrados.map(p => [parseFloat(p.lat), parseFloat(p.lon)]));
+      map.fitBounds(bounds.pad(0.2));
+    }
+
   }
 
-  fetch('puntos.json')
+  fetch('puntos_jitter_estado.json')
     .then(response => response.json())
     .then(data => {
       allData = data;
@@ -201,7 +214,9 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
       bioSelect.addEventListener("change", aplicarFiltros);
       estadoSelect.addEventListener("change", aplicarFiltros);
 
-      aplicarFiltros();
+      renderMarkers(data);
+    actualizarGraficas(data);
+    actualizarTabla(data);
     });
 </script>
 </body>
