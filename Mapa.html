@@ -81,14 +81,7 @@
     <h2>Tabla de Contenido</h2>
     <table id="tabla-contenido">
       <thead>
-        <tr>
-          <th>Estado</th>
-          <th>Municipio</th>
-          <th>Biocombustible</th>
-          <th>Operador</th>
-          <th>Tipo de Permiso</th>
-          <th>Año Autorización</th>
-        </tr>
+        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -96,7 +89,16 @@
 
 <script>
   
-let map = L.map('map').setView([23.6345, -102.5528], 5);
+let map = L.map('map', {
+  center: [23.6345, -102.5528],
+  zoom: 5,
+  minZoom: 4,
+  maxBounds: [
+    [5.0, -120.0],
+    [33.0, -85.0]
+  ],
+  maxBoundsViscosity: 1.0
+});
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
   let markers = L.layerGroup().addTo(map);
@@ -108,7 +110,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     data.forEach(p => {
       L.marker([parseFloat(p.lat), parseFloat(p.lon)])
         .addTo(markers)
-        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.biocombustible}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
     });
   }
 
@@ -117,7 +119,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     const estadoContador = {};
 
     data.forEach(p => {
-      bioContador[p.biocombustible] = (bioContador[p.biocombustible] || 0) + 1;
+      bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
       estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
     });
 
@@ -152,7 +154,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
   function actualizarTabla(data) {
     const grouped = {};
     data.forEach(p => {
-      const key = p.estado + '||' + p.biocombustible;
+      const key = p.estado + '||' + p.bioenergetico;
       grouped[key] = (grouped[key] || 0) + 1;
     });
 
@@ -169,28 +171,22 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
     const filtroBio = document.getElementById("filtro-bio").value;
     const filtroEstado = document.getElementById("filtro-estado").value;
     const filtrados = allData.filter(p =>
-      (filtroBio === "" || p.biocombustible === filtroBio) &&
+      (filtroBio === "" || p.bioenergetico === filtroBio) &&
       (filtroEstado === "" || p.estado === filtroEstado)
     );
     renderMarkers(filtrados);
     actualizarGraficas(filtrados);
     actualizarTabla(filtrados);
-
-    if (filtrados.length > 0) {
-      const bounds = L.latLngBounds(filtrados.map(p => [parseFloat(p.lat), parseFloat(p.lon)]));
-      map.fitBounds(bounds.pad(0.2));
-    }
-
   }
 
-  fetch('puntos_jitter_estado.json')
+  fetch('puntos.json')
     .then(response => response.json())
     .then(data => {
       allData = data;
       const bioSet = new Set();
       const estadoSet = new Set();
       data.forEach(p => {
-        bioSet.add(p.biocombustible);
+        bioSet.add(p.bioenergetico);
         estadoSet.add(p.estado);
       });
 
@@ -214,9 +210,7 @@ let map = L.map('map').setView([23.6345, -102.5528], 5);
       bioSelect.addEventListener("change", aplicarFiltros);
       estadoSelect.addEventListener("change", aplicarFiltros);
 
-      renderMarkers(data);
-    actualizarGraficas(data);
-    actualizarTabla(data);
+      aplicarFiltros();
     });
 </script>
 </body>
