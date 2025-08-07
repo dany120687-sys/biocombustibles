@@ -120,7 +120,12 @@ function renderMarkers(data) {
   estadosUnicos.forEach(estado => {
     const coord = estadoCoords[estado];
     if (coord) {
-      L.marker(coord).addTo(markers).bindPopup(`<b>${estado}</b>`);
+      
+    const permisionarios = data.filter(p => p.estado === estado)
+      .map(p => `<b>${p.permisionario}</b><br><b>${p.tipo}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta || 'Sin datos'}`)
+      .join('<hr>');
+    L.marker(coord).addTo(markers).bindPopup(permisionarios);
+    
     }
   });
 }
