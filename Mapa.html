@@ -16,7 +16,7 @@
     #map { height: 500px; margin-bottom: 30px; }
     .chart-container {
       width: 100%;
-      max-width: 700px;
+      max-width: 1100px;
       margin: 0 auto 40px auto;
     }
     h2 { text-align: center; }
@@ -33,7 +33,7 @@
     }
     table {
       width: 100%;
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto 50px auto;
       border-collapse: collapse;
       background-color: #fff;
@@ -78,131 +78,148 @@
   </div>
 
   <div class="chart-container">
-    <h2>Tabla de Contenido</h2>
+    <h2>Tabla de Contenido Detallada</h2>
     <table id="tabla-contenido">
       <thead>
-        <tr><th>Estado</th><th>Tipo de Bioenergético</th><th>Permisos</th></tr>
+        <tr>
+          <th>Estado</th>
+          <th>Municipio</th>
+          <th>Biocombustible</th>
+          <th>Operador</th>
+          <th>Tipo de Permiso</th>
+          <th>Año Autorización</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
 <script>
-  
-let map = L.map('map').setView([23.6345, -102.5528], 5);
+let map = L.map('map', {
+  center: [23.6345, -102.5528],
+  zoom: 5,
+  minZoom: 4,
+  maxBounds: [
+    [5.0, -120.0],
+    [33.0, -85.0]
+  ],
+  maxBoundsViscosity: 1.0
+});
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
-  let markers = L.layerGroup().addTo(map);
-  let allData = [];
-  let bioChart, estadoChart;
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+let markers = L.layerGroup().addTo(map);
+let allData = [];
+let bioChart, estadoChart;
 
-  function renderMarkers(data) {
-    markers.clearLayers();
+function renderMarkers(data) {
+  markers.clearLayers();
+  data.forEach(p => {
+    L.marker([parseFloat(p.lat), parseFloat(p.lon)])
+      .addTo(markers)
+      .bindPopup(`<b>${p.permisionario}</b><br><b>${p.biocombustible}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+  });
+}
+
+function actualizarGraficas(data) {
+  const bioContador = {};
+  const estadoContador = {};
+
+  data.forEach(p => {
+    bioContador[p.biocombustible] = (bioContador[p.biocombustible] || 0) + 1;
+    estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+  });
+
+  if (bioChart) bioChart.destroy();
+  if (estadoChart) estadoChart.destroy();
+
+  bioChart = new Chart(document.getElementById('bioChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(bioContador),
+      datasets: [{
+        label: 'Cantidad',
+        data: Object.values(bioContador),
+        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+      }]
+    }
+  });
+
+  estadoChart = new Chart(document.getElementById('estadoChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(estadoContador),
+      datasets: [{
+        label: 'Cantidad',
+        data: Object.values(estadoContador),
+        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+      }]
+    }
+  });
+}
+
+function actualizarTabla(data) {
+  const tbody = document.querySelector("#tabla-contenido tbody");
+  tbody.innerHTML = '';
+
+  data.forEach(p => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p.estado}</td>
+      <td>${p.municipio}</td>
+      <td>${p.biocombustible}</td>
+      <td>${p.permisionario}</td>
+      <td>${p.tipo_permiso}</td>
+      <td>${p.anio_autorizacion || 'N/A'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function aplicarFiltros() {
+  const filtroBio = document.getElementById("filtro-bio").value;
+  const filtroEstado = document.getElementById("filtro-estado").value;
+  const filtrados = allData.filter(p =>
+    (filtroBio === "" || p.biocombustible === filtroBio) &&
+    (filtroEstado === "" || p.estado === filtroEstado)
+  );
+  renderMarkers(filtrados);
+  actualizarGraficas(filtrados);
+  actualizarTabla(filtrados);
+}
+
+fetch('puntos.json')
+  .then(response => response.json())
+  .then(data => {
+    allData = data;
+    const bioSet = new Set();
+    const estadoSet = new Set();
     data.forEach(p => {
-      L.marker([parseFloat(p.lat), parseFloat(p.lon)])
-        .addTo(markers)
-        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.bioenergetico}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
-    });
-  }
-
-  function actualizarGraficas(data) {
-    const bioContador = {};
-    const estadoContador = {};
-
-    data.forEach(p => {
-      bioContador[p.bioenergetico] = (bioContador[p.bioenergetico] || 0) + 1;
-      estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+      bioSet.add(p.biocombustible);
+      estadoSet.add(p.estado);
     });
 
-    if (bioChart) bioChart.destroy();
-    if (estadoChart) estadoChart.destroy();
+    const bioSelect = document.getElementById("filtro-bio");
+    const estadoSelect = document.getElementById("filtro-estado");
 
-    bioChart = new Chart(document.getElementById('bioChart'), {
-      type: 'bar',
-      data: {
-        labels: Object.keys(bioContador),
-        datasets: [{
-          label: 'Cantidad',
-          data: Object.values(bioContador),
-          backgroundColor: 'rgba(54, 162, 235, 0.6)'
-        }]
-      }
+    Array.from(bioSet).sort().forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      bioSelect.appendChild(opt);
     });
 
-    estadoChart = new Chart(document.getElementById('estadoChart'), {
-      type: 'bar',
-      data: {
-        labels: Object.keys(estadoContador),
-        datasets: [{
-          label: 'Cantidad',
-          data: Object.values(estadoContador),
-          backgroundColor: 'rgba(255, 99, 132, 0.6)'
-        }]
-      }
-    });
-  }
-
-  function actualizarTabla(data) {
-    const grouped = {};
-    data.forEach(p => {
-      const key = p.estado + '||' + p.bioenergetico;
-      grouped[key] = (grouped[key] || 0) + 1;
+    Array.from(estadoSet).sort().forEach(e => {
+      const opt = document.createElement("option");
+      opt.value = e;
+      opt.textContent = e;
+      estadoSelect.appendChild(opt);
     });
 
-    const tbody = document.querySelector("#tabla-contenido tbody");
-    tbody.innerHTML = '';
-    Object.entries(grouped).forEach(([key, count]) => {
-      const [estado, tipo] = key.split('||');
-      const row = `<tr><td>${estado}</td><td>${tipo}</td><td>${count}</td></tr>`;
-      tbody.insertAdjacentHTML('beforeend', row);
-    });
-  }
+    bioSelect.addEventListener("change", aplicarFiltros);
+    estadoSelect.addEventListener("change", aplicarFiltros);
 
-  function aplicarFiltros() {
-    const filtroBio = document.getElementById("filtro-bio").value;
-    const filtroEstado = document.getElementById("filtro-estado").value;
-    const filtrados = allData.filter(p =>
-      (filtroBio === "" || p.bioenergetico === filtroBio) &&
-      (filtroEstado === "" || p.estado === filtroEstado)
-    );
-    renderMarkers(filtrados);
-    actualizarGraficas(filtrados);
-    actualizarTabla(filtrados);
-  }
-
-  fetch('puntos.json')
-    .then(response => response.json())
-    .then(data => {
-      allData = data;
-      const bioSet = new Set();
-      const estadoSet = new Set();
-      data.forEach(p => {
-        bioSet.add(p.bioenergetico);
-        estadoSet.add(p.estado);
-      });
-
-      const bioSelect = document.getElementById("filtro-bio");
-      const estadoSelect = document.getElementById("filtro-estado");
-
-      Array.from(bioSet).sort().forEach(b => {
-        const opt = document.createElement("option");
-        opt.value = b;
-        opt.textContent = b;
-        bioSelect.appendChild(opt);
-      });
-
-      Array.from(estadoSet).sort().forEach(e => {
-        const opt = document.createElement("option");
-        opt.value = e;
-        opt.textContent = e;
-        estadoSelect.appendChild(opt);
-      });
-
-      bioSelect.addEventListener("change", aplicarFiltros);
-      estadoSelect.addEventListener("change", aplicarFiltros);
-
-      aplicarFiltros();
-    });
+    aplicarFiltros();
+  });
 </script>
 </body>
 </html>
