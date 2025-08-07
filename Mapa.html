@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Biocombustibles en México</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+    #map { height: 500px; margin-bottom: 30px; }
+    .chart-container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+    }
+    h2 { text-align: center; }
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto 50px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #007acc;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Mapa de Biocombustibles por Estado</h1>
+
+  <div class="filters">
+    <label>Tipo:
+      <select id="filtro-bio">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Estado:
+      <select id="filtro-estado">
+        <option value="">Todos</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="chart-container">
+    <h2>Distribución por Tipo de Bioenergético</h2>
+    <canvas id="bioChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <h2>Permisos por Estado</h2>
+    <canvas id="estadoChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Tabla de Contenido</h2>
+    <table id="tabla-contenido">
+      <thead>
+        <tr>
+          <th>Estado</th>
+          <th>Municipio</th>
+          <th>Biocombustible</th>
+          <th>Operador</th>
+          <th>Tipo de Permiso</th>
+          <th>Año Autorización</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+  
+let map = L.map('map').setView([23.6345, -102.5528], 5);
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+  let markers = L.layerGroup().addTo(map);
+  let allData = [];
+  let bioChart, estadoChart;
+
+  function renderMarkers(data) {
+    markers.clearLayers();
+    data.forEach(p => {
+      L.marker([parseFloat(p.lat), parseFloat(p.lon)])
+        .addTo(markers)
+        .bindPopup(`<b>${p.permisionario}</b><br><b>${p.tipo}</b><br>${p.estado}, ${p.municipio}<br><b>Respuesta:</b> ${p.respuesta}`);
+    });
+  }
+
+  function actualizarGraficas(data) {
+    const bioContador = {};
+    const estadoContador = {};
+
+    data.forEach(p => {
+      bioContador[p.tipo] = (bioContador[p.tipo] || 0) + 1;
+      estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+    });
+
+    if (bioChart) bioChart.destroy();
+    if (estadoChart) estadoChart.destroy();
+
+    bioChart = new Chart(document.getElementById('bioChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(bioContador),
+        datasets: [{
+          label: 'Cantidad',
+          data: Object.values(bioContador),
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      }
+    });
+
+    estadoChart = new Chart(document.getElementById('estadoChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(estadoContador),
+        datasets: [{
+          label: 'Cantidad',
+          data: Object.values(estadoContador),
+          backgroundColor: 'rgba(255, 99, 132, 0.6)'
+        }]
+      }
+    });
+  }
+
+  function actualizarTabla(data) {
+    const grouped = {};
+    data.forEach(p => {
+      const key = p.estado + '||' + p.tipo;
+      grouped[key] = (grouped[key] || 0) + 1;
+    });
+
+    const tbody = document.querySelector("#tabla-contenido tbody");
+    tbody.innerHTML = '';
+    Object.entries(grouped).forEach(([key, count]) => {
+      const [estado, tipo] = key.split('||');
+      const row = `<tr><td>${estado}</td><td>${tipo}</td><td>${count}</td></tr>`;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  function aplicarFiltros() {
+    const filtroBio = document.getElementById("filtro-bio").value;
+    const filtroEstado = document.getElementById("filtro-estado").value;
+    const filtrados = allData.filter(p =>
+      (filtroBio === "" || p.tipo === filtroBio) &&
+      (filtroEstado === "" || p.estado === filtroEstado)
+    );
+    renderMarkers(filtrados);
+    actualizarGraficas(filtrados);
+    actualizarTabla(filtrados);
+
+    if (filtrados.length > 0) {
+      const bounds = L.latLngBounds(filtrados.map(p => [parseFloat(p.lat), parseFloat(p.lon)]));
+      map.fitBounds(bounds.pad(0.2));
+    }
+
+  }
+
+  fetch('puntos.json')
+    .then(response => response.json())
+    .then(data => {
+      allData = data;
+      const bioSet = new Set();
+      const estadoSet = new Set();
+      data.forEach(p => {
+        bioSet.add(p.tipo);
+        estadoSet.add(p.estado);
+      });
+
+      const bioSelect = document.getElementById("filtro-bio");
+      const estadoSelect = document.getElementById("filtro-estado");
+
+      Array.from(bioSet).sort().forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b;
+        opt.textContent = b;
+        bioSelect.appendChild(opt);
+      });
+
+      Array.from(estadoSet).sort().forEach(e => {
+        const opt = document.createElement("option");
+        opt.value = e;
+        opt.textContent = e;
+        estadoSelect.appendChild(opt);
+      });
+
+      bioSelect.addEventListener("change", aplicarFiltros);
+      estadoSelect.addEventListener("change", aplicarFiltros);
+
+      renderMarkers(data);
+    actualizarGraficas(data);
+    actualizarTabla(data);
+    });
+</script>
+</body>
+</html>
