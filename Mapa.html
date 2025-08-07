@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Biocombustibles en México</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+    #map { height: 500px; margin-bottom: 30px; }
+    .chart-container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+    }
+    h2 { text-align: center; }
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto 50px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #007acc;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Mapa de Biocombustibles por Estado</h1>
+
+  <div class="filters">
+    <label>Tipo:
+      <select id="filtro-bio">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Estado:
+      <select id="filtro-estado">
+        <option value="">Todos</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="chart-container">
+    <h2>Distribución por Tipo de Bioenergético</h2>
+    <canvas id="bioChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <h2>Permisos por Estado</h2>
+    <canvas id="estadoChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Tabla de Contenido</h2>
+    <table id="tabla-contenido">
+      <thead>
+        <tr>
+          <th>Estado</th>
+          <th>Municipio</th>
+          <th>Biocombustible</th>
+          <th>Operador</th>
+          <th>Tipo de Permiso</th>
+          <th>Año Autorización</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+let map = L.map('map').setView([23.6345, -102.5528], 5);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+let markers = L.layerGroup().addTo(map);
+let allData = [];
+let bioChart, estadoChart;
+
+const estadoCoords = {
+  "Aguascalientes": [21.8853, -102.2916], "Baja California": [30.8406, -115.2838], "Baja California Sur": [26.0444, -111.6661],
+  "Campeche": [19.8301, -90.5349], "Chiapas": [16.7569, -93.1292], "Chihuahua": [28.6353, -106.0889], "Ciudad de México": [19.4326, -99.1332],
+  "Coahuila": [27.0587, -101.7068], "Colima": [19.2433, -103.725], "Durango": [24.0277, -104.6532], "Estado de México": [19.3266, -99.8961],
+  "Guanajuato": [21.0181, -101.2583], "Guerrero": [17.6149, -99.4049], "Hidalgo": [20.1011, -98.7624], "Jalisco": [20.6597, -103.3496],
+  "Michoacán": [19.5665, -101.7068], "Morelos": [18.9242, -99.2216], "Nayarit": [21.7514, -104.8455], "Nuevo León": [25.6866, -100.3161],
+  "Oaxaca": [17.0732, -96.7266], "Puebla": [19.0414, -98.2063], "Querétaro": [20.5888, -100.3899], "Quintana Roo": [18.4931, -88.2962],
+  "San Luis Potosí": [22.1565, -100.9855], "Sinaloa": [24.8091, -107.394], "Sonora": [29.0892, -110.961], "Tabasco": [17.9895, -92.9475],
+  "Tamaulipas": [23.7369, -99.1411], "Tlaxcala": [19.3139, -98.2404], "Veracruz": [19.1738, -96.1342], "Yucatán": [20.9674, -89.5926],
+  "Zacatecas": [22.7709, -102.5832]
+};
+
+function renderMarkers(data) {
+  markers.clearLayers();
+  const estadosUnicos = [...new Set(data.map(p => p.estado))];
+  estadosUnicos.forEach(estado => {
+    const coord = estadoCoords[estado];
+    if (coord) {
+      L.marker(coord).addTo(markers).bindPopup(`<b>${estado}</b>`);
+    }
+  });
+}
+
+function actualizarGraficas(data) {
+  const bioContador = {}, estadoContador = {};
+  data.forEach(p => {
+    bioContador[p.tipo] = (bioContador[p.tipo] || 0) + 1;
+    estadoContador[p.estado] = (estadoContador[p.estado] || 0) + 1;
+  });
+  if (bioChart) bioChart.destroy();
+  if (estadoChart) estadoChart.destroy();
+
+  bioChart = new Chart(document.getElementById('bioChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(bioContador),
+      datasets: [{
+        label: 'Cantidad',
+        data: Object.values(bioContador),
+        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+      }]
+    }
+  });
+
+  estadoChart = new Chart(document.getElementById('estadoChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(estadoContador),
+      datasets: [{
+        label: 'Cantidad',
+        data: Object.values(estadoContador),
+        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+      }]
+    }
+  });
+}
+
+function actualizarTabla(data) {
+  const tbody = document.querySelector("#tabla-contenido tbody");
+  tbody.innerHTML = '';
+  data.forEach(p => {
+    const row = `<tr>
+      <td>${p.estado}</td>
+      <td>${p.municipio}</td>
+      <td>${p.tipo}</td>
+      <td>${p.permisionario}</td>
+      <td>${p.tipo}</td>
+      <td>${p.respuesta || "Sin datos"}</td>
+    </tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  });
+}
+
+function aplicarFiltros() {
+  const filtroBio = document.getElementById("filtro-bio").value;
+  const filtroEstado = document.getElementById("filtro-estado").value;
+  const filtrados = allData.filter(p =>
+    (filtroBio === "" || p.tipo === filtroBio) &&
+    (filtroEstado === "" || p.estado === filtroEstado)
+  );
+  renderMarkers(filtrados);
+  actualizarGraficas(filtrados);
+  actualizarTabla(filtrados);
+}
+
+fetch('puntos.json')
+  .then(response => response.json())
+  .then(data => {
+    allData = data;
+    const bioSet = new Set(), estadoSet = new Set();
+    data.forEach(p => {
+      bioSet.add(p.tipo);
+      estadoSet.add(p.estado);
+    });
+
+    const bioSelect = document.getElementById("filtro-bio");
+    const estadoSelect = document.getElementById("filtro-estado");
+
+    Array.from(bioSet).sort().forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      bioSelect.appendChild(opt);
+    });
+
+    Array.from(estadoSet).sort().forEach(e => {
+      const opt = document.createElement("option");
+      opt.value = e;
+      opt.textContent = e;
+      estadoSelect.appendChild(opt);
+    });
+
+    bioSelect.addEventListener("change", aplicarFiltros);
+    estadoSelect.addEventListener("change", aplicarFiltros);
+
+    renderMarkers(data);
+    actualizarGraficas(data);
+    actualizarTabla(data);
+  });
+</script>
+</body>
+</html>
