@@ -91,7 +91,19 @@
     <section class="layout">
       <div class="card">
         <h2>Mapa de instalaciones</h2>
-        <div id="map"></div>
+        <div id="map"
+  <!-- ======= Sección de datos detallados ======= -->
+  <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 16px">
+    <div class="card" style="background:#f7f8fa;border:1px solid #eaecf0;border-radius:12px;padding:14px;margin-bottom:16px">
+      <h2 style="margin:0 0 10px;font-size:18px">Tabla de Localidades (Censo)</h2>
+      <table id="tablaLocalidades" class="display" style="width:100%"></table>
+    </div>
+    <div class="card" style="background:#f7f8fa;border:1px solid #eaecf0;border-radius:12px;padding:14px">
+      <h2 style="margin:0 0 10px;font-size:18px">Priorización por Municipio (Score)</h2>
+      <table id="tablaRanking" class="display" style="width:100%"></table>
+    </div>
+  </section>
+></div>
         <!-- Galería fotos justo debajo del mapa -->
         <h3 style="margin:12px 0 6px">Galería fotográfica del programa</h3>
         <div class="gallery" id="gallery">
@@ -222,5 +234,98 @@ function loadMunicipios(){
     bootstrapFilters(); ['#f_programa','#f_proveedor','#f_modelo','#f_entidad','#f_estatus','#f_anio'].forEach(s=>document.querySelector(s).addEventListener('change',refresh));
     refresh();
   </script>
+
+<script>
+  // Leyenda de colores para el mapa (rango por % de hogares que quieren estufa)
+  function addLegend(){
+    if(typeof L === 'undefined' || !window.map) return;
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'info legend');
+      div.style.background = '#fff';
+      div.style.padding = '8px 10px';
+      div.style.border = '1px solid #ddd';
+      div.style.borderRadius = '8px';
+      div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
+      const grades = [0.80, 0.85, 0.90, 0.95];
+      const labels = [
+        '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%',
+        '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%',
+        '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%',
+        '<span style="display:inline-block;width:12px;height:12px;background:#f03b20;margin-right:6px;border:1px solid #ccc"></span> 90–95%',
+        '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%'
+      ];
+      div.innerHTML = '<b>Leyenda</b><br>' + labels.join('<br>');
+      return div;
+    };
+    legend.addTo(map);
+  }
+
+  // Inicializar tablas con DataTables
+  function initTables(){
+    // Localidades
+    fetch('estufas_agg_localidad.json')
+      .then(r => r.json())
+      .then(rows => {
+        // Derivar % que quiere
+        rows.forEach(r => {
+          const h = Number(r.hogares||0);
+          const q = Number(r.quiere_estufa||0);
+          r.porc_quiere = h ? (q/h*100).toFixed(1) : '0.0';
+        });
+        new DataTable('#tablaLocalidades', {
+          data: rows,
+          columns: [
+            { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'Localidad', data: 'LOCALIDAD' },
+            { title: 'Hogares', data: 'hogares' },
+            { title: 'Quiere estufa', data: 'quiere_estufa' },
+            { title: '% Quiere', data: 'porc_quiere' }
+          ],
+          pageLength: 10,
+          responsive: true
+        });
+      })
+      .catch(err => console.error('No se pudo cargar estufas_agg_localidad.json', err));
+
+    // Ranking
+    fetch('ranking_priorizacion_municipio.json')
+      .then(r => r.json())
+      .then(rows => {
+        rows.forEach(r => {
+          r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
+          r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
+        });
+        new DataTable('#tablaRanking', {
+          data: rows,
+          columns: [
+            { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'Hogares', data: 'hogares' },
+            { title: 'Quiere estufa', data: 'quiere_estufa' },
+            { title: '% Quiere', data: 'porc_quiere' },
+            { title: '% No-buena', data: 'porc_no_buena' },
+            { title: 'Score', data: 'score_prior' }
+          ],
+          order: [[6,'desc']],
+          pageLength: 8,
+          responsive: true
+        });
+      })
+      .catch(err => console.error('No se pudo cargar ranking_priorizacion_municipio.json', err));
+  }
+
+  // Hook: al crear el mapa, llamamos a addLegend() si existe 'map'
+  (function waitForMap(){
+    if (typeof map !== 'undefined') {
+      try { addLegend(); } catch(e){}
+      try { initTables(); } catch(e){}
+    } else {
+      setTimeout(waitForMap, 500);
+    }
+  })();
+</script>
+
 </body>
 </html>
