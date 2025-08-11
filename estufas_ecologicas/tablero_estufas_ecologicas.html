@@ -155,8 +155,41 @@
     }
 
     let map, layer;
+let muniLayer;
+function loadMunicipios(){
+  fetch('estufas_municipios.geojson')
+    .then(r => r.json())
+    .then(geo => {
+      if(muniLayer){ map.removeLayer(muniLayer); }
+      muniLayer = L.geoJSON(geo, {
+        style: f => {
+          const p = f.properties || {};
+          const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
+          const fill = ratio > 0.95 ? '#bd0026' :
+                       ratio > 0.90 ? '#f03b20' :
+                       ratio > 0.85 ? '#fd8d3c' :
+                       ratio > 0.80 ? '#feb24c' :
+                                      '#fed976';
+          return { color:'#003366', weight:1, fillOpacity:0.6, fillColor:fill };
+        },
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties || {};
+          const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
+          layer.bindPopup(
+            `<b>${p.MUNICIPIO}, ${p.ENTIDAD}</b><br>
+             Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
+             Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)<br>
+             Eficiente reportada: ${Number(p.tienen_eficiente||0).toLocaleString('es-MX')}`
+          );
+        }
+      }).addTo(map);
+      try { map.fitBounds(muniLayer.getBounds().pad(0.2)); } catch(e){}
+    })
+    .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
+}
+
     function renderMap(rows){
-      if(!map){ map=L.map('map').setView([22.5,-102],5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map); }
+      if(!map){ map=L.map('map').setView([22.5,-102],5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map); loadMunicipios(); }
       if(layer) layer.remove(); layer=L.layerGroup().addTo(map);
       rows.forEach(r=>{
         const color=r.estatus==='Instalada'? '#1f77b4': r.estatus==='En seguimiento'? '#ff7f0e': r.estatus==='Garantía'? '#2ca02c':'#d62728';
