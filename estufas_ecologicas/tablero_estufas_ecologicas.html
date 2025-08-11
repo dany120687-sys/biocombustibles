@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tablero de Estufas Ecológicas · DGEL</title>
+  <!-- Tipografías -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <style>
+    :root{
+      --azul:#0c3b6c; --gris:#f3f5f7; --texto:#1b1f29; --borde:#eaecf0; --dorado:#D48232;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--texto);background:#fff}
+    header{background:#0c3b6c;color:#fff;padding:18px 24px;display:flex;gap:16px;align-items:center}
+    .brand{font-size:22px;font-weight:800}
+    .brand small{display:block;font-weight:600;opacity:.9}
+    .container{max-width:1200px;margin:24px auto;padding:0 16px}
+
+    /* Filtros + KPIs */
+    .filters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:18px}
+    .filters label{font-size:12px;opacity:.8}
+    .filters select{width:100%;padding:10px 12px;border:1px solid var(--borde);border-radius:12px;background:#fff}
+
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 18px}
+    .kpi{background:var(--gris);border:1px solid var(--borde);border-radius:14px;padding:16px}
+    .kpi .label{font-size:12px;text-transform:uppercase;letter-spacing:.6px;opacity:.75}
+    .kpi .value{font-size:24px;font-weight:800}
+
+    /* Layout principal */
+    .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .card{background:var(--gris);border:1px solid var(--borde);border-radius:16px;padding:16px}
+    h2{margin:0 0 10px}
+    #map{height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--borde)}
+
+    /* Galería debajo del mapa */
+    .gallery{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .thumb{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px}
+    .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px}
+    .thumb figcaption{font-size:12px;margin-top:6px;opacity:.8}
+
+    /* Tabla */
+    table.dataTable tbody tr:hover{background:#fafafa}
+
+    footer{margin:28px 0 48px;text-align:center;font-size:12px;color:#666}
+
+    @media (max-width:1000px){
+      .filters{grid-template-columns:repeat(2,1fr)}
+      .kpis{grid-template-columns:repeat(2,1fr)}
+      .layout{grid-template-columns:1fr}
+      .gallery{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
+    <div class="brand">DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS <small>Tablero de Estufas Ecológicas · MVP</small></div>
+  </header>
+  <main class="container">
+    <!-- FILTROS -->
+    <section class="card">
+      <div class="filters">
+        <div><label>Programa</label><select id="f_programa"><option value="">Todos</option></select></div>
+        <div><label>Proveedor</label><select id="f_proveedor"><option value="">Todos</option></select></div>
+        <div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
+        <div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
+        <div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
+        <div><label>Año</label><select id="f_anio"><option value="">Todos</option></select></div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
+      <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
+      <div class="kpi"><div class="label">t CO₂e evitadas (estimadas)</div><div class="value" id="k_co2">–</div></div>
+      <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
+    </section>
+
+    <!-- MAPA + PANEL -->
+    <section class="layout">
+      <div class="card">
+        <h2>Mapa de instalaciones</h2>
+        <div id="map"></div>
+        <!-- Galería fotos justo debajo del mapa -->
+        <h3 style="margin:12px 0 6px">Galería fotográfica del programa</h3>
+        <div class="gallery" id="gallery">
+          <figure class="thumb"><img src="./estufa_1.jpg" alt="Instalación de estufa"><figcaption>Instalación y capacitación en sitio</figcaption></figure>
+          <figure class="thumb"><img src="./estufa_2.jpg" alt="Encendido de prueba"><figcaption>Encendido de prueba y verificación de tiraje</figcaption></figure>
+          <figure class="thumb"><img src="./estufa_3.jpg" alt="Taller con promotores"><figcaption>Taller con promotores del programa</figcaption></figure>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
+        <div class="card" style="height:220px"><h2>Instalaciones por año</h2><canvas id="chartInstalaciones"></canvas></div>
+        <div class="card" style="height:220px"><h2>Ahorro de leña (kg/mes) promedio por modelo</h2><canvas id="chartAhorro"></canvas></div>
+        <div class="card" style="overflow:auto"><h2>Bitácora (tabla)</h2><table id="tabla" class="display" style="width:100%"></table></div>
+      </div>
+    </section>
+
+    <footer>Identidad visual: Noto Sans · Fondo blanco · Paleta institucional · MVP estático listo para Vercel</footer>
+  </main>
+
+  <!-- ======================== DATOS FICTICIOS ======================== -->
+  <script>
+    const DATA = [
+      {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
+      {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Jalisco", municipio:"Zapopan", lat:20.732, lng:-103.384, estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
+      {id:"EST-0003", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Morelia", lat:19.705, lng:-101.194, estatus:"Garantía", fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve", consumo_base:130, consumo_post:80},
+      {id:"EST-0004", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Veracruz", municipio:"Coatepec", lat:19.454, lng:-96.958, estatus:"Instalada", fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK", consumo_base:110, consumo_post:65},
+      {id:"EST-0005", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Puebla", municipio:"Zacatlán", lat:19.935, lng:-97.962, estatus:"Instalada", fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK", consumo_base:140, consumo_post:75},
+      {id:"EST-0006", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Puebla", municipio:"Chignahuapan", lat:19.839, lng:-98.031, estatus:"Baja", fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa", consumo_base:115, consumo_post:115},
+      {id:"EST-0007", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Tlajomulco", lat:20.472, lng:-103.446, estatus:"Instalada", fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK", consumo_base:118, consumo_post:62}
+    ];
+    const FACTOR_EMISION_CO2_KG_POR_KG = 1.83;
+  </script>
+
+  <!-- ======================== LÓGICA ======================== -->
+  <script>
+    const $ = s=>document.querySelector(s);
+    const fmt = n=> n.toLocaleString('es-MX');
+    const year = d=> new Date(d).getFullYear();
+
+    function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort()}
+    function fillSelect(id,values){const el=$(id);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
+
+    function bootstrapFilters(){
+      fillSelect('#f_programa', unique(DATA,'programa'));
+      fillSelect('#f_proveedor', unique(DATA,'proveedor'));
+      fillSelect('#f_modelo', unique(DATA,'modelo'));
+      fillSelect('#f_entidad', unique(DATA,'entidad'));
+      fillSelect('#f_anio', [...new Set(DATA.map(d=>year(d.fecha_instalacion)))].sort());
+    }
+    function getFilters(){return{programa:$('#f_programa').value,proveedor:$('#f_proveedor').value,modelo:$('#f_modelo').value,entidad:$('#f_entidad').value,estatus:$('#f_estatus').value,anio:$('#f_anio').value}}
+    function applyFilters(data){const f=getFilters();return data.filter(d=>(!f.programa||d.programa===f.programa)&&(!f.proveedor||d.proveedor===f.proveedor)&&(!f.modelo||d.modelo===f.modelo)&&(!f.entidad||d.entidad===f.entidad)&&(!f.estatus||d.estatus===f.estatus)&&(!f.anio||year(d.fecha_instalacion)==+f.anio))}
+
+    function renderKPIs(rows){
+      const total=rows.length; const hogares=total;
+      const ahorroLenia=rows.reduce((a,r)=>a+Math.max(0,(r.consumo_base-r.consumo_post)),0);
+      const co2=(ahorroLenia*12*FACTOR_EMISION_CO2_KG_POR_KG)/1000;
+      const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
+      $('#k_estufas').textContent=fmt(total);
+      $('#k_hogares').textContent=fmt(hogares);
+      $('#k_co2').textContent=co2.toFixed(1);
+      $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
+    }
+
+    let map, layer;
+    function renderMap(rows){
+      if(!map){ map=L.map('map').setView([22.5,-102],5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map); }
+      if(layer) layer.remove(); layer=L.layerGroup().addTo(map);
+      rows.forEach(r=>{
+        const color=r.estatus==='Instalada'? '#1f77b4': r.estatus==='En seguimiento'? '#ff7f0e': r.estatus==='Garantía'? '#2ca02c':'#d62728';
+        const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
+        L.marker([r.lat,r.lng],{icon}).addTo(layer).bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
+      });
+      try{const b=L.latLngBounds(rows.map(r=>[r.lat,r.lng])); if(rows.length) map.fitBounds(b.pad(0.2));}catch(e){}
+    }
+
+    let chart1, chart2;
+    function renderCharts(rows){
+      const byYear={}; rows.forEach(r=>{const y=year(r.fecha_instalacion); byYear[y]=(byYear[y]||0)+1});
+      const ys=Object.keys(byYear).sort(); const cs=ys.map(y=>byYear[y]);
+      if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),{type:'bar',data:{labels:ys,datasets:[{label:'Instalaciones',data:cs}]},options:{maintainAspectRatio:false}});} else { chart1.data.labels=ys; chart1.data.datasets[0].data=cs; chart1.update(); }
+
+      const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
+      const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
+      if(!chart2){ chart2=new Chart(document.getElementById('chartAhorro'),{type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av}]},options:{maintainAspectRatio:false}});} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
+    }
+
+    let dt;
+    function renderTable(rows){
+      const columns=[{title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},{title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Estatus',data:'estatus'},{title:'Instalada',data:'fecha_instalacion'},{title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},{title:'Ahorro (kg/mes)',data:'ahorro'}];
+      const data=rows.map(r=>({id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,estatus:r.estatus,fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),garantia_fin:new Date(r.garantia_fin).toLocaleDateString('es-MX'),visita_ult_fecha:new Date(r.visita_ult_fecha).toLocaleDateString('es-MX'),ahorro:Math.max(0,r.consumo_base-r.consumo_post)}));
+      if(dt){ dt.clear(); dt.rows.add(data).draw(); } else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
+    }
+
+    function refresh(){ const rows=applyFilters(DATA); renderKPIs(rows); renderMap(rows); renderCharts(rows); renderTable(rows); }
+
+    bootstrapFilters(); ['#f_programa','#f_proveedor','#f_modelo','#f_entidad','#f_estatus','#f_anio'].forEach(s=>document.querySelector(s).addEventListener('change',refresh));
+    refresh();
+  </script>
+</body>
+</html>
