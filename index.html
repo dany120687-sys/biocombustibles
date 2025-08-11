@@ -4,53 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Unificado - Ley de Biocombustibles</title>
-  <meta http-equiv="refresh" content="1; url=estufas_ecologicas/">
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(to right, #e6f2ff, #ffffff);
-      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-    header { width: 100%; background-color: #003366; color: #fff; padding: 30px 20px; text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    header {
+      width: 100%;
+      background-color: #003366;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
     header h1 { margin: 0; font-size: 2.2rem; }
-    .notice { margin: 24px 0 -24px; color:#333; font-size:.95rem; }
-    .container { margin-top: 60px; display: flex; flex-direction: column; align-items: center; gap: 25px; }
+    .container {
+      margin-top: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+    }
     .link-button {
-      background-color: #007acc; color: #fff; padding: 15px 30px; border: none; border-radius: 8px;
-      text-decoration: none; font-size: 1.1rem; font-weight: 500; transition: background-color .3s, transform .2s;
+      background-color: #007acc; color: white; padding: 15px 30px; border: none; border-radius: 8px;
+      text-decoration: none; font-size: 1.1rem; font-weight: 500;
+      transition: background-color 0.3s ease, transform 0.2s ease;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     .link-button:hover { background-color: #005f99; transform: translateY(-2px); }
     footer { margin-top: auto; padding: 20px; font-size: 0.9rem; color: #666; }
   </style>
-  <script>
-    // Fallback JS por si el meta-refresh es bloqueado: redirige manualmente tras 1s
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => { window.location.href = 'estufas_ecologicas/'; }, 1000);
-    });
-  </script>
 </head>
 <body>
   <header>
     <h1>Portal Unificado<br> Ley de Biocombustibles</h1>
   </header>
 
-  <!-- Mensaje de fallback visible durante ~1s o si la ruta no existe -->
-  <div class="notice">Redirigiendo a <strong>Estufas Ecológicas</strong>… 
-    Si no cambia, usa el botón de abajo.</div>
-
   <div class="container">
-    <!-- NUEVO botón principal -->
-    <a class="link-button" href="estufas_ecologicas/">🌱 Estufas Ecológicas</a>
-
-    <!-- Enlaces existentes -->
     <a class="link-button" href="Portal_LBIO_Resumen_Articulos_Subtemas.html" target="_blank">📘 Resumen de Artículos</a>
     <a class="link-button" href="Relacion_Tramites_ConNotas.html" target="_blank">📝 Relación con Notas</a>
     <a class="link-button" href="Tramites_Articulos_Hipervinculado_LBIO.html" target="_blank">🔗 Hipervínculos Completos</a>
     <a class="link-button" href="Mapa.html" target="_blank">📊 Visualizador de Biocombustibles</a>
     <a class="link-button" href="index_mapa_conceptual.html" target="_blank">🧠 Mapa Conceptual</a>
+    <!-- Nuevo botón correcto -->
+    <a class="link-button" href="estufas_ecologicas/tableros_estufas_ecologicas.html" target="_blank">🌱 Estufas Ecológicas</a>
   </div>
 
   <footer>
