@@ -176,6 +176,27 @@
 
     let map, layer;
 let muniLayer;
+// === Helpers para zoom por municipio ===
+function normalizeTxt(s){ return (s||'').toString().trim().toLowerCase(); }
+function zoomToMunicipio(ent, mun){
+  if(!window.muniLayer || !window.map) return;
+  const entN = normalizeTxt(ent), munN = normalizeTxt(mun);
+  let found = null;
+  muniLayer.eachLayer(function(layer){
+    const p = layer.feature && layer.feature.properties ? layer.feature.properties : {};
+    if(normalizeTxt(p.ENTIDAD) === entN && normalizeTxt(p.MUNICIPIO) === munN){
+      found = layer;
+    }
+  });
+  if(found){
+    try { map.fitBounds(found.getBounds().pad(0.2)); } catch(e){}
+    // resaltar brevemente
+    const old = found.options;
+    found.setStyle({weight:3, color:'#111', fillOpacity:0.5});
+    setTimeout(()=>{ try{ found.setStyle(old);}catch(e){} }, 1800);
+  }
+}
+
 function loadMunicipios(){
   fetch('estufas_municipios.geojson')
     .then(r => r.json())
@@ -281,22 +302,55 @@ function loadMunicipios(){
           const q = Number(r.quiere_estufa||0);
           r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
         });
-        new DataTable('#tablaLocalidades', {
+        
+// Crear select de filtro por municipio
+const filtroWrap = document.createElement('div');
+filtroWrap.style.margin = '8px 0';
+filtroWrap.innerHTML = `<label style="margin-right:6px">Filtrar por municipio:</label>
+<select id="filtroMunicipio" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:220px">
+  <option value="">Todos</option>
+</select>`;
+document.querySelector('#tablaLocalidades').parentElement.prepend(filtroWrap);
+
+// Poblar opciones únicas por municipio
+const muniSet = new Set(rows.map(r => (r.MUNICIPIO || '').toString()));
+[...muniSet].sort().forEach(m => {
+  const opt = document.createElement('option'); opt.value = m; opt.textContent = m;
+  document.getElementById('filtroMunicipio').appendChild(opt);
+});
+
+// Inicializar DataTable
+const dtLoc = new DataTable('#tablaLocalidades', {
+
           data: rows,
           columns: [
-            { title: 'CVE Ent', data: 'CVEENTIDAD' },
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'CVE Mun', data: 'CVEMUN' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'CVE Loc', data: 'CVELOCALIDAD' },
-            { title: 'Localidad', data: 'LOCALIDAD' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' }
-          ],
-          pageLength: 10,
+  { title: 'Entidad', data: 'ENTIDAD' },
+  { title: 'Municipio', data: 'MUNICIPIO' },
+  { title: 'Localidad', data: 'LOCALIDAD' },
+  { title: 'Hogares', data: 'hogares' },
+  { title: 'Quiere estufa', data: 'quiere_estufa' },
+  { title: '% Quiere', data: 'porc_quiere' }
+],
+          pageLength: 10, rowCallback: (row, data) => { row.style.cursor='pointer'; }
           responsive: true
         });
+// Click en fila -> zoom a municipio
+document.querySelector('#tablaLocalidades tbody').addEventListener('click', function(e){
+  const tr = e.target.closest('tr');
+  if(!tr) return;
+  const row = dtLoc.row(tr);
+  if(!row) return;
+  const data = row.data();
+  if(data){ zoomToMunicipio(data.ENTIDAD, data.MUNICIPIO); }
+});
+
+// Cambio de filtro por municipio
+document.getElementById('filtroMunicipio').addEventListener('change', function(){
+  const val = this.value || '';
+  // Buscar por columna "Municipio"
+  dtLoc.column(1) ? dtLoc.column(1).search(val).draw() : dtLoc.search(val).draw();
+});
+
       })
       .catch(err => console.error('No se pudo cargar estufas_agg_localidad_detalle.json', err));
 
