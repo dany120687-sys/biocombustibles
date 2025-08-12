@@ -272,20 +272,23 @@ function loadMunicipios(){
   // Inicializar tablas con DataTables
   function initTables(){
     // Localidades
-    fetch('estufas_agg_localidad.json')
+    fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
         // Derivar % que quiere
         rows.forEach(r => {
           const h = Number(r.hogares||0);
           const q = Number(r.quiere_estufa||0);
-          r.porc_quiere = h ? (q/h*100).toFixed(1) : '0.0';
+          r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
         });
         new DataTable('#tablaLocalidades', {
           data: rows,
           columns: [
+            { title: 'CVE Ent', data: 'CVEENTIDAD' },
             { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'CVE Mun', data: 'CVEMUN' },
             { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'CVE Loc', data: 'CVELOCALIDAD' },
             { title: 'Localidad', data: 'LOCALIDAD' },
             { title: 'Hogares', data: 'hogares' },
             { title: 'Quiere estufa', data: 'quiere_estufa' },
@@ -295,7 +298,7 @@ function loadMunicipios(){
           responsive: true
         });
       })
-      .catch(err => console.error('No se pudo cargar estufas_agg_localidad.json', err));
+      .catch(err => console.error('No se pudo cargar estufas_agg_localidad_detalle.json', err));
 
     // Ranking
     fetch('ranking_priorizacion_municipio.json')
