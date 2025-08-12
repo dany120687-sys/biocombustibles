@@ -21,425 +21,376 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
   <style>
-    /* ===== Paleta institucional (HEX) ===== */
     :root{
-      --guinda:#9F2241;
-      --guinda-osc:#691C32;
-      --azul:#10312B;
-      --dorado:#BC955C;
-      --beige:#DDC9A3;
-      --gris-700:#6F7271;
-      --gris-500:#98989A;
-      --verde:#8FAB85;
-      --fondo:#ffffff;
-      --panel:#f6f7f8;
-      --borde:#eaecf0;
-      --texto:#1b1f29;
+      --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
+      --dorado:#BC955C; --beige:#DDC9A3; --gris-700:#6F7271; --gris-500:#98989A;
+      --verde:#8FAB85; --fondo:#ffffff; --panel:#f6f7f8; --borde:#eaecf0; --texto:#1b1f29;
     }
-
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      font-size:11pt; line-height:1.35;
-      color:var(--texto);
-      background:var(--fondo);
-    }
-
-    /* ====== Encabezado ====== */
-    header{
-      background:var(--azul);
-      color:#fff;
-      padding:18px 24px;
-      display:flex; gap:16px; align-items:center;
-      box-shadow:0 2px 8px rgba(0,0,0,.08);
-      position:relative;            /* importante para posicionar la franja de logos */
-      overflow:visible;
-    }
+    body{margin:0;font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:11pt;line-height:1.35;color:var(--texto);background:var(--fondo)}
+    header{background:var(--azul);color:#fff;padding:18px 24px;display:flex;gap:16px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative}
     .brand{font-size:22px;font-weight:800}
     .brand small{display:block;font-weight:600;opacity:.9}
-
-    /* Franja de logos a la derecha con FONDO BLANCO */
-    .logo-strip{
-      position:absolute;
-      right:16px;
-      top:10px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      background:#fff;               /* fondo blanco solicitado */
-      padding:8px 12px;
-      border-radius:10px;
-      box-shadow:0 2px 8px rgba(0,0,0,.12);
-      max-width:60vw;
-    }
-    .logo-strip img{
-      height:28px;                   /* alto uniforme */
-      width:auto;
-      display:block;
-      background:#fff;               /* cada logo también con fondo blanco */
-      padding:2px 4px;
-      border-radius:6px;
-    }
-
-    /* Responsive: ocultar logos si la pantalla es angosta */
-    @media (max-width:900px){
-      .logo-strip{display:none;}
-    }
-
+    .logo-strip{position:absolute;right:16px;top:10px;display:flex;gap:12px;align-items:center;background:#fff;padding:8px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);max-width:60vw}
+    .logo-strip img{height:28px;width:auto;display:block;background:#fff;padding:2px 4px;border-radius:6px}
+    @media (max-width:900px){.logo-strip{display:none}}
     .container{max-width:1200px;margin:24px auto;padding:0 16px}
-
-    /* Filtros */
     .filters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:18px}
     .filters label{font-size:10pt;opacity:.8}
-    .filters select{
-      width:100%;padding:10px 12px;border:1px solid var(--borde);
-      border-radius:12px;background:#fff;outline:none
-    }
+    .filters select{width:100%;padding:10px 12px;border:1px solid var(--borde);border-radius:12px;background:#fff;outline:none}
     .filters select:focus{border-color:var(--guinda);box-shadow:0 0 0 3px #9f22412a}
-
-    /* KPIs */
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 18px}
     .kpi{background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:16px}
     .kpi .label{font-size:10pt;letter-spacing:.3px;color:var(--gris-700)}
     .kpi .value{font-size:24px;font-weight:800;color:var(--azul)}
-
-    /* Layout principal */
     .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
     .card{background:var(--panel);border:1px solid var(--borde);border-radius:16px;padding:16px}
     h2{margin:0 0 10px;font-size:16pt;color:var(--guinda-osc)}
     #map{height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--borde);background:#fff}
-
-    /* Galería */
     .gallery{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .thumb{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px}
     .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px}
     .thumb figcaption{font-size:10pt;margin-top:6px;color:var(--gris-700)}
-
-    /* DataTables */
     table.dataTable thead th{background:#fff;color:var(--azul)}
     table.dataTable tbody tr:hover{background:#fafafa}
-
     footer{margin:28px 0 48px;text-align:center;font-size:10pt;color:var(--gris-700)}
-
     @media (max-width:1000px){
       .filters{grid-template-columns:repeat(2,1fr)}
       .kpis{grid-template-columns:repeat(2,1fr)}
       .layout{grid-template-columns:1fr}
       .gallery{grid-template-columns:1fr 1fr}
     }
-
-    /* Leaflet on top of panels */
-    .leaflet-container{z-index:0}
-    .info.legend{z-index:400}
+    .leaflet-container{z-index:0}.info.legend{z-index:400}
   </style>
 </head>
 <body>
-  <header>
-    <div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
-    <div class="brand">
-      DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS
-      <small>Tablero de Estufas Ecológicas · MVP</small>
+<header>
+  <div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
+  <div class="brand">
+    DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS
+    <small>Tablero de Estufas Ecológicas · MVP</small>
+  </div>
+  <div class="logo-strip" aria-label="Dependencias participantes">
+    <img src="1. SENER.png" alt="Energía">
+    <img src="2. BIENESTAR.png" alt="Bienestar">
+    <img src="3. Logo_Ciencia.png" alt="Ciencia y Tecnología">
+    <img src="4. INPI.png" alt="INPI">
+  </div>
+</header>
+
+<main class="container">
+  <!-- FILTROS -->
+  <section class="card">
+    <div class="filters">
+      <div><label>Programa</label><select id="f_programa"><option value="">Todos</option></select></div>
+      <div><label>Proveedor</label><select id="f_proveedor"><option value="">Todos</option></select></div>
+      <div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
+      <div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
+      <div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
+      <div><label>Año</label><select id="f_anio"><option value="">Todos</option></select></div>
+    </div>
+  </section>
+
+  <!-- KPIs (CO2 reemplazado por “Hogares que quieren estufa (censo)”) -->
+  <section class="kpis">
+    <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
+    <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
+    <div class="kpi"><div class="label">Hogares que quieren estufa (censo)</div><div class="value" id="k_quiere_estufa">–</div></div>
+    <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
+  </section>
+
+  <!-- MAPA + PANEL DERECHO -->
+  <section class="layout">
+    <div class="card">
+      <h2>Mapa de instalaciones</h2>
+      <div id="map"></div>
+
+      <h3 style="margin:12px 0 6px;color:var(--azul)">Galería fotográfica del programa</h3>
+      <div class="gallery" id="gallery">
+        <figure class="thumb"><img src="./estufa_1.jpg" alt="Instalación de estufa"><figcaption>Instalación y capacitación en sitio</figcaption></figure>
+        <figure class="thumb"><img src="./estufa_2.jpg" alt="Encendido de prueba"><figcaption>Encendido de prueba y verificación de tiraje</figcaption></figure>
+        <figure class="thumb"><img src="./estufa_3.jpg" alt="Taller con promotores"><figcaption>Taller con promotores del programa</figcaption></figure>
+      </div>
     </div>
 
-    <!-- ==== FRANJA DE LOGOS (FONDO BLANCO) ==== -->
-    <div class="logo-strip" aria-label="Dependencias participantes">
-      <!-- Ajusta los src a tus rutas reales en GitHub/Vercel -->
-      <img src="1. SENER.png"      alt="Energía">
-      <img src="2. BIENESTAR.png"  alt="Bienestar">
-      <img src="3. Logo_Ciencia.png" alt="Ciencia y Tecnología">
-      <img src="4. INPI.png"       alt="INPI">
+    <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
+      <div class="card" style="height:220px">
+        <h2>Instalaciones por semana</h2>
+        <canvas id="chartInstalaciones"></canvas>
+      </div>
+      <div class="card" style="height:220px">
+        <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
+        <canvas id="chartAhorro"></canvas>
+      </div>
+      <div class="card" style="overflow:auto">
+        <h2>Bitácora (tabla)</h2>
+        <table id="tabla" class="display" style="width:100%"></table>
+      </div>
     </div>
-  </header>
+  </section>
 
-  <main class="container">
-    <!-- FILTROS -->
-    <section class="card">
-      <div class="filters">
-        <div><label>Programa</label><select id="f_programa"><option value="">Todos</option></select></div>
-        <div><label>Proveedor</label><select id="f_proveedor"><option value="">Todos</option></select></div>
-        <div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
-        <div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
-        <div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
-        <div><label>Año</label><select id="f_anio"><option value="">Todos</option></select></div>
-      </div>
-    </section>
+  <!-- SECCIÓN DATOS DETALLADOS -->
+  <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
+    <div class="card" style="padding:14px;margin-bottom:16px">
+      <h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
+      <table id="tablaLocalidades" class="display" style="width:100%"></table>
+    </div>
+    <div class="card" style="padding:14px">
+      <h2 style="margin:0 0 10px;font-size:16px">Priorización por Municipio (Score)</h2>
+      <table id="tablaRanking" class="display" style="width:100%"></table>
+    </div>
+  </section>
 
-    <!-- KPIs -->
-    <section class="kpis">
-      <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
-      <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
-      <div class="kpi"><div class="label">t CO₂e evitadas (estimadas)</div><div class="value" id="k_co2">–</div></div>
-      <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
-    </section>
+  <footer>Identidad visual: Noto Sans 11 pt · Paleta institucional · MVP estático listo para Vercel</footer>
+</main>
 
-    <!-- MAPA + PANEL DERECHO -->
-    <section class="layout">
-      <div class="card">
-        <h2>Mapa de instalaciones</h2>
-        <div id="map"></div>
+<!-- ===== Datos demo (los mismos) ===== -->
+<script>
+  const DATA = [
+    {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
+    {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Jalisco", municipio:"Zapopan", lat:20.732, lng:-103.384, estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
+    {id:"EST-0003", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Morelia", lat:19.705, lng:-101.194, estatus:"Garantía", fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve", consumo_base:130, consumo_post:80},
+    {id:"EST-0004", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Veracruz", municipio:"Coatepec", lat:19.454, lng:-96.958, estatus:"Instalada", fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK", consumo_base:110, consumo_post:65},
+    {id:"EST-0005", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Puebla", municipio:"Zacatlán", lat:19.935, lng:-97.962, estatus:"Instalada", fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK", consumo_base:140, consumo_post:75},
+    {id:"EST-0006", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Puebla", municipio:"Chignahuapan", lat:19.839, lng:-98.031, estatus:"Baja", fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa", consumo_base:115, consumo_post:115},
+    {id:"EST-0007", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Tlajomulco", lat:20.472, lng:-103.446, estatus:"Instalada", fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK", consumo_base:118, consumo_post:62}
+  ];
+</script>
 
-        <h3 style="margin:12px 0 6px;color:var(--azul)">Galería fotográfica del programa</h3>
-        <div class="gallery" id="gallery">
-          <figure class="thumb"><img src="./estufa_1.jpg" alt="Instalación de estufa"><figcaption>Instalación y capacitación en sitio</figcaption></figure>
-          <figure class="thumb"><img src="./estufa_2.jpg" alt="Encendido de prueba"><figcaption>Encendido de prueba y verificación de tiraje</figcaption></figure>
-          <figure class="thumb"><img src="./estufa_3.jpg" alt="Taller con promotores"><figcaption>Taller con promotores del programa</figcaption></figure>
-        </div>
-      </div>
+<script>
+  const $ = s=>document.querySelector(s);
+  const fmt = n=> n.toLocaleString('es-MX');
+  const year = d=> new Date(d).getFullYear();
+  const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-      <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
-        <div class="card" style="height:220px"><h2>Instalaciones por año</h2><canvas id="chartInstalaciones"></canvas></div>
-        <div class="card" style="height:220px"><h2>Ahorro de leña (kg/mes) promedio por modelo</h2><canvas id="chartAhorro"></canvas></div>
-        <div class="card" style="overflow:auto"><h2>Bitácora (tabla)</h2><table id="tabla" class="display" style="width:100%"></table></div>
-      </div>
-    </section>
+  function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort()}
+  function fillSelect(id,values){const el=$(id);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
 
-    <!-- SECCIÓN DATOS DETALLADOS -->
-    <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
-      <div class="card" style="padding:14px;margin-bottom:16px">
-        <h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
-        <table id="tablaLocalidades" class="display" style="width:100%"></table>
-      </div>
-      <div class="card" style="padding:14px">
-        <h2 style="margin:0 0 10px;font-size:16px">Priorización por Municipio (Score)</h2>
-        <table id="tablaRanking" class="display" style="width:100%"></table>
-      </div>
-    </section>
+  function bootstrapFilters(){
+    fillSelect('#f_programa', unique(DATA,'programa'));
+    fillSelect('#f_proveedor', unique(DATA,'proveedor'));
+    fillSelect('#f_modelo', unique(DATA,'modelo'));
+    fillSelect('#f_entidad', unique(DATA,'entidad'));
+    fillSelect('#f_anio', [...new Set(DATA.map(d=>year(d.fecha_instalacion)))].sort());
+  }
+  function getFilters(){return{programa:$('#f_programa').value,proveedor:$('#f_proveedor').value,modelo:$('#f_modelo').value,entidad:$('#f_entidad').value,estatus:$('#f_estatus').value,anio:$('#f_anio').value}}
+  function applyFilters(data){const f=getFilters();return data.filter(d=>(!f.programa||d.programa===f.programa)&&(!f.proveedor||d.proveedor===f.proveedor)&&(!f.modelo||d.modelo===f.modelo)&&(!f.entidad||d.entidad===f.entidad)&&(!f.estatus||d.estatus===f.estatus)&&(!f.anio||year(d.fecha_instalacion)==+f.anio))}
 
-    <footer>Identidad visual: Noto Sans 11 pt · Paleta institucional · MVP estático listo para Vercel</footer>
-  </main>
+  function renderKPIs(rows){
+    const total=rows.length; const hogares=total;
+    const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
+    $('#k_estufas').textContent=fmt(total);
+    $('#k_hogares').textContent=fmt(hogares);
+    $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
+  }
 
-  <!-- ================== DATOS DEMO ================== -->
-  <script>
-    const DATA = [
-      {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
-      {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Jalisco", municipio:"Zapopan", lat:20.732, lng:-103.384, estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
-      {id:"EST-0003", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Morelia", lat:19.705, lng:-101.194, estatus:"Garantía", fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve", consumo_base:130, consumo_post:80},
-      {id:"EST-0004", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Veracruz", municipio:"Coatepec", lat:19.454, lng:-96.958, estatus:"Instalada", fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK", consumo_base:110, consumo_post:65},
-      {id:"EST-0005", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Puebla", municipio:"Zacatlán", lat:19.935, lng:-97.962, estatus:"Instalada", fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK", consumo_base:140, consumo_post:75},
-      {id:"EST-0006", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Puebla", municipio:"Chignahuapan", lat:19.839, lng:-98.031, estatus:"Baja", fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa", consumo_base:115, consumo_post:115},
-      {id:"EST-0007", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Tlajomulco", lat:20.472, lng:-103.446, estatus:"Instalada", fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK", consumo_base:118, consumo_post:62}
+  /* ====== MAPA ====== */
+  let map, layer, muniLayer;
+
+  function loadMunicipios(){
+    fetch('estufas_municipios.geojson')
+      .then(r => r.json())
+      .then(geo => {
+        if(muniLayer){ map.removeLayer(muniLayer); }
+        muniLayer = L.geoJSON(geo, {
+          style: f => {
+            const p = f.properties || {};
+            const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
+            const fill = ratio > 0.95 ? '#bd0026' :
+                         ratio > 0.90 ? '#f03b20' :
+                         ratio > 0.85 ? '#fd8d3c' :
+                         ratio > 0.80 ? '#feb24c' :
+                                        '#fed976';
+            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:fill };
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties || {};
+            const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
+            layer.bindPopup(
+              `<b>${p.MUNICIPIO}, ${p.ENTIDAD}</b><br>
+               Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
+               Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
+            );
+          }
+        }).addTo(map);
+        try { map.fitBounds(muniLayer.getBounds().pad(0.2)); } catch(e){}
+      })
+      .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
+  }
+
+  function renderMap(rows){
+    if(!map){
+      map=L.map('map').setView([22.5,-102],5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+      loadMunicipios();
+    }
+    if(layer) layer.remove();
+    layer=L.layerGroup().addTo(map);
+    rows.forEach(r=>{
+      const color = r.estatus==='Instalada'     ? getCss('--guinda') :
+                    r.estatus==='En seguimiento'? getCss('--dorado') :
+                    r.estatus==='Garantía'      ? getCss('--verde')  :
+                                                 '#d62728';
+      const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
+      L.marker([r.lat,r.lng],{icon}).addTo(layer)
+        .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
+    });
+    try{
+      const b=L.latLngBounds(rows.map(r=>[r.lat,r.lng]));
+      if(rows.length) map.fitBounds(b.pad(0.2));
+    }catch(e){}
+  }
+
+  /* ====== GRÁFICAS ====== */
+  let chart1, chart2;
+  Chart.defaults.color = getCss('--azul');
+  Chart.defaults.font.family = 'Noto Sans, Arial, sans-serif';
+  Chart.defaults.font.size = 12;
+
+  // Helpers: semana ISO (YYYY-Www)
+  function isoWeekKey(dateStr){
+    const d=new Date(dateStr);
+    // jueves de la semana ISO
+    const day = (d.getDay()+6)%7;
+    d.setDate(d.getDate()-day+3);
+    const firstThursday = new Date(d.getFullYear(),0,4);
+    const diff = d - firstThursday;
+    const week = 1 + Math.round(diff / 604800000);
+    const year = d.getFullYear();
+    return `${year}-W${String(week).padStart(2,'0')}`;
+  }
+  function sortWeekKeys(a,b){
+    const [ya,wa]=a.split('-W').map(Number);
+    const [yb,wb]=b.split('-W').map(Number);
+    return ya===yb ? wa-wb : ya-yb;
+  }
+
+  function renderCharts(rows){
+    // Instalaciones por semana
+    const byWeek={};
+    rows.forEach(r=>{
+      const wk=isoWeekKey(r.fecha_instalacion);
+      byWeek[wk]=(byWeek[wk]||0)+1;
+    });
+    const labels=Object.keys(byWeek).sort(sortWeekKeys);
+    const counts=labels.map(k=>byWeek[k]);
+    const cfg1={type:'bar',data:{labels,datasets:[{label:'Instalaciones',data:counts,backgroundColor:getCss('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
+    if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),cfg1);} else { chart1.data.labels=labels; chart1.data.datasets[0].data=counts; chart1.update(); }
+
+    // Ahorro promedio por modelo (igual que antes)
+    const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
+    const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
+    const cfg2={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
+    if(!chart2){ chart2=new Chart(document.getElementById('chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
+  }
+
+  /* ====== TABLAS ====== */
+  let dt;
+  function renderTable(rows){
+    const columns=[
+      {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
+      {title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
+      {title:'Estatus',data:'estatus'},{title:'Instalada',data:'fecha_instalacion'},
+      {title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},
+      {title:'Ahorro (kg/mes)',data:'ahorro'}
     ];
-    const FACTOR_EMISION_CO2_KG_POR_KG = 1.83;
-  </script>
+    const data=rows.map(r=>({
+      id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,estatus:r.estatus,
+      fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),
+      garantia_fin:new Date(r.garantia_fin).toLocaleDateString('es-MX'),
+      visita_ult_fecha:new Date(r.visita_ult_fecha).toLocaleDateString('es-MX'),
+      ahorro:Math.max(0,r.consumo_base-r.consumo_post)
+    }));
+    if(dt){ dt.clear(); dt.rows.add(data).draw(); }
+    else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
+  }
 
-  <!-- ================== LÓGICA ================== -->
-  <script>
-    const $ = s=>document.querySelector(s);
-    const fmt = n=> n.toLocaleString('es-MX');
-    const year = d=> new Date(d).getFullYear();
+  /* ====== Localidades / Ranking + KPI de censo ====== */
+  function initTablesYKPICenso(){
+    // KPI "Hogares que quieren estufa (censo)" se calcula con este fetch:
+    fetch('estufas_agg_localidad_detalle.json')
+      .then(r => r.json())
+      .then(rows => {
+        const totalQuiere = rows.reduce((a,r)=> a + Number(r.quiere_estufa||0), 0);
+        $('#k_quiere_estufa').textContent = totalQuiere.toLocaleString('es-MX');
 
-    function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort()}
-    function fillSelect(id,values){const el=$(id);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
-
-    function bootstrapFilters(){
-      fillSelect('#f_programa', unique(DATA,'programa'));
-      fillSelect('#f_proveedor', unique(DATA,'proveedor'));
-      fillSelect('#f_modelo', unique(DATA,'modelo'));
-      fillSelect('#f_entidad', unique(DATA,'entidad'));
-      fillSelect('#f_anio', [...new Set(DATA.map(d=>year(d.fecha_instalacion)))].sort());
-    }
-    function getFilters(){return{programa:$('#f_programa').value,proveedor:$('#f_proveedor').value,modelo:$('#f_modelo').value,entidad:$('#f_entidad').value,estatus:$('#f_estatus').value,anio:$('#f_anio').value}}
-    function applyFilters(data){const f=getFilters();return data.filter(d=>(!f.programa||d.programa===f.programa)&&(!f.proveedor||d.proveedor===f.proveedor)&&(!f.modelo||d.modelo===f.modelo)&&(!f.entidad||d.entidad===f.entidad)&&(!f.estatus||d.estatus===f.estatus)&&(!f.anio||year(d.fecha_instalacion)==+f.anio))}
-
-    function renderKPIs(rows){
-      const total=rows.length; const hogares=total;
-      const ahorroLenia=rows.reduce((a,r)=>a+Math.max(0,(r.consumo_base-r.consumo_post)),0);
-      const co2=(ahorroLenia*12*FACTOR_EMISION_CO2_KG_POR_KG)/1000;
-      const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
-      $('#k_estufas').textContent=fmt(total);
-      $('#k_hogares').textContent=fmt(hogares);
-      $('#k_co2').textContent=co2.toFixed(1);
-      $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
-    }
-
-    /* ====== MAPA ====== */
-    let map, layer, muniLayer;
-
-    function loadMunicipios(){
-      fetch('estufas_municipios.geojson')
-        .then(r => r.json())
-        .then(geo => {
-          if(muniLayer){ map.removeLayer(muniLayer); }
-          muniLayer = L.geoJSON(geo, {
-            style: f => {
-              const p = f.properties || {};
-              const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
-              const fill = ratio > 0.95 ? '#bd0026' :
-                           ratio > 0.90 ? '#f03b20' :
-                           ratio > 0.85 ? '#fd8d3c' :
-                           ratio > 0.80 ? '#feb24c' :
-                                          '#fed976';
-              return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:fill };
-            },
-            onEachFeature: (feature, layer) => {
-              const p = feature.properties || {};
-              const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
-              layer.bindPopup(
-                `<b>${p.MUNICIPIO}, ${p.ENTIDAD}</b><br>
-                 Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
-                 Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
-              );
-            }
-          }).addTo(map);
-          try { map.fitBounds(muniLayer.getBounds().pad(0.2)); } catch(e){}
-        })
-        .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
-    }
-
-    function getCss(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
-
-    function renderMap(rows){
-      if(!map){
-        map=L.map('map').setView([22.5,-102],5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-        loadMunicipios();
-      }
-      if(layer) layer.remove();
-      layer=L.layerGroup().addTo(map);
-
-      rows.forEach(r=>{
-        const color = r.estatus==='Instalada'     ? getCss('--guinda') :
-                      r.estatus==='En seguimiento'? getCss('--dorado') :
-                      r.estatus==='Garantía'      ? getCss('--verde')  :
-                                                   '#d62728';
-        const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
-        L.marker([r.lat,r.lng],{icon}).addTo(layer)
-          .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
+        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
+        new DataTable('#tablaLocalidades', {
+          data: rows,
+          columns: [
+            { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'Localidad', data: 'LOCALIDAD' },
+            { title: 'Hogares', data: 'hogares' },
+            { title: 'Quiere estufa', data: 'quiere_estufa' },
+            { title: '% Quiere', data: 'porc_quiere' }
+          ],
+          pageLength: 10,
+          responsive: true
+        });
       });
 
-      try{
-        const b=L.latLngBounds(rows.map(r=>[r.lat,r.lng]));
-        if(rows.length) map.fitBounds(b.pad(0.2));
-      }catch(e){}
-    }
-
-    /* ====== GRÁFICAS ====== */
-    let chart1, chart2;
-    function chartDefaults(){
-      Chart.defaults.color = getCss('--azul');
-      Chart.defaults.font.family = 'Noto Sans, Arial, sans-serif';
-      Chart.defaults.font.size = 12; /* ≈ 11pt */
-    }
-    chartDefaults();
-
-    function renderCharts(rows){
-      const byYear={}; rows.forEach(r=>{const y=year(r.fecha_instalacion); byYear[y]=(byYear[y]||0)+1});
-      const ys=Object.keys(byYear).sort(); const cs=ys.map(y=>byYear[y]);
-      const c1Cfg={type:'bar',data:{labels:ys,datasets:[{label:'Instalaciones',data:cs,backgroundColor:getCss('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
-      if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),c1Cfg);} else { chart1.data.labels=ys; chart1.data.datasets[0].data=cs; chart1.update(); }
-
-      const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
-      const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
-      const c2Cfg={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
-      if(!chart2){ chart2=new Chart(document.getElementById('chartAhorro'),c2Cfg);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
-    }
-
-    /* ====== TABLAS ====== */
-    let dt;
-    function renderTable(rows){
-      const columns=[
-        {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
-        {title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
-        {title:'Estatus',data:'estatus'},{title:'Instalada',data:'fecha_instalacion'},
-        {title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},
-        {title:'Ahorro (kg/mes)',data:'ahorro'}
-      ];
-      const data=rows.map(r=>({
-        id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,estatus:r.estatus,
-        fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),
-        garantia_fin:new Date(r.garantia_fin).toLocaleDateString('es-MX'),
-        visita_ult_fecha:new Date(r.visita_ult_fecha).toLocaleDateString('es-MX'),
-        ahorro:Math.max(0,r.consumo_base-r.consumo_post)
-      }));
-      if(dt){ dt.clear(); dt.rows.add(data).draw(); }
-      else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
-    }
-
-    /* ====== SECCIÓN DETALLE (Localidades / Ranking) ====== */
-    function initTables(){
-      fetch('estufas_agg_localidad_detalle.json')
-        .then(r => r.json())
-        .then(rows => {
-          rows.forEach(r => {
-            r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
-          });
-          new DataTable('#tablaLocalidades', {
-            data: rows,
-            columns: [
-              { title: 'Entidad', data: 'ENTIDAD' },
-              { title: 'Municipio', data: 'MUNICIPIO' },
-              { title: 'Localidad', data: 'LOCALIDAD' },
-              { title: 'Hogares', data: 'hogares' },
-              { title: 'Quiere estufa', data: 'quiere_estufa' },
-              { title: '% Quiere', data: 'porc_quiere' }
-            ],
-            pageLength: 10,
-            responsive: true
-          });
+    fetch('ranking_priorizacion_municipio.json')
+      .then(r => r.json())
+      .then(rows => {
+        rows.forEach(r => {
+          r.porc_quiere   = (Number(r.porc_quiere||0)*100).toFixed(1);
+          r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
         });
-
-      fetch('ranking_priorizacion_municipio.json')
-        .then(r => r.json())
-        .then(rows => {
-          rows.forEach(r => {
-            r.porc_quiere   = (Number(r.porc_quiere||0)*100).toFixed(1);
-            r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
-          });
-          new DataTable('#tablaRanking', {
-            data: rows,
-            columns: [
-              { title: 'Entidad', data: 'ENTIDAD' },
-              { title: 'Municipio', data: 'MUNICIPIO' },
-              { title: 'Hogares', data: 'hogares' },
-              { title: 'Quiere estufa', data: 'quiere_estufa' },
-              { title: '% Quiere', data: 'porc_quiere' },
-              { title: '% No-buena', data: 'porc_no_buena' },
-              { title: 'Score', data: 'score_prior' }
-            ],
-            order: [[6,'desc']],
-            pageLength: 8,
-            responsive: true
-          });
+        new DataTable('#tablaRanking', {
+          data: rows,
+          columns: [
+            { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'Hogares', data: 'hogares' },
+            { title: 'Quiere estufa', data: 'quiere_estufa' },
+            { title: '% Quiere', data: 'porc_quiere' },
+            { title: '% No-buena', data: 'porc_no_buena' },
+            { title: 'Score', data: 'score_prior' }
+          ],
+          order: [[6,'desc']],
+          pageLength: 8,
+          responsive: true
         });
-    }
+      });
+  }
 
-    function refresh(){
-      const rows=applyFilters(DATA);
-      renderKPIs(rows);
-      renderMap(rows);
-      renderCharts(rows);
-      renderTable(rows);
-    }
+  function refresh(){
+    const rows=applyFilters(DATA);
+    renderKPIs(rows);
+    renderMap(rows);
+    renderCharts(rows);
+    renderTable(rows);
+  }
 
-    bootstrapFilters();
-    ['#f_programa','#f_proveedor','#f_modelo','#f_entidad','#f_estatus','#f_anio']
-      .forEach(s=>document.querySelector(s).addEventListener('change',refresh));
+  bootstrapFilters();
+  ['#f_programa','#f_proveedor','#f_modelo','#f_entidad','#f_estatus','#f_anio']
+    .forEach(s=>document.querySelector(s).addEventListener('change',refresh));
 
-    refresh();
-    initTables();
+  refresh();
+  initTablesYKPICenso();
 
-    /* Leyenda de municipios */
-    (function addLegend(){
-      if(!window.L) return;
-      const legend = L.control({position: 'bottomright'});
-      legend.onAdd = function () {
-        const div = L.DomUtil.create('div', 'info legend');
-        div.style.background = '#fff';
-        div.style.padding = '8px 10px';
-        div.style.border = '1px solid var(--borde)';
-        div.style.borderRadius = '8px';
-        div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-        div.innerHTML = '<b>Leyenda</b><br>'
-          + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
-          + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
-          + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
-          + '<span style="display:inline-block;width:12px;height:12px;background:#f03b20;margin-right:6px;border:1px solid #ccc"></span> 90–95%<br>'
-          + '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%';
-        return div;
-      };
-      setTimeout(()=>legend.addTo(map),1000);
-    })();
-  </script>
+  // Leyenda del mapa
+  (function addLegend(){
+    if(!window.L) return;
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'info legend');
+      div.style.background = '#fff';
+      div.style.padding = '8px 10px';
+      div.style.border = '1px solid var(--borde)';
+      div.style.borderRadius = '8px';
+      div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
+      div.innerHTML = '<b>Leyenda</b><br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#f03b20;margin-right:6px;border:1px solid #ccc"></span> 90–95%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%';
+      return div;
+    };
+    setTimeout(()=>legend.addTo(map),1000);
+  })();
+</script>
 </body>
 </html>
