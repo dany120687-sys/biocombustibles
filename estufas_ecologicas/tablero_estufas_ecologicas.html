@@ -20,7 +20,7 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- PapaParse para leer CSV en el navegador -->
+  <!-- PapaParse para leer CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
@@ -146,7 +146,7 @@
   <footer>Energia 2025. Dirección General de Energías Renovables</footer>
 </main>
 
-<!-- ===== Datos demo (los mismos) ===== -->
+<!-- ===== Datos demo (instalaciones) ===== -->
 <script>
   const DATA = [
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
@@ -165,9 +165,6 @@
   const year = d=> new Date(d).getFullYear();
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-  // NUEVO: sobreescritura para KPI "Hogares beneficiados"
-  let KPI_HOGARES_OVERRIDE = null;
-
   function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort()}
   function fillSelect(id,values){const el=$(id);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
 
@@ -183,11 +180,11 @@
 
   function renderKPIs(rows){
     const total=rows.length;
-    const hogares= (KPI_HOGARES_OVERRIDE!=null) ? KPI_HOGARES_OVERRIDE : total; // <-- usa override si está
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
     $('#k_estufas').textContent=fmt(total);
-    $('#k_hogares').textContent=fmt(hogares);
+    $('#k_hogares').textContent=fmt(total); // demo
     $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
+    // #k_quiere_estufa lo pone el CSV del censo (ver más abajo)
   }
 
   /* ====== MAPA ====== */
@@ -253,10 +250,9 @@
   Chart.defaults.font.family = 'Noto Sans, Arial, sans-serif';
   Chart.defaults.font.size = 12;
 
-  // Helpers: semana ISO (YYYY-Www)
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
-    const day = (d.getDay()+6)%7; // jueves ISO
+    const day = (d.getDay()+6)%7;
     d.setDate(d.getDate()-day+3);
     const firstThursday = new Date(d.getFullYear(),0,4);
     const diff = d - firstThursday;
@@ -271,7 +267,6 @@
   }
 
   function renderCharts(rows){
-    // Instalaciones por semana
     const byWeek={};
     rows.forEach(r=>{
       const wk=isoWeekKey(r.fecha_instalacion);
@@ -282,7 +277,6 @@
     const cfg1={type:'bar',data:{labels,datasets:[{label:'Instalaciones',data:counts,backgroundColor:getCss('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
     if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),cfg1);} else { chart1.data.labels=labels; chart1.data.datasets[0].data=counts; chart1.update(); }
 
-    // Ahorro promedio por modelo
     const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
     const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
     const cfg2={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
@@ -310,15 +304,11 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
-  /* ====== Localidades / Ranking + KPI de censo ====== */
-  function initTablesYKPICenso(){
-    // KPI "Hogares que quieren estufa (censo)" (se mantiene)
+  /* ====== Localidades / Ranking ====== */
+  function initTablasCenso(){
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
-        const totalQuiere = rows.reduce((a,r)=> a + Number(r.quiere_estufa||0), 0);
-        $('#k_quiere_estufa').textContent = totalQuiere.toLocaleString('es-MX');
-
         rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
         new DataTable('#tablaLocalidades', {
           data: rows,
@@ -373,7 +363,7 @@
     .forEach(s=>document.querySelector(s).addEventListener('change',refresh));
 
   refresh();
-  initTablesYKPICenso();
+  initTablasCenso();
 
   // Leyenda del mapa
   (function addLegend(){
@@ -397,24 +387,48 @@
     setTimeout(()=>legend.addTo(map),1000);
   })();
 
-  /* ======= NUEVO: leer Censo_estufas.csv y poner la suma de Grupo_Prioritario_SENER_REMBIO en "Hogares beneficiados" ======= */
+  /* ========= KPI “Hogares que quieren estufa (censo)” DESDE Censo_estufas.csv ========= */
+  // Encuentra una columna con nombre similar a "Grupo_Prioritario_SENER_REMBIO"
+  function normaliza(s){
+    return (s||'').toString().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // sin acentos
+      .replace(/[^a-z0-9]/g,''); // sin espacios/guiones
+  }
+  function encuentraColumna(headers){
+    const objetivo = 'grupoprioritariosenerrembio';
+    let mejor = null;
+    headers.forEach(h=>{
+      const n = normaliza(h);
+      if(n===objetivo) mejor = h;
+    });
+    if(mejor) return mejor;
+    // heurística: que contenga “grupo” y “rembio”
+    headers.forEach(h=>{
+      const n = normaliza(h);
+      if(n.includes('grupo') && n.includes('rembio')) mejor = h;
+    });
+    return mejor;
+  }
+
   Papa.parse('Censo_estufas.csv', {
     download: true,
     header: true,
     skipEmptyLines: true,
     complete: (result) => {
       const rows = result.data || [];
-      const col = 'Grupo_Prioritario_SENER_REMBIO';
-      const suma = rows.reduce((acc, r) => {
-        const val = (r[col] ?? '').toString().replace(/,/g,'').trim();
-        const n = Number(val);
-        return acc + (isFinite(n) ? n : 0);
-      }, 0);
+      const headers = result.meta && result.meta.fields ? result.meta.fields : Object.keys(rows[0]||{});
+      const col = encuentraColumna(headers);
 
-      KPI_HOGARES_OVERRIDE = suma;
-      // refrescamos KPIs para reflejarlo aunque existan filtros
-      const filtered = applyFilters(DATA);
-      renderKPIs(filtered);
+      let suma = 0;
+      if(col){
+        suma = rows.reduce((acc, r) => {
+          const val = (r[col] ?? '').toString().replace(/,/g,'').trim();
+          const n = Number(val);
+          return acc + (isFinite(n) ? n : 0);
+        }, 0);
+      }
+      // KPI correcto (el de 21,810)
+      $('#k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
     },
     error: (err) => {
       console.error('Error al leer Censo_estufas.csv:', err);
