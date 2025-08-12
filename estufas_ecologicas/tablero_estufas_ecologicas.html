@@ -21,13 +21,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
   <style>
-    /* ===== Paleta institucional (HEX) =====
-       Guinda 7420C #9F2241  | Guinda oscura 7421C #691C32
-       Azul petróleo 627C #10312B
-       Dorado 465C #BC955C   | Beige 468C #DDC9A3
-       Gris 424C #6F7271     | Cool Gray 7C #98989A
-       Verde 7742C (60%) #8FAB85
-    */
+    /* ===== Paleta institucional (HEX) ===== */
     :root{
       --guinda:#9F2241;
       --guinda-osc:#691C32;
@@ -52,15 +46,46 @@
       background:var(--fondo);
     }
 
+    /* ====== Encabezado ====== */
     header{
       background:var(--azul);
       color:#fff;
       padding:18px 24px;
       display:flex; gap:16px; align-items:center;
       box-shadow:0 2px 8px rgba(0,0,0,.08);
+      position:relative;            /* importante para posicionar la franja de logos */
+      overflow:visible;
     }
     .brand{font-size:22px;font-weight:800}
     .brand small{display:block;font-weight:600;opacity:.9}
+
+    /* Franja de logos a la derecha con FONDO BLANCO */
+    .logo-strip{
+      position:absolute;
+      right:16px;
+      top:10px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:#fff;               /* fondo blanco solicitado */
+      padding:8px 12px;
+      border-radius:10px;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+      max-width:60vw;
+    }
+    .logo-strip img{
+      height:28px;                   /* alto uniforme */
+      width:auto;
+      display:block;
+      background:#fff;               /* cada logo también con fondo blanco */
+      padding:2px 4px;
+      border-radius:6px;
+    }
+
+    /* Responsive: ocultar logos si la pantalla es angosta */
+    @media (max-width:900px){
+      .logo-strip{display:none;}
+    }
 
     .container{max-width:1200px;margin:24px auto;padding:0 16px}
 
@@ -115,6 +140,15 @@
     <div class="brand">
       DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS
       <small>Tablero de Estufas Ecológicas · MVP</small>
+    </div>
+
+    <!-- ==== FRANJA DE LOGOS (FONDO BLANCO) ==== -->
+    <div class="logo-strip" aria-label="Dependencias participantes">
+      <!-- Ajusta los src a tus rutas reales en GitHub/Vercel -->
+      <img src="1. SENER.png"      alt="Energía">
+      <img src="2. BIENESTAR.png"  alt="Bienestar">
+      <img src="3. Logo_Ciencia.png" alt="Ciencia y Tecnología">
+      <img src="4. INPI.png"       alt="INPI">
     </div>
   </header>
 
@@ -236,7 +270,7 @@
                            ratio > 0.85 ? '#fd8d3c' :
                            ratio > 0.80 ? '#feb24c' :
                                           '#fed976';
-              return { color:varGet('--azul'), weight:1, fillOpacity:0.6, fillColor:fill };
+              return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:fill };
             },
             onEachFeature: (feature, layer) => {
               const p = feature.properties || {};
@@ -253,7 +287,7 @@
         .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
     }
 
-    function varGet(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
+    function getCss(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
 
     function renderMap(rows){
       if(!map){
@@ -265,9 +299,9 @@
       layer=L.layerGroup().addTo(map);
 
       rows.forEach(r=>{
-        const color = r.estatus==='Instalada'     ? varGet('--guinda') :
-                      r.estatus==='En seguimiento'? varGet('--dorado') :
-                      r.estatus==='Garantía'      ? varGet('--verde')  :
+        const color = r.estatus==='Instalada'     ? getCss('--guinda') :
+                      r.estatus==='En seguimiento'? getCss('--dorado') :
+                      r.estatus==='Garantía'      ? getCss('--verde')  :
                                                    '#d62728';
         const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
         L.marker([r.lat,r.lng],{icon}).addTo(layer)
@@ -283,7 +317,7 @@
     /* ====== GRÁFICAS ====== */
     let chart1, chart2;
     function chartDefaults(){
-      Chart.defaults.color = varGet('--azul');
+      Chart.defaults.color = getCss('--azul');
       Chart.defaults.font.family = 'Noto Sans, Arial, sans-serif';
       Chart.defaults.font.size = 12; /* ≈ 11pt */
     }
@@ -292,12 +326,12 @@
     function renderCharts(rows){
       const byYear={}; rows.forEach(r=>{const y=year(r.fecha_instalacion); byYear[y]=(byYear[y]||0)+1});
       const ys=Object.keys(byYear).sort(); const cs=ys.map(y=>byYear[y]);
-      const c1Cfg={type:'bar',data:{labels:ys,datasets:[{label:'Instalaciones',data:cs,backgroundColor:varGet('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
+      const c1Cfg={type:'bar',data:{labels:ys,datasets:[{label:'Instalaciones',data:cs,backgroundColor:getCss('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
       if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),c1Cfg);} else { chart1.data.labels=ys; chart1.data.datasets[0].data=cs; chart1.update(); }
 
       const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
       const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
-      const c2Cfg={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:varGet('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
+      const c2Cfg={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
       if(!chart2){ chart2=new Chart(document.getElementById('chartAhorro'),c2Cfg);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
     }
 
