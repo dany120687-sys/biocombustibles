@@ -284,16 +284,13 @@ function loadMunicipios(){
         new DataTable('#tablaLocalidades', {
           data: rows,
           columns: [
-            { title: 'CVE Ent', data: 'CVEENTIDAD' },
             { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'CVE Mun', data: 'CVEMUN' },
             { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'CVE Loc', data: 'CVELOCALIDAD' },
             { title: 'Localidad', data: 'LOCALIDAD' },
             { title: 'Hogares', data: 'hogares' },
             { title: 'Quiere estufa', data: 'quiere_estufa' },
             { title: '% Quiere', data: 'porc_quiere' }
-          ],
+    ],
           pageLength: 10,
           responsive: true
         });
