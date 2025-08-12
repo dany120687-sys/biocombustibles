@@ -1,21 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tablero de Estufas Ecológicas · DGEL</title>
-  <!-- Tipografías -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- DataTables -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Tablero de Estufas Ecológicas · DGEL</title>
+<!-- Tipografías -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Leaflet -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- DataTables -->
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<style>
     :root{
       --azul:#0c3b6c; --gris:#f3f5f7; --texto:#1b1f29; --borde:#eaecf0; --dorado:#D48232;
     }
@@ -60,78 +61,54 @@
       .gallery{grid-template-columns:1fr 1fr}
     }
   </style>
-
-  <style>
-    #map { background:#fff; }
-    .leaflet-container { z-index: 0; }
-    .info.legend { z-index: 400; }
-  </style>
-
 </head>
 <body>
-  <header>
-    <div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
-    <div class="brand">DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS <small>Tablero de Estufas Ecológicas · MVP</small></div>
-  </header>
-  <main class="container">
-    <!-- FILTROS -->
-    <section class="card">
-      <div class="filters">
-        <div><label>Programa</label><select id="f_programa"><option value="">Todos</option></select></div>
-        <div><label>Proveedor</label><select id="f_proveedor"><option value="">Todos</option></select></div>
-        <div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
-        <div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
-        <div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
-        <div><label>Año</label><select id="f_anio"><option value="">Todos</option></select></div>
-      </div>
-    </section>
-
-    <!-- KPIs -->
-    <section class="kpis">
-      <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
-      <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
-      <div class="kpi"><div class="label">t CO₂e evitadas (estimadas)</div><div class="value" id="k_co2">–</div></div>
-      <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
-    </section>
-
-    <!-- MAPA + PANEL -->
-    <section class="layout">
-      <div class="card">
-        <h2>Mapa de instalaciones</h2>
-        <div id="map"
-  <!-- ======= Sección de datos detallados ======= -->
-  
-></div>
-        <!-- Galería fotos justo debajo del mapa -->
-        <h3 style="margin:12px 0 6px">Galería fotográfica del programa</h3>
-        <div class="gallery" id="gallery">
-          <figure class="thumb"><img src="./estufa_1.jpg" alt="Instalación de estufa"><figcaption>Instalación y capacitación en sitio</figcaption></figure>
-          <figure class="thumb"><img src="./estufa_2.jpg" alt="Encendido de prueba"><figcaption>Encendido de prueba y verificación de tiraje</figcaption></figure>
-          <figure class="thumb"><img src="./estufa_3.jpg" alt="Taller con promotores"><figcaption>Taller con promotores del programa</figcaption></figure>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
-        <div class="card" style="height:220px"><h2>Instalaciones por año</h2><canvas id="chartInstalaciones"></canvas></div>
-        <div class="card" style="height:220px"><h2>Ahorro de leña (kg/mes) promedio por modelo</h2><canvas id="chartAhorro"></canvas></div>
-        <div class="card" style="overflow:auto"><h2>Bitácora (tabla)</h2><table id="tabla" class="display" style="width:100%"></table></div>
-      </div>
-    </section>
-
-    <footer>Identidad visual: Noto Sans · Fondo blanco · Paleta institucional · MVP estático listo para Vercel</footer>
-  <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 16px">
-    <div class="card" style="background:#f7f8fa;border:1px solid #eaecf0;border-radius:12px;padding:14px;margin-bottom:16px">
-      <h2 style="margin:0 0 10px;font-size:18px">Tabla de Localidades (Censo)</h2>
-      <table id="tablaLocalidades" class="display" style="width:100%"></table>
-    </div>
-    <div class="card" style="background:#f7f8fa;border:1px solid #eaecf0;border-radius:12px;padding:14px">
-      <h2 style="margin:0 0 10px;font-size:18px">Priorización por Municipio (Score)</h2>
-      <table id="tablaRanking" class="display" style="width:100%"></table>
-    </div>
-  </section>
+<header>
+<div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
+<div class="brand">DIRECCIÓN GENERAL DE ENERGÍAS LIMPIAS <small>Tablero de Estufas Ecológicas · MVP</small></div>
+</header>
+<main class="container">
+<!-- FILTROS -->
+<section class="card">
+<div class="filters">
+<div><label>Programa</label><select id="f_programa"><option value="">Todos</option></select></div>
+<div><label>Proveedor</label><select id="f_proveedor"><option value="">Todos</option></select></div>
+<div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
+<div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
+<div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
+<div><label>Año</label><select id="f_anio"><option value="">Todos</option></select></div>
+</div>
+</section>
+<!-- KPIs -->
+<section class="kpis">
+<div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
+<div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
+<div class="kpi"><div class="label">t CO₂e evitadas (estimadas)</div><div class="value" id="k_co2">–</div></div>
+<div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
+</section>
+<!-- MAPA + PANEL -->
+<section class="layout">
+<div class="card">
+<h2>Mapa de instalaciones</h2>
+<div id="map"></div>
+<!-- Galería fotos justo debajo del mapa -->
+<h3 style="margin:12px 0 6px">Galería fotográfica del programa</h3>
+<div class="gallery" id="gallery">
+<figure class="thumb"><img alt="Instalación de estufa" src="./estufa_1.jpg"/><figcaption>Instalación y capacitación en sitio</figcaption></figure>
+<figure class="thumb"><img alt="Encendido de prueba" src="./estufa_2.jpg"/><figcaption>Encendido de prueba y verificación de tiraje</figcaption></figure>
+<figure class="thumb"><img alt="Taller con promotores" src="./estufa_3.jpg"/><figcaption>Taller con promotores del programa</figcaption></figure>
+</div>
+</div>
+<div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
+<div class="card" style="height:220px"><h2>Instalaciones por año</h2><canvas id="chartInstalaciones"></canvas></div>
+<div class="card" style="height:220px"><h2>Ahorro de leña (kg/mes) promedio por modelo</h2><canvas id="chartAhorro"></canvas></div>
+<div class="card" style="overflow:auto"><h2>Bitácora (tabla)</h2><table class="display" id="tabla" style="width:100%"></table></div>
+</div>
+</section>
+<footer>Identidad visual: Noto Sans · Fondo blanco · Paleta institucional · MVP estático listo para Vercel</footer>
 </main>
-
-  <!-- ======================== DATOS FICTICIOS ======================== -->
-  <script>
+<!-- ======================== DATOS FICTICIOS ======================== -->
+<script>
     const DATA = [
       {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
       {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Jalisco", municipio:"Zapopan", lat:20.732, lng:-103.384, estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
@@ -143,9 +120,8 @@
     ];
     const FACTOR_EMISION_CO2_KG_POR_KG = 1.83;
   </script>
-
-  <!-- ======================== LÓGICA ======================== -->
-  <script>
+<!-- ======================== LÓGICA ======================== -->
+<script>
     const $ = s=>document.querySelector(s);
     const fmt = n=> n.toLocaleString('es-MX');
     const year = d=> new Date(d).getFullYear();
@@ -199,7 +175,7 @@ function loadMunicipios(){
             `<b>${p.MUNICIPIO}, ${p.ENTIDAD}</b><br>
              Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
              Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)<br>
-`
+             Eficiente reportada: ${Number(p.tienen_eficiente||0).toLocaleString('es-MX')}`
           );
         }
       }).addTo(map);
@@ -244,96 +220,27 @@ function loadMunicipios(){
   </script>
 
 <script>
-  // Leyenda de colores para el mapa (rango por % de hogares que quieren estufa)
-  function addLegend(){
-    if(typeof L === 'undefined' || !window.map) return;
-    const legend = L.control({position: 'bottomright'});
-    legend.onAdd = function () {
-      const div = L.DomUtil.create('div', 'info legend');
-      div.style.background = '#fff';
-      div.style.padding = '8px 10px';
-      div.style.border = '1px solid #ddd';
-      div.style.borderRadius = '8px';
-      div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-      const grades = [0.80, 0.85, 0.90, 0.95];
-      const labels = [
-        '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%',
-        '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%',
-        '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%',
-        '<span style="display:inline-block;width:12px;height:12px;background:#f03b20;margin-right:6px;border:1px solid #ccc"></span> 90–95%',
-        '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%'
-      ];
-      div.innerHTML = '<b>Leyenda</b><br>' + labels.join('<br>');
-      return div;
-    };
-    legend.addTo(map);
-  }
-
-  // Inicializar tablas con DataTables
-  function initTables(){
-    // Localidades
-    fetch('estufas_agg_localidad_detalle.json')
-      .then(r => r.json())
-      .then(rows => {
-        // Derivar % que quiere
-        rows.forEach(r => {
-          const h = Number(r.hogares||0);
-          const q = Number(r.quiere_estufa||0);
-          r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
-        });
-        new DataTable('#tablaLocalidades', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Localidad', data: 'LOCALIDAD' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' }
-    ],
-          pageLength: 10,
-          responsive: true
-        });
-      })
-      .catch(err => console.error('No se pudo cargar estufas_agg_localidad_detalle.json', err));
-
-    // Ranking
-    fetch('ranking_priorizacion_municipio.json')
-      .then(r => r.json())
-      .then(rows => {
-        rows.forEach(r => {
-          r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1);
-          r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
-        });
-        new DataTable('#tablaRanking', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' },
-            { title: '% No-buena', data: 'porc_no_buena' },
-            { title: 'Score', data: 'score_prior' }
-          ],
-          order: [[6,'desc']],
-          pageLength: 8,
-          responsive: true
-        });
-      })
-      .catch(err => console.error('No se pudo cargar ranking_priorizacion_municipio.json', err));
-  }
-
-  // Hook: al crear el mapa, llamamos a addLegend() si existe 'map'
-  (function waitForMap(){
-    if (typeof map !== 'undefined') {
-      try { addLegend(); } catch(e){}
-      try { initTables(); } catch(e){}
+fetch('localidades_filtradas_mich.geojson')
+  .then(response => response.json())
+  .then(data => {
+    if (typeof L !== 'undefined' && window.mymap) {
+      L.geoJSON(data, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 4,
+            fillColor: "#ff7800",
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        }
+      }).addTo(window.mymap);
     } else {
-      setTimeout(waitForMap, 500);
+      console.error("Leaflet o el mapa no están definidos.");
     }
-  })();
+  })
+  .catch(err => console.error("Error cargando GeoJSON:", err));
 </script>
-
 </body>
 </html>
