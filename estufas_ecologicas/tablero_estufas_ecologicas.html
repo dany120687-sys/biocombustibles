@@ -20,6 +20,9 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+  <!-- PapaParse para leer CSV en el navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
     :root{
       --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
@@ -90,7 +93,7 @@
     </div>
   </section>
 
-  <!-- KPIs (CO2 reemplazado por “Hogares que quieren estufa (censo)”) -->
+  <!-- KPIs -->
   <section class="kpis">
     <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
     <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
@@ -149,7 +152,7 @@
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Guadalajara", lat:20.676, lng:-103.347, estatus:"Instalada", fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK", consumo_base:120, consumo_post:60},
     {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Jalisco", municipio:"Zapopan", lat:20.732, lng:-103.384, estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
     {id:"EST-0003", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Morelia", lat:19.705, lng:-101.194, estatus:"Garantía", fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve", consumo_base:130, consumo_post:80},
-    {id:"EST-0004", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Veracruz", municipio:"Coatepec", lat:19.454, lng:-96.958, estatus:"Instalada", fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK", consumo_base:110, consumo_post:65},
+    {id:"EST-0004", programa:"Bienestar", proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Veracruz", municipio:"Coatepec", lat:19.454, lng:-96.958, estatus:"Instalada", fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", consumo_base:110, consumo_post:65, visita_ult_hallazgo:"OK"},
     {id:"EST-0005", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Puebla", municipio:"Zacatlán", lat:19.935, lng:-97.962, estatus:"Instalada", fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK", consumo_base:140, consumo_post:75},
     {id:"EST-0006", programa:"Calor Seguro", proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Puebla", municipio:"Chignahuapan", lat:19.839, lng:-98.031, estatus:"Baja", fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa", consumo_base:115, consumo_post:115},
     {id:"EST-0007", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Jalisco", municipio:"Tlajomulco", lat:20.472, lng:-103.446, estatus:"Instalada", fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK", consumo_base:118, consumo_post:62}
@@ -161,6 +164,9 @@
   const fmt = n=> n.toLocaleString('es-MX');
   const year = d=> new Date(d).getFullYear();
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  // NUEVO: sobreescritura para KPI "Hogares beneficiados"
+  let KPI_HOGARES_OVERRIDE = null;
 
   function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort()}
   function fillSelect(id,values){const el=$(id);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
@@ -176,7 +182,8 @@
   function applyFilters(data){const f=getFilters();return data.filter(d=>(!f.programa||d.programa===f.programa)&&(!f.proveedor||d.proveedor===f.proveedor)&&(!f.modelo||d.modelo===f.modelo)&&(!f.entidad||d.entidad===f.entidad)&&(!f.estatus||d.estatus===f.estatus)&&(!f.anio||year(d.fecha_instalacion)==+f.anio))}
 
   function renderKPIs(rows){
-    const total=rows.length; const hogares=total;
+    const total=rows.length;
+    const hogares= (KPI_HOGARES_OVERRIDE!=null) ? KPI_HOGARES_OVERRIDE : total; // <-- usa override si está
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
     $('#k_estufas').textContent=fmt(total);
     $('#k_hogares').textContent=fmt(hogares);
@@ -249,8 +256,7 @@
   // Helpers: semana ISO (YYYY-Www)
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
-    // jueves de la semana ISO
-    const day = (d.getDay()+6)%7;
+    const day = (d.getDay()+6)%7; // jueves ISO
     d.setDate(d.getDate()-day+3);
     const firstThursday = new Date(d.getFullYear(),0,4);
     const diff = d - firstThursday;
@@ -276,7 +282,7 @@
     const cfg1={type:'bar',data:{labels,datasets:[{label:'Instalaciones',data:counts,backgroundColor:getCss('--guinda')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
     if(!chart1){ chart1=new Chart(document.getElementById('chartInstalaciones'),cfg1);} else { chart1.data.labels=labels; chart1.data.datasets[0].data=counts; chart1.update(); }
 
-    // Ahorro promedio por modelo (igual que antes)
+    // Ahorro promedio por modelo
     const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
     const ml=Object.keys(byModel).sort(); const av=ml.map(m=> (byModel[m].s/byModel[m].c).toFixed(1));
     const cfg2={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
@@ -306,7 +312,7 @@
 
   /* ====== Localidades / Ranking + KPI de censo ====== */
   function initTablesYKPICenso(){
-    // KPI "Hogares que quieren estufa (censo)" se calcula con este fetch:
+    // KPI "Hogares que quieren estufa (censo)" (se mantiene)
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
@@ -390,6 +396,30 @@
     };
     setTimeout(()=>legend.addTo(map),1000);
   })();
+
+  /* ======= NUEVO: leer Censo_estufas.csv y poner la suma de Grupo_Prioritario_SENER_REMBIO en "Hogares beneficiados" ======= */
+  Papa.parse('Censo_estufas.csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: (result) => {
+      const rows = result.data || [];
+      const col = 'Grupo_Prioritario_SENER_REMBIO';
+      const suma = rows.reduce((acc, r) => {
+        const val = (r[col] ?? '').toString().replace(/,/g,'').trim();
+        const n = Number(val);
+        return acc + (isFinite(n) ? n : 0);
+      }, 0);
+
+      KPI_HOGARES_OVERRIDE = suma;
+      // refrescamos KPIs para reflejarlo aunque existan filtros
+      const filtered = applyFilters(DATA);
+      renderKPIs(filtered);
+    },
+    error: (err) => {
+      console.error('Error al leer Censo_estufas.csv:', err);
+    }
+  });
 </script>
 </body>
 </html>
