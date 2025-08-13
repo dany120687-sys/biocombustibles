@@ -192,18 +192,82 @@
 <script>
   const $ = s=>document.querySelector(s);
   const fmt = n=> n.toLocaleString('es-MX');
-  const year = d=> new Date(d).getFullYear();
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-
-  // helpers
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
 
-  // combos
-  function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'))}
-  function fillSelect(id,values,allText){const el=$(id);el.innerHTML='';const opt=document.createElement('option');opt.value='';opt.textContent=allText||'Todos';el.appendChild(opt);values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op)})}
+  /* ===================== FUENTE PARA COMBOS (CSV de Vercel) ===================== */
+  let CENSO_ROWS = [];             // contenido de Censo_estufas.csv (header:true)
+  let LOC_GEO = null;              // localidades geojson (para el mapa)
+  let rowsLocalidadesAll = [];     // estufas_agg_localidad_detalle.json completo
+  let dtLocalidades = null;        // DataTable de tablaLocalidades
 
-  function bootstrapFiltersSimple(){ fillSelect('#f_modelo', unique(DATA,'modelo'), 'Todos'); }
+  const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
+  function setOptions(sel, values, firstLabel){
+    const el = document.querySelector(sel);
+    const current = el.value;
+    el.innerHTML='';
+    const optAll=document.createElement('option'); optAll.value=''; optAll.textContent=firstLabel||'Todos'; el.appendChild(optAll);
+    values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op);});
+    if(values.includes(current)) el.value=current;
+  }
+
+  function fuenteCombos(){           // devuelve filas base para armar combos
+    if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
+    // fallback: usar features del Geo si no hubo CSV
+    const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
+    return feats.map(f=>f.properties||{});
+  }
+
+  function buildEntidadFromFuente(){
+    const rows = fuenteCombos();
+    const ents = uniqSorted(rows.map(r=> r.ENTIDAD || r.entidad));
+    setOptions('#f_entidad', ents, 'Todas');
+  }
+  function cascadeMunicipios(){
+    const ent = $('#f_entidad').value;
+    const rows = fuenteCombos().filter(r => !ent || (r.ENTIDAD||r.entidad)===ent);
+    const muns = uniqSorted(rows.map(r=> r.MUNICIPIO || r.municipio));
+    setOptions('#f_municipio', muns, 'Todos');
+  }
+  function cascadeLocalidades(){
+    const ent=$('#f_entidad').value, mun=$('#f_municipio').value;
+    const rows = fuenteCombos().filter(r=>{
+      const okE=!ent || (r.ENTIDAD||r.entidad)===ent;
+      const okM=!mun || (r.MUNICIPIO||r.municipio)===mun;
+      return okE && okM;
+    });
+    const locs = uniqSorted(rows.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
+    setOptions('#f_localidad', locs, 'Todas');
+  }
+
+  // Carga CSV (Vercel o relativo)
+  function cargarCensoCSV_yCombos(){
+    Papa.parse('Censo_estufas.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
+        CENSO_ROWS = (res.data||[]).map(r=>{
+          // normaliza llaves más comunes por si vienen con mayúsculas
+          return {
+            ENTIDAD: r.ENTIDAD || r.entidad || r['Entidad'] || '',
+            MUNICIPIO: r.MUNICIPIO || r.municipio || r['Municipio'] || '',
+            LOCALIDAD: r.LOCALIDAD || r.localidad || r['Localidad'] || '',
+            ...r
+          };
+        });
+        buildEntidadFromFuente();
+        cascadeMunicipios();
+        cascadeLocalidades();
+      },
+      error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
+    });
+  }
+
+  /* ===================== FILTROS / APLICACIÓN ===================== */
+  function bootstrapFiltersSimple(){ // modelo desde DATA
+    const modelos=[...new Set(DATA.map(x=>x.modelo))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
+    setOptions('#f_modelo', modelos, 'Todos');
+  }
 
   function getFilters(){
     return{
@@ -216,7 +280,7 @@
     }
   }
 
-  // semana ISO
+  // Semana ISO
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
     const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day+3);
@@ -245,8 +309,8 @@
     $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
   }
 
-  /* ====== MAPA ====== */
-  let map, layer, muniLayer, locaAllLayer, locaFiltered, layerControl, LOC_GEO=null;
+  /* ===================== MAPA ===================== */
+  let map, layer, muniLayer, locaAllLayer, locaFiltered, layerControl;
 
   function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
@@ -276,7 +340,7 @@
           }
         });
 
-        // Activar Municipios y fijar la vista inicial a su extensión
+        // Fija vista a municipios al iniciar
         muniLayer.addTo(map);
         if (!window.__fittedMunicipios && muniLayer.getLayers().length){
           try{
@@ -284,7 +348,6 @@
             window.__fittedMunicipios = true;
           }catch(e){}
         }
-
         if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
@@ -325,8 +388,10 @@
       });
       if(layerControl) layerControl.addBaseLayer(locaAllLayer,'Localidades');
 
-      // combos en cascada
-      buildEntidadFromGeo(); cascadeMunicipios(); cascadeLocalidades(); buildWeeksFromData();
+      // Combos desde CSV si existe; si no, desde Geo
+      if(!(CENSO_ROWS && CENSO_ROWS.length)){
+        buildEntidadFromFuente(); cascadeMunicipios(); cascadeLocalidades();
+      }
     }catch(err){
       console.error(err);
       alert('No se pudo cargar la capa de Localidades.\nVerifica nombre/ubicación del archivo.');
@@ -355,42 +420,6 @@
     });
   }
 
-  // ===== Combos en cascada desde LOC_GEO =====
-  const uniqSorted = arr => [...new Set(arr)].filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
-  function setOptions(sel, values, firstLabel){
-    const el = document.querySelector(sel);
-    const current = el.value;
-    el.innerHTML='';
-    const optAll=document.createElement('option'); optAll.value=''; optAll.textContent=firstLabel||'Todos'; el.appendChild(optAll);
-    values.forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v;el.appendChild(op);});
-    if(values.includes(current)) el.value=current;
-  }
-  function allFeatures(){return (LOC_GEO && Array.isArray(LOC_GEO.features))? LOC_GEO.features : []}
-
-  function buildEntidadFromGeo(){
-    const ents = uniqSorted(allFeatures().map(f=>gProp(f.properties,'ENTIDAD','entidad')));
-    setOptions('#f_entidad', ents, 'Todas');
-  }
-  function cascadeMunicipios(){
-    const ent=$('#f_entidad').value;
-    const muns = uniqSorted(allFeatures()
-      .filter(f=>!ent || gProp(f.properties,'ENTIDAD','entidad')===ent)
-      .map(f=>gProp(f.properties,'MUNICIPIO','municipio')));
-    setOptions('#f_municipio', muns, 'Todos');
-  }
-  function cascadeLocalidades(){
-    const ent=$('#f_entidad').value, mun=$('#f_municipio').value;
-    const locs = uniqSorted(allFeatures()
-      .filter(f=>{
-        const p=f.properties||{};
-        const okEnt=!ent || gProp(p,'ENTIDAD','entidad')===ent;
-        const okMun=!mun || gProp(p,'MUNICIPIO','municipio')===mun;
-        return okEnt && okMun;
-      })
-      .map(f=>gProp(f.properties,'LOCALIDAD','localidad','NOM_LOC')));
-    setOptions('#f_localidad', locs, 'Todas');
-  }
-
   // Mostrar localidades filtradas en el mapa y alternar capas
   function showLocalidadesFiltered(){
     if(!LOC_GEO || !map) return;
@@ -403,9 +432,10 @@
     if(locaAllLayer && !map.hasLayer(locaAllLayer)) map.addLayer(locaAllLayer);
     if(muniLayer && map.hasLayer(muniLayer)) map.removeLayer(muniLayer);
 
+    const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     const subset = {
       type:'FeatureCollection',
-      features: allFeatures().filter(f=>{
+      features: feats.filter(f=>{
         const p=f.properties||{};
         const okEnt=!ent || gProp(p,'ENTIDAD','entidad')===ent;
         const okMun=!mun || gProp(p,'MUNICIPIO','municipio')===mun;
@@ -421,7 +451,7 @@
     try{ map.fitBounds(locaFiltered.getBounds(),{maxZoom:13,padding:[20,20]}); }catch(e){}
   }
 
-  /* ====== GRÁFICAS ====== */
+  /* ===================== GRÁFICAS ===================== */
   let chart1, chart2;
   Chart.defaults.color = getCss('--azul');
   Chart.defaults.font.family = 'Noto Sans, Arial, sans-serif';
@@ -433,7 +463,7 @@
     const labels=Object.keys(byWeek).sort(sortWeekKeys);
     const counts=labels.map(k=>byWeek[k]);
 
-    // llenar filtro Año/Semana (una sola vez)
+    // llenar filtro Año/Semana (una vez)
     const weekSel=$('#f_week');
     if(weekSel && weekSel.options.length<=1){ labels.forEach(l=>{const op=document.createElement('option');op.value=op.textContent=l;weekSel.appendChild(op);}); }
 
@@ -446,7 +476,7 @@
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ====== TABLA DE BITÁCORA ====== */
+  /* ===================== TABLA BITÁCORA ===================== */
   let dt;
   function renderTable(rows){
     const columns=[
@@ -467,7 +497,7 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
-  /* ====== TABLAS DE CENSO ====== */
+  /* ===================== TABLAS DE CENSO ===================== */
   function initTablasCenso(){
     const dtLang = {
       decimal: ",", thousands: ".",
@@ -482,42 +512,30 @@
       paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
     };
 
-    // Localidades (censo)
+    // --- Localidades (censo) ---
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
+        // guardamos todas las filas y dibujamos con filtros activos
         rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
-        new DataTable('#tablaLocalidades', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Localidad', data: 'LOCALIDAD' },
-            { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
-          ],
-          pageLength: 10, responsive: true, language: dtLang, dom: 'ftip'
-        });
+        rowsLocalidadesAll = rows;
+        renderTablaLocalidades(); // primera vez
+        // DataTables idioma / dom ya se fijan al crear
       });
 
-    // Priorización por Municipio (con % Quiere / Instaladas)
+    // --- Priorización por Municipio (ya existente, sin cambios de filtros) ---
     fetch('ranking_priorizacion_municipio.json')
       .then(r => r.json())
       .then(rows => {
+        // cálculo de instaladas desde DATA
         const installedByMun = {};
-        DATA.forEach(d=>{
-          if(d.estatus==='Instalada'){
-            installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1;
-          }
-        });
+        DATA.forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
         rows.forEach(r=>{
           const instaladas = installedByMun[r.MUNICIPIO] || 0;
           r.instaladas = instaladas;
           const quiere = Number(r.quiere_estufa||0);
           r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
         });
-
         new DataTable('#tablaRanking', {
           data: rows,
           columns: [
@@ -534,7 +552,51 @@
       });
   }
 
-  /* ====== REFRESH GENERAL ====== */
+  function filasLocalidadesFiltradas(){
+    const f=getFilters();
+    return rowsLocalidadesAll.filter(r=>{
+      const okE = !f.entidad   || r.ENTIDAD===f.entidad;
+      const okM = !f.municipio || r.MUNICIPIO===f.municipio;
+      const okL = !f.localidad || r.LOCALIDAD===f.localidad;
+      return okE && okM && okL;
+    });
+  }
+
+  function renderTablaLocalidades(){
+    const data = filasLocalidadesFiltradas();
+    const cfg = {
+      data,
+      columns: [
+        { title: 'Entidad', data: 'ENTIDAD' },
+        { title: 'Municipio', data: 'MUNICIPIO' },
+        { title: 'Localidad', data: 'LOCALIDAD' },
+        { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
+        { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+        { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
+      ],
+      pageLength: 10, responsive: true, language: {
+        decimal: ",", thousands: ".",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        infoEmpty: "Mostrando 0 a 0 de 0 registros",
+        infoFiltered: "(filtrado de _MAX_ en total)",
+        lengthMenu: "Mostrar _MENU_",
+        loadingRecords: "Cargando...",
+        processing: "Procesando...",
+        search: "Buscar:",
+        zeroRecords: "No se encontraron registros",
+        paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+      },
+      dom: 'ftip'
+    };
+    if(dtLocalidades){
+      dtLocalidades.clear();
+      dtLocalidades.rows.add(data).draw();
+    }else{
+      dtLocalidades = new DataTable('#tablaLocalidades', cfg);
+    }
+  }
+
+  /* ===================== REFRESH GENERAL ===================== */
   function renderAll(){
     const rows=applyFilters(DATA);
     renderKPIs(rows);
@@ -550,39 +612,12 @@
     }
   }
 
-  // Init
+  /* ===================== INIT ===================== */
   bootstrapFiltersSimple();
   buildWeeksFromData();
   renderAll();
   initTablasCenso();
-
-  // Listeners filtros/cascadas
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); });
-  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); });
-  $('#f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); });
-  ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',renderAll));
-
-  // Leyenda del mapa
-  (function addLegend(){
-    if(!window.L) return;
-    const legend = L.control({position: 'bottomright'});
-    legend.onAdd = function () {
-      const div = L.DomUtil.create('div', 'info legend');
-      div.style.background = '#fff';
-      div.style.padding = '8px 10px';
-      div.style.border = '1px solid var(--borde)';
-      div.style.borderRadius = '8px';
-      div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-      div.innerHTML = '<b>Solicitud de estufas</b><br>'
-        + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
-        + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
-        + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
-        + '<span style="display:inline-block;width:12px;height:12px;background:#9F2241;margin-right:6px;border:1px solid #ccc"></span> 90–95%<br>'
-        + '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%';
-      return div;
-    };
-    setTimeout(()=>legend.addTo(map),1000);
-  })();
+  cargarCensoCSV_yCombos(); // carga CSV y alimenta combos
 
   // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
   function encuentraColumna(headers){
@@ -606,6 +641,34 @@
       $('#k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
     }
   });
+
+  // Listeners filtros/cascadas (actualizan mapa + tabla localidades)
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
+
+  // Leyenda del mapa
+  (function addLegend(){
+    if(!window.L) return;
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'info legend');
+      div.style.background = '#fff';
+      div.style.padding = '8px 10px';
+      div.style.border = '1px solid var(--borde)';
+      div.style.borderRadius = '8px';
+      div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
+      div.innerHTML = '<b>Solicitud de estufas</b><br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#9F2241;margin-right:6px;border:1px solid #ccc"></span> 90–95%<br>'
+        + '<span style="display:inline-block;width:12px;height:12px;background:#bd0026;margin-right:6px;border:1px solid #ccc"></span> > 95%';
+      return div;
+    };
+    setTimeout(()=>legend.addTo(map),1000);
+  })();
 
   // Lightbox
   const lightboxEl = document.createElement('div');
