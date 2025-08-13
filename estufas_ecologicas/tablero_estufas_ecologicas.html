@@ -275,7 +275,16 @@
             );
           }
         });
+
+        // Activar Municipios y fijar la vista inicial a su extensión
         muniLayer.addTo(map);
+        if (!window.__fittedMunicipios && muniLayer.getLayers().length){
+          try{
+            map.fitBounds(muniLayer.getBounds(), { padding:[20,20] });
+            window.__fittedMunicipios = true;
+          }catch(e){}
+        }
+
         if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
