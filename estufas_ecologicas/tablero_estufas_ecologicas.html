@@ -238,7 +238,7 @@
     const total=rows.length;
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
     $('#k_estufas').textContent=fmt(total);
-    $('#k_hogares').textContent=fmt(total);
+    $('#k_hogares').textContent=fmt(total); // demo
     $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
   }
 
@@ -479,26 +479,24 @@
         });
       });
 
-    // --- Priorización por Municipio (ajustada) ---
+    // --- Priorización por Municipio (ajustada a % = Quiere / Instaladas) ---
     fetch('ranking_priorizacion_municipio.json')
       .then(r => r.json())
       .then(rows => {
-        // A) Preparar % quiere (por si lo usamos visualmente)
-        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
-
-        // B) Calcular estufas instaladas por municipio con DATA
+        // A) Estufas instaladas por municipio con DATA (estatus = "Instalada")
         const installedByMun = {};
         DATA.forEach(d=>{
           if(d.estatus==='Instalada'){
             installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1;
           }
         });
-        const totalInstalled = Object.values(installedByMun).reduce((a,b)=>a+b,0);
 
-        // C) Enriquecer filas con instaladas y %
+        // B) Enriquecer filas y calcular % quiere/instaladas
         rows.forEach(r=>{
-          r.instaladas   = installedByMun[r.MUNICIPIO] || 0;
-          r.pct_instal   = totalInstalled ? (r.instaladas/totalInstalled*100) : 0;
+          const instaladas = installedByMun[r.MUNICIPIO] || 0;
+          r.instaladas = instaladas;
+          const quiere = Number(r.quiere_estufa||0);
+          r.pct_q_sobre_inst = instaladas > 0 ? (quiere / instaladas) * 100 : 0;
         });
 
         new DataTable('#tablaRanking', {
@@ -508,11 +506,10 @@
             { title: 'Municipio', data: 'MUNICIPIO' },
             { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
             { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` },
             { title: 'Estufas instaladas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: '% de estufas totales', data: 'pct_instal', render: d => `${Number(d||0).toFixed(1)}%` }
+            { title: '% Quiere / Instaladas', data: 'pct_q_sobre_inst', render: d => `${Number(d||0).toFixed(1)}%` }
           ],
-          order: [[6,'desc']],           /* ordena por % de estufas totales */
+          order: [[5,'desc']],  /* ordena por el % quiere/instaladas */
           pageLength: 8,
           responsive: true,
           language: dtLang,
