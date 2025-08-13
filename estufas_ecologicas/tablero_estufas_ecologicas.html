@@ -243,35 +243,80 @@
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
   }
 
-  function loadLocalidades(){
-    fetch('localidades_filtradas_mich.geojson') // <-- usa tu archivo compartido
-      .then(r => r.json())
-      .then(geo => {
-        locaLayer = L.geoJSON(geo, {
-          pointToLayer: (feature, latlng) => {
-            const p = feature.properties || {};
-            const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
-            return L.circleMarker(latlng, {
-              radius: 6,
-              color: '#ffffff',
-              weight: 1,
-              fillColor: colorByRatio(ratio),
-              fillOpacity: 0.9
-            });
-          },
-          onEachFeature: (feature, lyr) => {
-            const p = feature.properties || {};
-            const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
-            const ent = p.ENTIDAD||p.entidad||'—';
-            const mun = p.MUNICIPIO||p.municipio||'—';
-            const loc = p.LOCALIDAD||p.localidad||p.NOM_LOC||'—';
-            lyr.bindPopup(
-              `<b>${loc}</b><br>${mun}, ${ent}<br>
-               Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
-               Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
-            );
-          }
+<script>
+// Intenta cargar la primera ruta que exista
+async function fetchFirstExisting(paths){
+  for (const p of paths){
+    try{
+      const r = await fetch(p, {cache:'no-store'});
+      if (r.ok){
+        const j = await r.json();
+        console.log('Capa "Localidades" cargada desde:', p);
+        return j;
+      }
+    }catch(e){/* intenta la siguiente */}
+  }
+  throw new Error('No se encontró el GeoJSON de localidades en: '+paths.join(', '));
+}
+</script>
+  
+  <script>
+async function loadLocalidades(){
+  try{
+    // Prueba con ambos nombres y rutas relativas comunes
+    const geo = await fetchFirstExisting([
+      'localidades_filtradas_mich.geojson',
+      'localidades_filtrdas_mich.geojson',
+      './localidades_filtradas_mich.geojson',
+      './localidades_filtrdas_mich.geojson'
+    ]);
+
+    let count = 0;
+    locaLayer = L.geoJSON(geo, {
+      pointToLayer: (feature, latlng) => {
+        count++;
+        const p = feature.properties || {};
+        const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
+        return L.circleMarker(latlng, {
+          radius: 6,
+          color: '#ffffff',
+          weight: 1,
+          fillColor: ratio > 0.95 ? '#bd0026' :
+                     ratio > 0.90 ? '#f03b20' :
+                     ratio > 0.85 ? '#fd8d3c' :
+                     ratio > 0.80 ? '#feb24c' : '#fed976',
+          fillOpacity: 0.9
         });
+      },
+      onEachFeature: (feature, lyr) => {
+        const p = feature.properties || {};
+        const ent = p.ENTIDAD || p.entidad || '—';
+        const mun = p.MUNICIPIO || p.municipio || '—';
+        const loc = p.LOCALIDAD || p.localidad || p.NOM_LOC || '—';
+        const pct = (p.hogares && p.quiere_estufa)
+          ? ((p.quiere_estufa/p.hogares)*100).toFixed(1)
+          : '0.0';
+        lyr.bindPopup(
+          `<b>${loc}</b><br>${mun}, ${ent}<br>
+           Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
+           Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
+        );
+      }
+    });
+
+    if (count === 0){
+      console.warn('El GeoJSON de localidades se cargó pero no trae features (revisa que no esté filtrado en blanco).');
+    }
+
+    // La registramos como base layer (exclusiva con Municipios)
+    if (layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
+
+  }catch(err){
+    console.error(err);
+    alert('No se pudo cargar la capa de Localidades.\nVerifica el nombre y que el archivo esté en la misma carpeta que el HTML.');
+  }
+}
+</script>
 
         // No la activamos por defecto; solo la registramos como base layer
         if(layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
