@@ -379,7 +379,11 @@
   }
 
   /* ====== TABLAS ====== */
-  let dt;
+  let dt, dtRanking=null, rankingCache=null;
+  const normTxt = s => (s||'').toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9| ]/g,'').trim();
+
   function renderTable(rows){
     const columns=[
       {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
@@ -399,7 +403,7 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
-  /* ====== Localidades / Ranking ====== */
+  // ---- Tabla de Localidades (igual que antes)
   function initTablasCenso(){
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
@@ -420,29 +424,73 @@
         });
       });
 
-    fetch('ranking_priorizacion_municipio.json')
+    // Cargar cache para ranking municipal (sin pintar todavía)
+    fetch('ranking_priorizacion_municipio.json', {cache:'no-store'})
       .then(r => r.json())
       .then(rows => {
-        rows.forEach(r => {
-          r.porc_quiere   = (Number(r.porc_quiere||0)*100).toFixed(1);
-          r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
-        });
-        new DataTable('#tablaRanking', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' },
-            { title: '% No-buena', data: 'porc_no_buena' },
-            { title: 'Score', data: 'score_prior' }
-          ],
-          order: [[6,'desc']],
-          pageLength: 8,
-          responsive: true
-        });
+        rankingCache = rows || [];
+        // Pintar ranking por primera vez con los filtros iniciales
+        renderRankingTable(applyFilters(DATA));
       });
+  }
+
+  // ---- NUEVA tabla de ranking con columnas dinámicas
+  async function renderRankingTable(filteredRows){
+    if (!rankingCache) return; // aún no carga el JSON base
+
+    // Índice de estufas instaladas por ENTIDAD|MUNICIPIO (con filtros)
+    const idxInst = {};
+    filteredRows
+      .filter(r => r.estatus === 'Instalada')
+      .forEach(r => {
+        const key = normTxt(`${r.entidad}|${r.municipio}`);
+        idxInst[key] = (idxInst[key] || 0) + 1;
+      });
+
+    // Armar filas
+    const rows = rankingCache.map(row => {
+      const ent = row.ENTIDAD ?? row.entidad ?? '';
+      const mun = row.MUNICIPIO ?? row.municipio ?? '';
+      const key = normTxt(`${ent}|${mun}`);
+
+      const instaladas = idxInst[key] || 0;
+      const hogares = Number(row.hogares || 0);
+      const quiere  = Number(row.quiere_estufa || 0);
+
+      const pct_instaladas = quiere > 0 ? (instaladas / quiere) * 100 : 0;
+
+      return {
+        ENTIDAD: ent,
+        MUNICIPIO: mun,
+        hogares: hogares.toLocaleString('es-MX'),
+        quiere_estufa: quiere.toLocaleString('es-MX'),
+        porc_quiere: ((Number(row.porc_quiere || 0) * 100).toFixed(1)) + '%',
+        instaladas: instaladas.toLocaleString('es-MX'),
+        pct_instaladas: pct_instaladas.toFixed(1) + '%'
+      };
+    });
+
+    const columns = [
+      { title: 'Entidad', data: 'ENTIDAD' },
+      { title: 'Municipio', data: 'MUNICIPIO' },
+      { title: 'Hogares', data: 'hogares' },
+      { title: 'Quiere estufa', data: 'quiere_estufa' },
+      { title: '% Quiere', data: 'porc_quiere' },
+      { title: 'Estufas instaladas', data: 'instaladas' },
+      { title: '% de estufas instaladas', data: 'pct_instaladas' }
+    ];
+
+    if (dtRanking){
+      dtRanking.clear();
+      dtRanking.rows.add(rows).draw();
+    } else {
+      dtRanking = new DataTable('#tablaRanking', {
+        data: rows,
+        columns,
+        pageLength: 8,
+        responsive: true
+      });
+    }
   }
 
   function refresh(){
@@ -451,6 +499,7 @@
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
+    renderRankingTable(rows); // <- actualizar segunda tabla con filtros vigentes
   }
 
   bootstrapFilters();
