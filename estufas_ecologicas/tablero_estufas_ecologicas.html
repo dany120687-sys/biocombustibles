@@ -52,7 +52,7 @@
     #map{height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--borde);background:#fff}
     .gallery{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .thumb{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px}
-    .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:zoom-in} /* cursor de zoom */
+    .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:zoom-in}
     .thumb figcaption{font-size:10pt;margin-top:6px;color:var(--gris-700)}
     table.dataTable thead th{background:#fff;color:var(--azul)}
     table.dataTable tbody tr:hover{background:#fafafa}
@@ -65,20 +65,11 @@
     }
     .leaflet-container{z-index:0}.info.legend{z-index:400}
 
-    /* ===== Lightbox (ampliar imágenes) ===== */
-    .lightbox{
-      display:none; position:fixed; inset:0; z-index:9999;
-      background:rgba(0,0,0,.85);
-      align-items:center; justify-content:center; padding:24px;
-    }
-    .lightbox.open{ display:flex; }
-    .lightbox img{
-      max-width:92vw; max-height:86vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4);
-    }
-    .lightbox .close{
-      position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer;
-      background:transparent; border:0; padding:6px 10px;
-    }
+    /* Lightbox */
+    .lightbox{display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.85); align-items:center; justify-content:center; padding:24px;}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:92vw; max-height:86vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
     .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
   </style>
 </head>
@@ -126,18 +117,15 @@
       <h3 style="margin:12px 0 6px;color:var(--azul)">Galería fotográfica del programa</h3>
       <div class="gallery" id="gallery">
         <figure class="thumb">
-          <img src="./estufa_1.jpg" alt="Instalación de estufa"
-               onclick="openLightbox(this.src,this.alt)">
+          <img src="./estufa_1.jpg" alt="Instalación de estufa" onclick="openLightbox(this.src,this.alt)">
           <figcaption>Instalación y capacitación en sitio</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./estufa_2.jpg" alt="Encendido de prueba y verificación de tiraje"
-               onclick="openLightbox(this.src,this.alt)">
+          <img src="./estufa_2.jpg" alt="Encendido de prueba y verificación de tiraje" onclick="openLightbox(this.src,this.alt)">
           <figcaption>Encendido de prueba y verificación de tiraje</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./estufa_3.jpg" alt="Taller con promotores del programa"
-               onclick="openLightbox(this.src,this.alt)">
+          <img src="./estufa_3.jpg" alt="Taller con promotores del programa" onclick="openLightbox(this.src,this.alt)">
           <figcaption>Taller con promotores del programa</figcaption>
         </figure>
       </div>
@@ -177,13 +165,13 @@
 <!-- ===== Datos demo (instalaciones) ===== -->
 <script>
   const DATA = [
-    {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658, lng:-102.048, estatus:"Instalada",       fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",          consumo_base:120, consumo_post:60},
-    {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Michoacán", municipio:"Charapan",     lat:19.593, lng:-102.304, estatus:"En seguimiento",  fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo", consumo_base:100, consumo_post:70},
-    {id:"EST-0003", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Cherán",       lat:19.687, lng:-101.953, estatus:"Garantía",        fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve", consumo_base:130, consumo_post:80},
-    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643, lng:-101.861, estatus:"Instalada",       fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",          consumo_base:110, consumo_post:65},
-    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",     fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",          consumo_base:140, consumo_post:75},
-    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595, lng:-102.478, estatus:"Baja",            fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa", consumo_base:115, consumo_post:115},
-    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670, lng:-102.089, estatus:"Instalada",       fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",          consumo_base:118, consumo_post:62}
+    {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658,  lng:-102.048,  estatus:"Instalada",      fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",            consumo_base:120, consumo_post:60},
+    {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Michoacán", municipio:"Charapan",     lat:19.593,  lng:-102.304,  estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo",   consumo_base:100, consumo_post:70},
+    {id:"EST-0003", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Cherán",       lat:19.687,  lng:-101.953,  estatus:"Garantía",       fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve",   consumo_base:130, consumo_post:80},
+    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",            consumo_base:110, consumo_post:65},
+    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",            consumo_base:140, consumo_post:75},
+    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa",  consumo_base:115, consumo_post:115},
+    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
   ];
 </script>
 
@@ -216,47 +204,99 @@
   }
 
   /* ====== MAPA ====== */
-  let map, layer, muniLayer;
+  let map, layer, muniLayer, locaLayer, layerControl;
+
+  function colorByRatio(ratio){
+    return ratio > 0.95 ? '#bd0026' :
+           ratio > 0.90 ? '#f03b20' :
+           ratio > 0.85 ? '#fd8d3c' :
+           ratio > 0.80 ? '#feb24c' : '#fed976';
+  }
 
   function loadMunicipios(){
     fetch('estufas_municipios.geojson')
       .then(r => r.json())
       .then(geo => {
-        if(muniLayer){ map.removeLayer(muniLayer); }
         muniLayer = L.geoJSON(geo, {
           style: f => {
             const p = f.properties || {};
             const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
-            const fill = ratio > 0.95 ? '#bd0026' :
-                         ratio > 0.90 ? '#f03b20' :
-                         ratio > 0.85 ? '#fd8d3c' :
-                         ratio > 0.80 ? '#feb24c' :
-                                        '#fed976';
-            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:fill };
+            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:colorByRatio(ratio) };
           },
-          onEachFeature: (feature, layer) => {
+          onEachFeature: (feature, lyr) => {
             const p = feature.properties || {};
             const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
-            layer.bindPopup(
-              `<b>${p.MUNICIPIO}, ${p.ENTIDAD}</b><br>
+            lyr.bindPopup(
+              `<b>${p.MUNICIPIO||p.municipio||'—'}, ${p.ENTIDAD||p.entidad||'—'}</b><br>
                Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
                Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
             );
           }
-        }).addTo(map);
-        try { map.fitBounds(muniLayer.getBounds().pad(0.2)); } catch(e){}
+        });
+
+        // Por defecto activar Municipios
+        muniLayer.addTo(map);
+
+        // Añadir como "base layer" (exclusivo)
+        if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
   }
 
+  function loadLocalidades(){
+    fetch('localidades_filtradas_mich.geojson') // <-- usa tu archivo compartido
+      .then(r => r.json())
+      .then(geo => {
+        locaLayer = L.geoJSON(geo, {
+          pointToLayer: (feature, latlng) => {
+            const p = feature.properties || {};
+            const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
+            return L.circleMarker(latlng, {
+              radius: 6,
+              color: '#ffffff',
+              weight: 1,
+              fillColor: colorByRatio(ratio),
+              fillOpacity: 0.9
+            });
+          },
+          onEachFeature: (feature, lyr) => {
+            const p = feature.properties || {};
+            const pct = (p.hogares && p.quiere_estufa) ? ((p.quiere_estufa/p.hogares)*100).toFixed(1) : '0.0';
+            const ent = p.ENTIDAD||p.entidad||'—';
+            const mun = p.MUNICIPIO||p.municipio||'—';
+            const loc = p.LOCALIDAD||p.localidad||p.NOM_LOC||'—';
+            lyr.bindPopup(
+              `<b>${loc}</b><br>${mun}, ${ent}<br>
+               Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
+               Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
+            );
+          }
+        });
+
+        // No la activamos por defecto; solo la registramos como base layer
+        if(layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
+      })
+      .catch(err => console.error('No se pudo cargar localidades_filtradas_mich.geojson', err));
+  }
+
   function renderMap(rows){
     if(!map){
-      map=L.map('map').setView([22.5,-102],5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+      map = L.map('map').setView([22.5,-102],5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:18, attribution:'© OpenStreetMap'
+      }).addTo(map);
+
+      // Control de capas (exclusivo entre Municipios/Localidades)
+      layerControl = L.control.layers({}, null, {collapsed:false}).addTo(map);
+
+      // Cargar capas
       loadMunicipios();
+      loadLocalidades();
     }
+
+    // Marcadores de instalaciones (capa independiente)
     if(layer) layer.remove();
-    layer=L.layerGroup().addTo(map);
+    layer = L.layerGroup().addTo(map);
     rows.forEach(r=>{
       const color = r.estatus==='Instalada'     ? getCss('--guinda') :
                     r.estatus==='En seguimiento'? getCss('--dorado') :
@@ -266,10 +306,6 @@
       L.marker([r.lat,r.lng],{icon}).addTo(layer)
         .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
     });
-    try{
-      const b=L.latLngBounds(rows.map(r=>[r.lat,r.lng]));
-      if(rows.length) map.fitBounds(b.pad(0.2));
-    }catch(e){}
   }
 
   /* ====== GRÁFICAS ====== */
@@ -471,13 +507,11 @@
     img.src = src; img.alt = alt || '';
     lightboxEl.classList.add('open');
   }
-  // cerrar al hacer clic fuera o en la X
   lightboxEl.addEventListener('click', (e)=>{
     if(e.target === lightboxEl || e.target.classList.contains('close')){
       lightboxEl.classList.remove('open');
     }
   });
-  // cerrar con ESC
   document.addEventListener('keydown', (e)=>{
     if(e.key === 'Escape') lightboxEl.classList.remove('open');
   });
