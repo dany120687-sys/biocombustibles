@@ -206,17 +206,7 @@
   /* ====== MAPA ====== */
   let map, layer, muniLayer, locaLayer, layerControl;
 
-  // Colores institucionales (sin rojos) para LOCALIDADES
-  function colorByRatioLocalidad(r){
-    if (r > 0.95) return getCss('--verde');     // más alto: verde institucional
-    if (r > 0.90) return getCss('--dorado');    // dorado
-    if (r > 0.85) return getCss('--beige');     // beige
-    if (r > 0.80) return getCss('--gris-500');  // gris medio
-    return '#dfe4e8';                           // muy bajo
-  }
-
-  // Colores (con rojos) que ya usas para MUNICIPIOS – se mantienen
-  function colorByRatioMunicipio(ratio){
+  function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
            ratio > 0.90 ? '#f03b20' :
            ratio > 0.85 ? '#fd8d3c' :
@@ -246,7 +236,7 @@
           style: f => {
             const p = f.properties || {};
             const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
-            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:colorByRatioMunicipio(ratio) };
+            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:colorByRatio(ratio) };
           },
           onEachFeature: (feature, lyr) => {
             const p = feature.properties || {};
@@ -259,23 +249,17 @@
           }
         });
 
+        // Por defecto activar Municipios
         muniLayer.addTo(map);
+
+        // Añadir como base layer
         if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
   }
 
-  // Normalizador para clave de emparejamiento
-  function norm(s){
-    return (s||'').toString().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-z0-9]/g,'');
-  }
-  const keyLoc = (ent,mun,loc)=> `${norm(ent)}|${norm(mun)}|${norm(loc)}`;
-
   async function loadLocalidades(){
     try{
-      // 1) GeoJSON de localidades
       const geo = await fetchFirstExisting([
         'localidades_filtradas_mich.geojson',
         'localidades_filtrdas_mich.geojson',
@@ -283,49 +267,18 @@
         './localidades_filtrdas_mich.geojson'
       ]);
 
-      // 2) Censo por localidad (para filtrar y, si hace falta, completar atributos)
-      const censo = await fetch('estufas_agg_localidad_detalle.json', {cache:'no-store'}).then(r=>r.json());
-
-      // Mapa de censo por clave normalizada
-      const censoMap = new Map();
-      censo.forEach(r=>{
-        const k = keyLoc(r.ENTIDAD||r.entidad, r.MUNICIPIO||r.municipio, r.LOCALIDAD||r.localidad);
-        censoMap.set(k, r);
-      });
-
-      // Filtrar features que SÍ tienen registro en censo
-      const filtered = {
-        type:'FeatureCollection',
-        features: (geo.features||[]).filter(f=>{
-          const p=f.properties||{};
-          const k = keyLoc(p.ENTIDAD||p.entidad, p.MUNICIPIO||p.municipio, p.LOCALIDAD||p.localidad||p.NOM_LOC);
-          return censoMap.has(k);
-        }).map(f=>{
-          // Completar/actualizar hogares/quiere_estufa desde censo si no vienen en el GeoJSON
-          const p=f.properties||{};
-          const k = keyLoc(p.ENTIDAD||p.entidad, p.MUNICIPIO||p.municipio, p.LOCALIDAD||p.localidad||p.NOM_LOC);
-          const row = censoMap.get(k);
-          if (row){
-            p.hogares       = Number(p.hogares ?? row.hogares ?? 0);
-            p.quiere_estufa = Number(p.quiere_estufa ?? row.quiere_estufa ?? 0);
-          }
-          f.properties = p;
-          return f;
-        })
-      };
-
       let count = 0;
-      locaLayer = L.geoJSON(filtered, {
+      locaLayer = L.geoJSON(geo, {
         pointToLayer: (feature, latlng) => {
           count++;
           const p = feature.properties || {};
           const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
           return L.circleMarker(latlng, {
-            radius: 10,                // más grande que los puntos de estufas
+            radius: 6,
             color: '#ffffff',
-            weight: 1.5,
-            fillColor: colorByRatioLocalidad(ratio),
-            fillOpacity: 0.95
+            weight: 1,
+            fillColor: colorByRatio(ratio),
+            fillOpacity: 0.9
           });
         },
         onEachFeature: (feature, lyr) => {
@@ -345,7 +298,7 @@
       });
 
       if (count === 0){
-        console.warn('El GeoJSON de localidades filtrado no trae features (revisa el censo o las claves).');
+        console.warn('El GeoJSON de localidades se cargó pero no trae features.');
       }
 
       // Registrar como base layer (conmutador con Municipios)
@@ -353,7 +306,7 @@
 
     }catch(err){
       console.error(err);
-      alert('No se pudo cargar la capa de Localidades con censo.\nVerifica los archivos y sus nombres.');
+      alert('No se pudo cargar la capa de Localidades.\nVerifica el nombre y que el archivo esté junto al HTML.');
     }
   }
 
@@ -426,7 +379,11 @@
   }
 
   /* ====== TABLAS ====== */
-  let dt;
+  let dt, dtRanking=null, rankingCache=null;
+  const normTxt = s => (s||'').toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9| ]/g,'').trim();
+
   function renderTable(rows){
     const columns=[
       {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
@@ -446,7 +403,7 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
-  /* ====== Localidades / Ranking ====== */
+  // ---- Tabla de Localidades (igual que antes)
   function initTablasCenso(){
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
@@ -467,30 +424,73 @@
         });
       });
 
-    fetch('ranking_priorizacion_municipio.json')
+    // Cargar cache para ranking municipal (sin pintar todavía)
+    fetch('ranking_priorizacion_municipio.json', {cache:'no-store'})
       .then(r => r.json())
       .then(rows => {
-        rows.forEach(r => {
-          r.porc_quiere   = (Number(r.porc_quiere||0)*100).toFixed(1);
-          r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
-          // Si ya tienes instaladas por municipio puedes añadirlas aquí en el futuro
-        });
-        new DataTable('#tablaRanking', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' },
-            { title: '% No-buena', data: 'porc_no_buena' },
-            { title: 'Score', data: 'score_prior' }
-          ],
-          order: [[6,'desc']],
-          pageLength: 8,
-          responsive: true
-        });
+        rankingCache = rows || [];
+        // Pintar ranking por primera vez con los filtros iniciales
+        renderRankingTable(applyFilters(DATA));
       });
+  }
+
+  // ---- NUEVA tabla de ranking con columnas dinámicas
+  async function renderRankingTable(filteredRows){
+    if (!rankingCache) return; // aún no carga el JSON base
+
+    // Índice de estufas instaladas por ENTIDAD|MUNICIPIO (con filtros)
+    const idxInst = {};
+    filteredRows
+      .filter(r => r.estatus === 'Instalada')
+      .forEach(r => {
+        const key = normTxt(`${r.entidad}|${r.municipio}`);
+        idxInst[key] = (idxInst[key] || 0) + 1;
+      });
+
+    // Armar filas
+    const rows = rankingCache.map(row => {
+      const ent = row.ENTIDAD ?? row.entidad ?? '';
+      const mun = row.MUNICIPIO ?? row.municipio ?? '';
+      const key = normTxt(`${ent}|${mun}`);
+
+      const instaladas = idxInst[key] || 0;
+      const hogares = Number(row.hogares || 0);
+      const quiere  = Number(row.quiere_estufa || 0);
+
+      const pct_instaladas = quiere > 0 ? (instaladas / quiere) * 100 : 0;
+
+      return {
+        ENTIDAD: ent,
+        MUNICIPIO: mun,
+        hogares: hogares.toLocaleString('es-MX'),
+        quiere_estufa: quiere.toLocaleString('es-MX'),
+        porc_quiere: ((Number(row.porc_quiere || 0) * 100).toFixed(1)) + '%',
+        instaladas: instaladas.toLocaleString('es-MX'),
+        pct_instaladas: pct_instaladas.toFixed(1) + '%'
+      };
+    });
+
+    const columns = [
+      { title: 'Entidad', data: 'ENTIDAD' },
+      { title: 'Municipio', data: 'MUNICIPIO' },
+      { title: 'Hogares', data: 'hogares' },
+      { title: 'Quiere estufa', data: 'quiere_estufa' },
+      { title: '% Quiere', data: 'porc_quiere' },
+      { title: 'Estufas instaladas', data: 'instaladas' },
+      { title: '% de estufas instaladas', data: 'pct_instaladas' }
+    ];
+
+    if (dtRanking){
+      dtRanking.clear();
+      dtRanking.rows.add(rows).draw();
+    } else {
+      dtRanking = new DataTable('#tablaRanking', {
+        data: rows,
+        columns,
+        pageLength: 8,
+        responsive: true
+      });
+    }
   }
 
   function refresh(){
@@ -499,6 +499,7 @@
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
+    renderRankingTable(rows); // <- actualizar segunda tabla con filtros vigentes
   }
 
   bootstrapFilters();
@@ -508,7 +509,7 @@
   refresh();
   initTablasCenso();
 
-  // Leyenda del mapa (mantengo la de municipios)
+  // Leyenda del mapa
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
@@ -519,7 +520,7 @@
       div.style.border = '1px solid var(--borde)';
       div.style.borderRadius = '8px';
       div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-      div.innerHTML = '<b>Leyenda (municipios)</b><br>'
+      div.innerHTML = '<b>Leyenda</b><br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
