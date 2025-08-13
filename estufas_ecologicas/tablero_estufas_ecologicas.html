@@ -206,26 +206,56 @@
   /* ====== MAPA ====== */
   let map, layer, muniLayer, locaLayer, layerControl;
 
+  // escala municipal (ya existente)
   function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
            ratio > 0.90 ? '#f03b20' :
            ratio > 0.85 ? '#fd8d3c' :
            ratio > 0.80 ? '#feb24c' : '#fed976';
   }
+  // NUEVA escala institucional para Localidades (evita rojos)
+  function colorByRatioLocal(r){
+    return r > 0.95 ? '#10312B' :     // azul oscuro
+           r > 0.90 ? '#2E5C53' :     // azul/verde
+           r > 0.85 ? '#8FAB85' :     // verde
+           r > 0.80 ? '#BC955C' :     // dorado
+                      '#DDC9A3';      // beige
+  }
 
-  // util: prueba una lista de rutas y regresa el primer GeoJSON que exista
+  // util: probar rutas y devolver el primer GeoJSON válido
   async function fetchFirstExisting(paths){
     for (const p of paths){
       try{
         const r = await fetch(p, {cache:'no-store'});
         if (r.ok){
           const j = await r.json();
-          console.log('Capa cargada desde:', p);
           return j;
         }
-      }catch(e){/* probar siguiente */}
+      }catch(e){}
     }
     throw new Error('No se encontró el archivo en: '+paths.join(', '));
+  }
+
+  // ===== índice de localidades con datos de censo (desde estufas_agg_localidad_detalle.json)
+  let censoLocKeys = null;
+  const normTxt = s => (s||'').toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9| ]/g,'').trim();
+
+  async function ensureCensoLocKeys(){
+    if (censoLocKeys) return censoLocKeys;
+    const rows = await fetch('estufas_agg_localidad_detalle.json', {cache:'no-store'}).then(r=>r.json());
+    const set = new Set();
+    rows.forEach(r=>{
+      const ent = r.ENTIDAD ?? r.entidad ?? '';
+      const mun = r.MUNICIPIO ?? r.municipio ?? '';
+      const loc = r.LOCALIDAD ?? r.localidad ?? r.NOM_LOC ?? '';
+      // considerar que exista cualquier registro (si quieres, cambia a r.quiere_estufa>0)
+      const key = normTxt(`${ent}|${mun}|${loc}`);
+      if (key) set.add(key);
+    });
+    censoLocKeys = set;
+    return censoLocKeys;
   }
 
   function loadMunicipios(){
@@ -248,11 +278,7 @@
             );
           }
         });
-
-        // Por defecto activar Municipios
         muniLayer.addTo(map);
-
-        // Añadir como base layer
         if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
@@ -262,23 +288,31 @@
     try{
       const geo = await fetchFirstExisting([
         'localidades_filtradas_mich.geojson',
-        'localidades_filtrdas_mich.geojson',
-        './localidades_filtradas_mich.geojson',
-        './localidades_filtrdas_mich.geojson'
+        './localidades_filtradas_mich.geojson'
       ]);
+
+      const keys = await ensureCensoLocKeys();
 
       let count = 0;
       locaLayer = L.geoJSON(geo, {
+        filter: (feature) => {
+          const p = feature.properties || {};
+          const ent = p.ENTIDAD || p.entidad || '';
+          const mun = p.MUNICIPIO || p.municipio || '';
+          const loc = p.LOCALIDAD || p.localidad || p.NOM_LOC || '';
+          const key = normTxt(`${ent}|${mun}|${loc}`);
+          return keys.has(key); // <— solo las que están en el censo
+        },
         pointToLayer: (feature, latlng) => {
           count++;
           const p = feature.properties || {};
           const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
           return L.circleMarker(latlng, {
-            radius: 6,
+            radius: 10,                 // más grande que las estufas
             color: '#ffffff',
-            weight: 1,
-            fillColor: colorByRatio(ratio),
-            fillOpacity: 0.9
+            weight: 1.5,
+            fillColor: colorByRatioLocal(ratio),
+            fillOpacity: 0.95
           });
         },
         onEachFeature: (feature, lyr) => {
@@ -298,10 +332,8 @@
       });
 
       if (count === 0){
-        console.warn('El GeoJSON de localidades se cargó pero no trae features.');
+        console.warn('No hubo coincidencias Localidad–Censo (revisa nombres/acentos).');
       }
-
-      // Registrar como base layer (conmutador con Municipios)
       if (layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
 
     }catch(err){
@@ -317,15 +349,12 @@
         maxZoom:18, attribution:'© OpenStreetMap'
       }).addTo(map);
 
-      // Control de capas (exclusivo entre Municipios/Localidades)
       layerControl = L.control.layers({}, null, {collapsed:false}).addTo(map);
 
-      // Cargar capas
       loadMunicipios();
       loadLocalidades();
     }
 
-    // Marcadores de instalaciones (capa independiente)
     if(layer) layer.remove();
     layer = L.layerGroup().addTo(map);
     rows.forEach(r=>{
@@ -380,9 +409,6 @@
 
   /* ====== TABLAS ====== */
   let dt, dtRanking=null, rankingCache=null;
-  const normTxt = s => (s||'').toString().toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9| ]/g,'').trim();
 
   function renderTable(rows){
     const columns=[
@@ -429,34 +455,33 @@
       .then(r => r.json())
       .then(rows => {
         rankingCache = rows || [];
-        // Pintar ranking por primera vez con los filtros iniciales
         renderRankingTable(applyFilters(DATA));
       });
   }
 
-  // ---- NUEVA tabla de ranking con columnas dinámicas
+  // ---- ranking (sin cambios respecto a tu última versión con % Instaladas)
   async function renderRankingTable(filteredRows){
-    if (!rankingCache) return; // aún no carga el JSON base
-
-    // Índice de estufas instaladas por ENTIDAD|MUNICIPIO (con filtros)
+    if (!rankingCache) return;
     const idxInst = {};
     filteredRows
       .filter(r => r.estatus === 'Instalada')
       .forEach(r => {
-        const key = normTxt(`${r.entidad}|${r.municipio}`);
+        const key = (r.entidad + '|' + r.municipio).toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+          .replace(/[^a-z0-9| ]/g,'').trim();
         idxInst[key] = (idxInst[key] || 0) + 1;
       });
 
-    // Armar filas
     const rows = rankingCache.map(row => {
       const ent = row.ENTIDAD ?? row.entidad ?? '';
       const mun = row.MUNICIPIO ?? row.municipio ?? '';
-      const key = normTxt(`${ent}|${mun}`);
+      const key = (ent + '|' + mun).toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9| ]/g,'').trim();
 
       const instaladas = idxInst[key] || 0;
       const hogares = Number(row.hogares || 0);
       const quiere  = Number(row.quiere_estufa || 0);
-
       const pct_instaladas = quiere > 0 ? (instaladas / quiere) * 100 : 0;
 
       return {
@@ -480,7 +505,7 @@
       { title: '% de estufas instaladas', data: 'pct_instaladas' }
     ];
 
-    if (dtRanking){
+    if (window.dtRanking){
       dtRanking.clear();
       dtRanking.rows.add(rows).draw();
     } else {
@@ -499,7 +524,7 @@
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
-    renderRankingTable(rows); // <- actualizar segunda tabla con filtros vigentes
+    renderRankingTable(rows);
   }
 
   bootstrapFilters();
@@ -509,7 +534,7 @@
   refresh();
   initTablasCenso();
 
-  // Leyenda del mapa
+  // Leyenda (municipios)
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
