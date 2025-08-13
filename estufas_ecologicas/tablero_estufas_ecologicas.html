@@ -496,7 +496,7 @@
           const instaladas = installedByMun[r.MUNICIPIO] || 0;
           r.instaladas = instaladas;
           const quiere = Number(r.quiere_estufa||0);
-          r.pct_q_sobre_inst = instaladas > 0 ? (quiere / instaladas) * 100 : 0;
+          r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
         });
 
         new DataTable('#tablaRanking', {
@@ -557,7 +557,7 @@
       div.style.border = '1px solid var(--borde)';
       div.style.borderRadius = '8px';
       div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-      div.innerHTML = '<b>Leyenda</b><br>'
+      div.innerHTML = '<b>Solicitud de estufas</b><br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
