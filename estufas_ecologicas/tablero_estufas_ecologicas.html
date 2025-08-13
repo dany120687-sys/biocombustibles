@@ -214,7 +214,7 @@
       modelo:$('#f_modelo').value,
       entidad:$('#f_entidad').value,
       municipio:$('#f_municipio').value,
-      localidad:$('#f_localidad').value, // DATA no lo trae; sirve para mapa/localidades
+      localidad:$('#f_localidad').value,
       estatus:$('#f_estatus').value,
       week:$('#f_week').value
     }
@@ -248,7 +248,6 @@
     $('#k_estufas').textContent=fmt(total);
     $('#k_hogares').textContent=fmt(total); // demo
     $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
-    // #k_quiere_estufa lo calcula Censo_estufas.csv más abajo
   }
 
   // ==== MAPA ====
@@ -256,7 +255,7 @@
 
   function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
-           ratio > 0.90 ? '#9F2241' :   /* guinda institucional */
+           ratio > 0.90 ? '#9F2241' :
            ratio > 0.85 ? '#fd8d3c' :
            ratio > 0.80 ? '#feb24c' : '#fed976';
   }
@@ -472,8 +471,22 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
-  // ==== TABLAS DE CENSO (se mantienen igual) ====
+  // ==== TABLAS DE CENSO (Localidades + Priorización) ====
   function initTablasCenso(){
+    const dtLang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
+
+    // --- Localidades (censo) ---
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
@@ -484,33 +497,51 @@
             { title: 'Entidad', data: 'ENTIDAD' },
             { title: 'Municipio', data: 'MUNICIPIO' },
             { title: 'Localidad', data: 'LOCALIDAD' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' }
+            { title: 'Hogares', data: 'hogares',
+              render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: 'Quiere estufa', data: 'quiere_estufa',
+              render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: '% Quiere', data: 'porc_quiere',
+              render: d => `${Number(d||0).toFixed(1)}%` }
           ],
-          pageLength: 10, responsive: true
+          pageLength: 10,
+          responsive: true,
+          language: dtLang,
+          dom: 'ftip'   /* sin selector de “Show entries” */
         });
       });
 
+    // --- Priorización por Municipio (Score) — versión “buena” ---
     fetch('ranking_priorizacion_municipio.json')
       .then(r => r.json())
       .then(rows => {
         rows.forEach(r => {
           r.porc_quiere   = (Number(r.porc_quiere||0)*100).toFixed(1);
           r.porc_no_buena = (Number(r.porc_no_buena||0)*100).toFixed(1);
+          r.score_prior   = Number(r.score_prior||0);
         });
         new DataTable('#tablaRanking', {
           data: rows,
           columns: [
             { title: 'Entidad', data: 'ENTIDAD' },
             { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Hogares', data: 'hogares' },
-            { title: 'Quiere estufa', data: 'quiere_estufa' },
-            { title: '% Quiere', data: 'porc_quiere' },
-            { title: '% No-buena', data: 'porc_no_buena' },
-            { title: 'Score', data: 'score_prior' }
+            { title: 'Hogares', data: 'hogares',
+              render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: 'Quiere estufa', data: 'quiere_estufa',
+              render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: '% Quiere', data: 'porc_quiere',
+              render: d => `${Number(d||0).toFixed(1)}%` },
+            { title: '% No-buena', data: 'porc_no_buena',
+              render: d => `${Number(d||0).toFixed(1)}%` },
+            { title: 'Score', data: 'score_prior',
+              render: d => Number(d||0).toFixed(1) }
           ],
-          order: [[6,'desc']], pageLength: 8, responsive: true
+          order: [[6,'desc']],
+          pageLength: 8,
+          responsive: true,
+          language: dtLang,
+          dom: 'ftip',        /* oculta “Show entries” */
+          lengthChange: false /* seguridad extra */
         });
       });
   }
@@ -532,6 +563,10 @@
   }
 
   // Inicialización
+  function fillSelect(id, values, allText){ const el=$(id); if(!el) return; el.innerHTML=''; const opt=document.createElement('option'); opt.value=''; opt.textContent=allText||'Todos'; el.appendChild(opt); values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); }); }
+  function unique(list,key){return [...new Set(list.map(x=>x[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'))}
+  function bootstrapFiltersSimple(){ fillSelect('#f_modelo', unique(DATA,'modelo'), 'Todos'); }
+
   bootstrapFiltersSimple();
   buildWeeksFromData();
   renderAll();
@@ -599,3 +634,4 @@
 </script>
 </body>
 </html>
+
