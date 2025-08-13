@@ -171,7 +171,7 @@
     {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",            consumo_base:110, consumo_post:65},
     {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",            consumo_base:140, consumo_post:75},
     {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa",  consumo_base:115, consumo_post:115},
-    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", visita_ult_fecha:"2024-05-10", garantia_fin:"2025-12-30",  consumo_base:118, consumo_post:62}
+    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
   ];
 </script>
 
@@ -200,28 +200,20 @@
     $('#k_estufas').textContent=fmt(total);
     $('#k_hogares').textContent=fmt(total); // demo
     $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
+    // #k_quiere_estufa lo pone el CSV del censo (ver más abajo)
   }
 
   /* ====== MAPA ====== */
   let map, layer, muniLayer, locaLayer, layerControl;
 
-  // Escala para MUNICIPIOS (se queda igual, con rojos)
-  function colorByRatioMunicipio(ratio){
+  function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
            ratio > 0.90 ? '#f03b20' :
            ratio > 0.85 ? '#fd8d3c' :
            ratio > 0.80 ? '#feb24c' : '#fed976';
   }
-  // Escala para LOCALIDADES (dorado institucional, sin rojos)
-  function colorByRatioLocalidad(ratio){
-    return ratio > 0.95 ? '#8f6a37' :  /* más intenso */
-           ratio > 0.90 ? '#a67b42' :
-           ratio > 0.85 ? '#bc955c' :  /* ≈ var(--dorado) */
-           ratio > 0.80 ? '#d5bb8b' :
-                          '#e9dcc0';   /* claro */
-  }
 
-  // util: prueba varias rutas y regresa el primer GeoJSON que exista
+  // util: prueba una lista de rutas y regresa el primer GeoJSON que exista
   async function fetchFirstExisting(paths){
     for (const p of paths){
       try{
@@ -236,7 +228,6 @@
     throw new Error('No se encontró el archivo en: '+paths.join(', '));
   }
 
-  /* ---------- MUNICIPIOS ---------- */
   function loadMunicipios(){
     fetch('estufas_municipios.geojson')
       .then(r => r.json())
@@ -245,7 +236,7 @@
           style: f => {
             const p = f.properties || {};
             const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
-            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:colorByRatioMunicipio(ratio) };
+            return { color:getCss('--azul'), weight:1, fillOpacity:0.6, fillColor:colorByRatio(ratio) };
           },
           onEachFeature: (feature, lyr) => {
             const p = feature.properties || {};
@@ -257,149 +248,66 @@
             );
           }
         });
+
+        // Por defecto activar Municipios
         muniLayer.addTo(map);
+
+        // Añadir como base layer
         if(layerControl) layerControl.addBaseLayer(muniLayer, 'Municipios');
       })
       .catch(err => console.error('No se pudo cargar estufas_municipios.geojson', err));
   }
 
-  /* ---------- LOCALIDADES con datos del CENSO ---------- */
-  let CENSO_IDX = null;       // { "ent|mun|loc" : {hogares, quiere} }
-  let LOCALIDADES_GEO = null; // geojson completo
-  let censoReady = false, geoReady = false;
-
-  const normaliza = s => (s||'').toString().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-z0-9 ]/g,'').trim();
-
-  function findCol(headers, opciones){
-    const H = headers.map(h=>({raw:h,n:normaliza(h)}));
-    for(const target of opciones){
-      const tn = normaliza(target);
-      const hit = H.find(x => x.n === tn);
-      if(hit) return hit.raw;
-    }
-    // aproximado
-    for(const target of opciones){
-      const tn = normaliza(target);
-      const hit = H.find(x => x.n.includes(tn));
-      if(hit) return hit.raw;
-    }
-    return null;
-  }
-  function toNum(v){
-    if(v===null||v===undefined) return 0;
-    const s = String(v).replace(/,/g,'').trim();
-    const n = Number(s);
-    return isFinite(n) ? n : 0;
-  }
-
-  // Lee y agrega Censo_estufas.csv -> llena CENSO_IDX
-  function loadCenso(){
-    return new Promise((resolve,reject)=>{
-      Papa.parse('Censo_estufas.csv', {
-        download:true, header:true, skipEmptyLines:true,
-        complete:(res)=>{
-          const rows = res.data || [];
-          const headers = res.meta && res.meta.fields ? res.meta.fields : Object.keys(rows[0]||{});
-
-          const cEnt = findCol(headers, ['ENTIDAD','Entidad','estado']);
-          const cMun = findCol(headers, ['MUNICIPIO','Municipio','municipio']);
-          const cLoc = findCol(headers, ['LOCALIDAD','Localidad','NOM_LOC','nombre localidad','localidad']);
-          const cHog = findCol(headers, ['hogares','total hogares','Hogares']);
-          const cQui = findCol(headers, ['quiere estufa','quiere_estufa','quiere','Quiere_estufa']);
-
-          const idx = {};
-          rows.forEach(r=>{
-            const ent = normaliza(r[cEnt]||'');
-            const mun = normaliza(r[cMun]||'');
-            const loc = normaliza(r[cLoc]||'');
-            if(!ent || !mun || !loc) return;
-            const key = `${ent}|${mun}|${loc}`;
-            if(!idx[key]) idx[key] = {hogares:0, quiere:0};
-            idx[key].hogares += toNum(r[cHog]);
-            idx[key].quiere  += toNum(r[cQui]);
-          });
-          CENSO_IDX = idx;
-          censoReady = true;
-          resolve();
-        },
-        error:(e)=>{console.error(e); reject(e);}
-      });
-    });
-  }
-
   async function loadLocalidades(){
-    LOCALIDADES_GEO = await fetchFirstExisting([
-      'localidades_filtradas_mich.geojson',
-      'localidades_filtrdas_mich.geojson',
-      './localidades_filtradas_mich.geojson',
-      './localidades_filtrdas_mich.geojson'
-    ]);
-    geoReady = true;
-    buildLocalidadesLayerIfReady();
-  }
+    try{
+      const geo = await fetchFirstExisting([
+        'localidades_filtradas_mich.geojson',
+        'localidades_filtrdas_mich.geojson',
+        './localidades_filtradas_mich.geojson',
+        './localidades_filtrdas_mich.geojson'
+      ]);
 
-  function buildLocalidadesLayerIfReady(){
-    if(!geoReady || !censoReady) return;
+      let count = 0;
+      locaLayer = L.geoJSON(geo, {
+        pointToLayer: (feature, latlng) => {
+          count++;
+          const p = feature.properties || {};
+          const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa / p.hogares) : 0;
+          return L.circleMarker(latlng, {
+            radius: 6,
+            color: '#ffffff',
+            weight: 1,
+            fillColor: colorByRatio(ratio),
+            fillOpacity: 0.9
+          });
+        },
+        onEachFeature: (feature, lyr) => {
+          const p = feature.properties || {};
+          const ent = p.ENTIDAD || p.entidad || '—';
+          const mun = p.MUNICIPIO || p.municipio || '—';
+          const loc = p.LOCALIDAD || p.localidad || p.NOM_LOC || '—';
+          const pct = (p.hogares && p.quiere_estufa)
+            ? ((p.quiere_estufa/p.hogares)*100).toFixed(1)
+            : '0.0';
+          lyr.bindPopup(
+            `<b>${loc}</b><br>${mun}, ${ent}<br>
+             Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>
+             Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`
+          );
+        }
+      });
 
-    // quitar capa previa si existía
-    if(locaLayer){ locaLayer.remove(); locaLayer = null; }
-
-    let count = 0;
-    locaLayer = L.geoJSON(LOCALIDADES_GEO, {
-      filter: (feat)=>{
-        // solo localidades con datos
-        const p = feat.properties || {};
-        const ent = normaliza(p.ENTIDAD || p.entidad || '');
-        const mun = normaliza(p.MUNICIPIO || p.municipio || '');
-        const loc = normaliza(p.LOCALIDAD || p.localidad || p.NOM_LOC || '');
-        const key = `${ent}|${mun}|${loc}`;
-        const rec = CENSO_IDX && CENSO_IDX[key];
-        return !!(rec && rec.quiere > 0); // deja solo las que tienen censo y al menos alguien quiere
-      },
-      pointToLayer: (feature, latlng) => {
-        count++;
-        const rec = getCensoForFeature(feature);
-        const ratio = (rec && rec.hogares) ? (rec.quiere / rec.hogares) : 0;
-        return L.circleMarker(latlng, {
-          radius: 9,                 /* más grande que el punto de estufa */
-          color: '#ffffff',
-          weight: 1.25,
-          fillColor: colorByRatioLocalidad(ratio),
-          fillOpacity: 0.95
-        });
-      },
-      onEachFeature: (feature, lyr) => {
-        const p = feature.properties || {};
-        const ent = p.ENTIDAD || p.entidad || '—';
-        const mun = p.MUNICIPIO || p.municipio || '—';
-        const loc = p.LOCALIDAD || p.localidad || p.NOM_LOC || '—';
-        const rec = getCensoForFeature(feature) || {hogares:0,quiere:0};
-        const pct = rec.hogares ? ((rec.quiere/rec.hogares)*100).toFixed(1) : '0.0';
-        lyr.bindPopup(
-          `<b>${loc}</b><br>${mun}, ${ent}<br>
-           Hogares: ${Number(rec.hogares||0).toLocaleString('es-MX')}<br>
-           Quiere estufa: ${Number(rec.quiere||0).toLocaleString('es-MX')} (${pct}%)`
-        );
+      if (count === 0){
+        console.warn('El GeoJSON de localidades se cargó pero no trae features.');
       }
-    });
 
-    if (count === 0){
-      console.warn('No hubo localidades con datos del censo (revisa encabezados del CSV o normalización).');
+      // Registrar como base layer (conmutador con Municipios)
+      if (layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
+
+    }catch(err){
+      console.error(err);
+      alert('No se pudo cargar la capa de Localidades.\nVerifica el nombre y que el archivo esté junto al HTML.');
     }
-
-    // registrar como base layer conmutando con Municipios
-    if(layerControl) layerControl.addBaseLayer(locaLayer, 'Localidades');
-  }
-
-  function getCensoForFeature(feat){
-    const p = feat.properties || {};
-    const ent = normaliza(p.ENTIDAD || p.entidad || '');
-    const mun = normaliza(p.MUNICIPIO || p.municipio || '');
-    const loc = normaliza(p.LOCALIDAD || p.localidad || p.NOM_LOC || '');
-    const key = `${ent}|${mun}|${loc}`;
-    return CENSO_IDX ? CENSO_IDX[key] : null;
   }
 
   function renderMap(rows){
@@ -409,12 +317,12 @@
         maxZoom:18, attribution:'© OpenStreetMap'
       }).addTo(map);
 
+      // Control de capas (exclusivo entre Municipios/Localidades)
       layerControl = L.control.layers({}, null, {collapsed:false}).addTo(map);
 
-      // Cargar ambas fuentes y construir cuando ambas estén listas
+      // Cargar capas
       loadMunicipios();
       loadLocalidades();
-      loadCenso().then(buildLocalidadesLayerIfReady);
     }
 
     // Marcadores de instalaciones (capa independiente)
@@ -495,6 +403,7 @@
     else { dt=new DataTable('#tabla',{data,columns,pageLength:10,responsive:true}); }
   }
 
+  // ---- Tabla de Localidades (igual que antes)
   function initTablasCenso(){
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
@@ -515,17 +424,21 @@
         });
       });
 
-    // Cache para ranking municipal
+    // Cargar cache para ranking municipal (sin pintar todavía)
     fetch('ranking_priorizacion_municipio.json', {cache:'no-store'})
       .then(r => r.json())
       .then(rows => {
         rankingCache = rows || [];
+        // Pintar ranking por primera vez con los filtros iniciales
         renderRankingTable(applyFilters(DATA));
       });
   }
 
+  // ---- NUEVA tabla de ranking con columnas dinámicas
   async function renderRankingTable(filteredRows){
-    if (!rankingCache) return;
+    if (!rankingCache) return; // aún no carga el JSON base
+
+    // Índice de estufas instaladas por ENTIDAD|MUNICIPIO (con filtros)
     const idxInst = {};
     filteredRows
       .filter(r => r.estatus === 'Instalada')
@@ -534,6 +447,7 @@
         idxInst[key] = (idxInst[key] || 0) + 1;
       });
 
+    // Armar filas
     const rows = rankingCache.map(row => {
       const ent = row.ENTIDAD ?? row.entidad ?? '';
       const mun = row.MUNICIPIO ?? row.municipio ?? '';
@@ -542,6 +456,7 @@
       const instaladas = idxInst[key] || 0;
       const hogares = Number(row.hogares || 0);
       const quiere  = Number(row.quiere_estufa || 0);
+
       const pct_instaladas = quiere > 0 ? (instaladas / quiere) * 100 : 0;
 
       return {
@@ -584,7 +499,7 @@
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
-    renderRankingTable(rows);
+    renderRankingTable(rows); // <- actualizar segunda tabla con filtros vigentes
   }
 
   bootstrapFilters();
@@ -594,7 +509,7 @@
   refresh();
   initTablasCenso();
 
-  // Leyenda (se mantiene la de municipios)
+  // Leyenda del mapa
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
@@ -605,7 +520,7 @@
       div.style.border = '1px solid var(--borde)';
       div.style.borderRadius = '8px';
       div.style.boxShadow = '0 2px 6px rgba(0,0,0,.05)';
-      div.innerHTML = '<b>Leyenda (municipios)</b><br>'
+      div.innerHTML = '<b>Leyenda</b><br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fed976;margin-right:6px;border:1px solid #ccc"></span> ≤ 80%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#feb24c;margin-right:6px;border:1px solid #ccc"></span> 80–85%<br>'
         + '<span style="display:inline-block;width:12px;height:12px;background:#fd8d3c;margin-right:6px;border:1px solid #ccc"></span> 85–90%<br>'
@@ -616,8 +531,12 @@
     setTimeout(()=>legend.addTo(map),1000);
   })();
 
-  /* ========= KPI “Hogares que quieren estufa (censo)” ========= */
-  // (se mantiene el cálculo de la suma total por robustez)
+  /* ========= KPI “Hogares que quieren estufa (censo)” DESDE Censo_estufas.csv ========= */
+  function normaliza(s){
+    return (s||'').toString().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]/g,'');
+  }
   function encuentraColumna(headers){
     const objetivo = 'grupoprioritariosenerrembio';
     let mejor = null;
@@ -632,6 +551,7 @@
     });
     return mejor;
   }
+
   Papa.parse('Censo_estufas.csv', {
     download: true,
     header: true,
@@ -653,7 +573,7 @@
     error: (err) => { console.error('Error al leer Censo_estufas.csv:', err); }
   });
 
-  /* ====== Lightbox ====== */
+  /* ====== Lightbox JS ====== */
   const lightboxEl = document.createElement('div');
   lightboxEl.className = 'lightbox';
   lightboxEl.innerHTML = `
@@ -661,6 +581,7 @@
     <img alt="">
   `;
   document.body.appendChild(lightboxEl);
+
   function openLightbox(src, alt){
     const img = lightboxEl.querySelector('img');
     img.src = src; img.alt = alt || '';
