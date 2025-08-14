@@ -153,7 +153,6 @@
 </div>
 <div class="card" style="overflow:auto">
 <h2>Bitácora de actividades</h2>
-
 <div class="tab-pane active" id="tab-seg">
 <table class="display" id="tablaSeg" style="width:100%"></table>
 </div>
@@ -517,10 +516,7 @@
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
     if (!DataTable.isDataTable('#tablaSeg')) {
-      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[{title:'Fecha', data:'fecha'},{title:'Entidad', data:'entidad'},{title:'Municipio', data:'municipio'},{title:'Localidad', data:'localidad'},{title:'Beneficiario / Hogar', data:'beneficiario'},{title:'Estatus', data:'estatus'},{title:'Espacio listo', data:'espacio_listo'},{title:'Materiales entregados', data:'materiales'},{title:'Fecha inicio obra', data:'fecha_inicio'},{title:'Funcionamiento', data:'funcion'},{title:'Checklist piezas', data:'piezas'},{title:'Satisfacción', data:'satisfaccion'},{title:'Observaciones', data:'observaciones'}]});
-    }
-    if (!DataTable.isDataTable('#tablaCon')) {
-      new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
+      new DataTable('#tablaSeg',{ data: demo, columns:[{title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Localidad',data:'localidad'},{title:'Beneficiario / Hogar',data:'beneficiario'},{title:'Estatus',data:'estatus'},{title:'Espacio listo',data:'espacio_listo'},{title:'Materiales entregados',data:'materiales'},{title:'Fecha inicio obra',data:'fecha_inicio'},{title:'Funcionamiento',data:'funcion'},{title:'Checklist piezas',data:'piezas'},{title:'Satisfacción',data:'satisfaccion'},{title:'Observaciones',data:'observaciones'}],language:lang,dom:'ftip',columns:[
         {title:'Fecha',data:'fecha'},
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
@@ -545,40 +541,78 @@
     return def;
   }
 
+  
   function cargarBitacora(){
-    Papa.parse('bitacora_actividades.csv', {
-      download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>{
-        const rows = res.data||[];
-        const seg = [];
-        const con = [];
-        rows.forEach(r=>{
-          const tipo = (col(r,['tipo','formato','fase'],'')||'').toString().toLowerCase();
-          const base = {
-            entidad: col(r,['entidad','estado']),
-            municipio: col(r,['municipio']),
-            localidad: col(r,['localidad','colonia','nom_loc']),
-            beneficiario: col(r,['nombre','nombre (s)','persona beneficiaria','beneficiario']),
-            fecha: col(r,['fecha','fecha de inicio','fecha de conclusión','fecha_conclusion','fecha_inicio']),
-            id_promotor: col(r,['id promotor','id_promotor','promotor id','id']),
-            observaciones: col(r,['observaciones','nota','comentarios'])
-          };
-          if(tipo.includes('conclu')){
-            con.push({
-              ...base,
-              funcion: col(r,['funcionamiento','calienta correctamente','se expulsa el humo correctamente']),
-              piezas: col(r,['check list','piezas','partes','la estufa patsari cuenta con']),
-              satisfaccion: col(r,['satisfaccion','satisfacción','opinion final','opinión final'])
-            });
-          }else{
-            seg.push({
-              ...base,
-              espacio_listo: col(r,['el espacio ya se encuentra en condiciones','espacio listo','verificacion del espacio']),
-              materiales: col(r,['materiales entregados','entrega de materiales']),
-              fecha_inicio: col(r,['fecha de inicio de construccion','fecha de inicio']),
-            });
-          }
-        });
+    // Datos DEMO embebidos (sin CSV)
+    const demo = [
+      {
+        fecha: '2025-08-01',
+        entidad: 'Michoacán',
+        municipio: 'Paracho',
+        localidad: 'Capacuaro',
+        beneficiario: 'Familia López García',
+        estatus: 'Seguimiento',
+        espacio_listo: 'Sí',
+        materiales: 'Bloques, cemento, rejilla',
+        fecha_inicio: '2025-08-03',
+        funcion: 'Correcto',
+        piezas: 'Cámara, parrilla, chimenea',
+        satisfaccion: 'Alta',
+        observaciones: 'Se recomendó mantenimiento de chimenea'
+      },
+      {
+        fecha: '2025-08-02',
+        entidad: 'Michoacán',
+        municipio: 'Cherán',
+        localidad: 'Tanaco',
+        beneficiario: 'Hogar Hernández',
+        estatus: 'Concluida',
+        espacio_listo: 'Sí',
+        materiales: 'Completos',
+        fecha_inicio: '2025-08-04',
+        funcion: 'Calienta bien y expulsa humo',
+        piezas: 'Completo (checklist OK)',
+        satisfaccion: 'Muy alta',
+        observaciones: 'Se capacitó a la familia en uso eficiente'
+      },
+      {
+        fecha: '2025-08-05',
+        entidad: 'Michoacán',
+        municipio: 'Nahuatzen',
+        localidad: 'Arantepacua',
+        beneficiario: 'Familia Pérez',
+        estatus: 'Seguimiento',
+        espacio_listo: 'En adecuación',
+        materiales: 'Pendiente rejilla',
+        fecha_inicio: '2025-08-07',
+        funcion: 'En prueba',
+        piezas: 'Parrilla y cámara instaladas',
+        satisfaccion: 'Media',
+        observaciones: 'Esperando entrega de rejilla'
+      }
+    ];
+
+    const lang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
+
+    if (typeof dtSeg !== 'undefined' && dtSeg){ dtSeg.destroy(); dtSeg = null; }
+    if (typeof dtCon !== 'undefined' && dtCon){ try{dtCon.destroy();}catch(e){} dtCon = null; }
+
+    dtSeg = new DataTable('#tablaSeg',{ data: demo, columns:[{title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Localidad',data:'localidad'},{title:'Beneficiario / Hogar',data:'beneficiario'},{title:'Estatus',data:'estatus'},{title:'Espacio listo',data:'espacio_listo'},{title:'Materiales entregados',data:'materiales'},{title:'Fecha inicio obra',data:'fecha_inicio'},{title:'Funcionamiento',data:'funcion'},{title:'Checklist piezas',data:'piezas'},{title:'Satisfacción',data:'satisfaccion'},{title:'Observaciones',data:'observaciones'}],
+      pageLength: 8, responsive:true, language: lang, dom:'ftip'
+    });
+  }
+);
 
         const lang = {
           decimal: ",", thousands: ".",
@@ -596,19 +630,7 @@
         if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
         if (dtCon){ dtCon.destroy(); dtCon = null; }
 
-        dtSeg = new DataTable('#tablaSeg',{
-          data: seg,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Espacio listo', data:'espacio_listo'},
-            {title:'Materiales', data:'materiales'},
-            {title:'ID Promotor', data:'id_promotor'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
+        dtSeg = new DataTable('#tablaSeg',{ data: demo, columns:[{title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Localidad',data:'localidad'},{title:'Beneficiario / Hogar',data:'beneficiario'},{title:'Estatus',data:'estatus'},{title:'Espacio listo',data:'espacio_listo'},{title:'Materiales entregados',data:'materiales'},{title:'Fecha inicio obra',data:'fecha_inicio'},{title:'Funcionamiento',data:'funcion'},{title:'Checklist piezas',data:'piezas'},{title:'Satisfacción',data:'satisfaccion'},{title:'Observaciones',data:'observaciones'}],
           pageLength: 8, responsive:true, language: lang, dom:'ftip'
         });
 
@@ -628,7 +650,7 @@
           pageLength: 8, responsive:true, language: lang, dom:'ftip'
         });
       },
-      error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
+      error: (e)=> console.warn('No se pudo leer NO_CSV_EMBEBIDO.csv', e)
     });
   }
 
