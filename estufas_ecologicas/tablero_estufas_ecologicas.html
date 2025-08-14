@@ -1,208 +1,3 @@
-🔄 **HTML Edit Mode** - Processing your edit request...
-
-
-
-First, I need to remove the tabs section and simplify the bitácora structure:
-
-```diff
-<<<<<<< SEARCH
-      <div class="card" style="overflow:auto">
-        <h2>Bitácora de actividades</h2>
-        <!-- SE ELIMINAN LOS BOTONES DE PESTAÑAS -->
-        <div id="tab-seg" class="tab-pane active">
-          <table id="tablaSeg" class="display" style="width:100%"></table>
-        </div>
-        <!-- SE ELIMINA LA SECCIÓN DE LA SEGUNDA TABLA -->
-      </div>
-=======
-      <div class="card" style="overflow:auto">
-        <h2>Bitácora de actividades</h2>
-        <table id="tablaSeg" class="display" style="width:100%"></table>
-      </div>
->>>>>>> REPLACE
-```
-
-
-Now I need to fix the main issue - the CSV loading function is not logging properly and the data mapping might be incorrect. Let me add debugging and fix the function:
-
-```diff
-<<<<<<< SEARCH
-  function cargarBitacora(){
-    Papa.parse('bitacora_actividades.csv', {
-      download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>{
-        const rows = res.data||[];
-        const allRecords = [];
-        rows.forEach(r=>{
-          const estatus_csv = col(r,['Estatus']); // Obtener el estatus original del CSV
-          const base = {
-            fecha: col(r,['Fecha']),
-            estatus_csv: estatus_csv, // Guardar el estatus original
-            entidad: col(r,['ENTIDAD']),
-            municipio: col(r,['MUNICIPIO']),
-            localidad: col(r,['LOCALIDAD']),
-            beneficiario: col(r,['Beneficiario / Hogar']),
-            observaciones: col(r,['Observaciones'])
-          };
-
-          // Añadir campos específicos de seguimiento o conclusión, si existen
-          if (estatus_csv.toLowerCase().includes('seguimiento')) {
-            allRecords.push({
-              ...base,
-              espacio_listo: col(r,['Espacio listo']),
-              materiales: col(r,['Materiales entregados']),
-              funcion: '', // Vacío para seguimiento
-              piezas: '', // Vacío para seguimiento
-              satisfaccion: '' // Vacío para seguimiento
-            });
-          } else if (estatus_csv.toLowerCase().includes('conclusión')) {
-            allRecords.push({
-              ...base,
-              espacio_listo: '', // Vacío para conclusión
-              materiales: '', // Vacío para conclusión
-              funcion: col(r,['Funcionamiento']),
-              piezas: col(r,['Checklist piezas']),
-              satisfaccion: col(r,['Satisfacción'])
-            });
-          } else {
-            // Para cualquier otro estatus, incluir todos los campos disponibles
-            allRecords.push({
-              ...base,
-              espacio_listo: col(r,['Espacio listo']),
-              materiales: col(r,['Materiales entregados']),
-              funcion: col(r,['Funcionamiento']),
-              piezas: col(r,['Checklist piezas']),
-              satisfaccion: col(r,['Satisfacción'])
-            });
-          }
-        });
-
-        const lang = {
-          decimal: ",", thousands: ".",
-          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-          infoEmpty: "Mostrando 0 a 0 de 0 registros",
-          infoFiltered: "(filtrado de _MAX_ en total)",
-          lengthMenu: "Mostrar _MENU_",
-          loadingRecords: "Cargando...",
-          processing: "Procesando...",
-          search: "Buscar:",
-          zeroRecords: "No se encontraron registros",
-          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-        };
-
-        if (dtBitacora){ dtBitacora.destroy(); dtBitacora = null; } // Destruir la instancia existente
-
-        dtBitacora = new DataTable('#tablaSeg',{ // Usar #tablaSeg para la tabla única
-          data: allRecords,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Estatus', data:'estatus_csv'}, // Mostrar el estatus del CSV
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Espacio listo', data:'espacio_listo'},
-            {title:'Materiales', data:'materiales'},
-            {title:'Funcionamiento', data:'funcion'},
-            {title:'Piezas/Checklist', data:'piezas'},
-            {title:'Satisfacción', data:'satisfaccion'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
-      },
-      error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
-    });
-  }
-=======
-  function cargarBitacora(){
-    console.log('Iniciando carga de bitacora_actividades.csv...');
-    Papa.parse('bitacora_actividades.csv', {
-      download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>{
-        console.log('CSV cargado. Filas encontradas:', res.data?.length);
-        console.log('Encabezados disponibles:', res.meta?.fields);
-        console.log('Primera fila de ejemplo:', res.data?.[0]);
-        
-        const rows = res.data||[];
-        const allRecords = [];
-        
-        rows.forEach((r, index)=>{
-          // Probar diferentes variaciones de nombres de columnas
-          const record = {
-            fecha: col(r,['Fecha', 'FECHA', 'fecha']),
-            estatus_csv: col(r,['Estatus', 'ESTATUS', 'estatus', 'Status']),
-            entidad: col(r,['ENTIDAD', 'Entidad', 'entidad']),
-            municipio: col(r,['MUNICIPIO', 'Municipio', 'municipio']),
-            localidad: col(r,['LOCALIDAD', 'Localidad', 'localidad']),
-            beneficiario: col(r,['Beneficiario / Hogar', 'Beneficiario', 'beneficiario', 'BENEFICIARIO']),
-            espacio_listo: col(r,['Espacio listo', 'ESPACIO_LISTO', 'espacio_listo']),
-            materiales: col(r,['Materiales entregados', 'Materiales', 'MATERIALES', 'materiales']),
-            funcion: col(r,['Funcionamiento', 'FUNCIONAMIENTO', 'funcionamiento']),
-            piezas: col(r,['Checklist piezas', 'Piezas', 'PIEZAS', 'piezas']),
-            satisfaccion: col(r,['Satisfacción', 'SATISFACCION', 'satisfaccion']),
-            observaciones: col(r,['Observaciones', 'OBSERVACIONES', 'observaciones'])
-          };
-          
-          if(index < 3) console.log(`Registro ${index}:`, record);
-          allRecords.push(record);
-        });
-
-        console.log('Total de registros procesados:', allRecords.length);
-
-        const lang = {
-          decimal: ",", thousands: ".",
-          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-          infoEmpty: "Mostrando 0 a 0 de 0 registros",
-          infoFiltered: "(filtrado de _MAX_ en total)",
-          lengthMenu: "Mostrar _MENU_",
-          loadingRecords: "Cargando...",
-          processing: "Procesando...",
-          search: "Buscar:",
-          zeroRecords: "No se encontraron registros",
-          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-        };
-
-        if (dtBitacora){ 
-          console.log('Destruyendo tabla anterior...');
-          dtBitacora.destroy(); 
-          dtBitacora = null; 
-        }
-
-        console.log('Creando nueva tabla con', allRecords.length, 'registros...');
-        dtBitacora = new DataTable('#tablaSeg',{
-          data: allRecords,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Estatus', data:'estatus_csv'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Espacio listo', data:'espacio_listo'},
-            {title:'Materiales', data:'materiales'},
-            {title:'Funcionamiento', data:'funcion'},
-            {title:'Piezas/Checklist', data:'piezas'},
-            {title:'Satisfacción', data:'satisfaccion'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
-        console.log('Tabla creada exitosamente');
-      },
-      error: (e)=> {
-        console.error('Error al cargar bitacora_actividades.csv:', e);
-        console.warn('No se pudo leer bitacora_actividades.csv', e);
-      }
-    });
-  }
->>>>>>> REPLACE
-
-Summ
-```
-ary: I removed the tab structure from the HTML and enhanced the CSV loading function with detailed console logging to help debug why the data isn't showing. The function now tries multiple column name variations and provides extensive logging to identify the exact issue with the CSV data loading.Here is the updated HTML content after applying above edits:
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -291,7 +86,7 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
     .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
     .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
 
-    /* Tabs bitácora - ESTO YA NO SE USARÁ PERO SE MANTIENE EL ESTILO POR SI ACASO */
+    /* Tabs bitácora */
     .tabs{display:flex;gap:8px;margin-bottom:10px}
     .tab-btn{padding:8px 12px;border:1px solid var(--borde);background:#fff;border-radius:10px;cursor:pointer;font-weight:600}
     .tab-btn.active{background:var(--guinda);color:#fff;border-color:var(--guinda)}
@@ -368,7 +163,16 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
       </div>
       <div class="card" style="overflow:auto">
         <h2>Bitácora de actividades</h2>
-        <table id="tablaSeg" class="display" style="width:100%"></table>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="seg">Seguimiento</button>
+          <button class="tab-btn" data-tab="con">Conclusión</button>
+        </div>
+        <div id="tab-seg" class="tab-pane active">
+          <table id="tablaSeg" class="display" style="width:100%"></table>
+        </div>
+        <div id="tab-con" class="tab-pane">
+          <table id="tablaCon" class="display" style="width:100%"></table>
+        </div>
       </div>
     </div>
   </section>
@@ -712,11 +516,11 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
 
 
   
-  /* ===================== BITÁCORA (TABLA ÚNICA) ===================== */
-  let dtBitacora; // Renombrado de dtSeg a dtBitacora para la tabla única
+  /* ===================== BITÁCORA (SEGUIMIENTO / CONCLUSIÓN) ===================== */
+  let dtSeg, dtCon;
 
   // Mostrar encabezados vacíos para que se vean las tablas aunque el CSV tarde en cargar
-  function initEmptyBitacoraTable(){
+  function initEmptyBitacoraTables(){
     const lang = {
       decimal:",", thousands:".",
       info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
@@ -729,16 +533,26 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
       zeroRecords:"No se encontraron registros",
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
-    if (!DataTable.isDataTable('#tablaSeg')) { // Se sigue usando #tablaSeg como ID
+    if (!DataTable.isDataTable('#tablaSeg')) {
       new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
         {title:'Fecha',data:'fecha'},
-        {title:'Estatus',data:'estatus_csv'}, // Nueva columna para el estatus del CSV
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
         {title:'Localidad',data:'localidad'},
         {title:'Beneficiario',data:'beneficiario'},
         {title:'Espacio listo',data:'espacio_listo'},
         {title:'Materiales',data:'materiales'},
+        {title:'ID Promotor',data:'id_promotor'},
+        {title:'Observaciones',data:'observaciones'}
+      ]});
+    }
+    if (!DataTable.isDataTable('#tablaCon')) {
+      new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
+        {title:'Fecha',data:'fecha'},
+        {title:'Entidad',data:'entidad'},
+        {title:'Municipio',data:'municipio'},
+        {title:'Localidad',data:'localidad'},
+        {title:'Beneficiario',data:'beneficiario'},
         {title:'Funcionamiento',data:'funcion'},
         {title:'Piezas/Checklist',data:'piezas'},
         {title:'Satisfacción',data:'satisfaccion'},
@@ -759,39 +573,39 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
   }
 
   function cargarBitacora(){
-    console.log('Iniciando carga de bitacora_actividades.csv...');
     Papa.parse('bitacora_actividades.csv', {
       download:true, header:true, skipEmptyLines:true,
       complete:(res)=>{
-        console.log('CSV cargado. Filas encontradas:', res.data?.length);
-        console.log('Encabezados disponibles:', res.meta?.fields);
-        console.log('Primera fila de ejemplo:', res.data?.[0]);
-        
         const rows = res.data||[];
-        const allRecords = [];
-        
-        rows.forEach((r, index)=>{
-          // Probar diferentes variaciones de nombres de columnas
-          const record = {
-            fecha: col(r,['Fecha', 'FECHA', 'fecha']),
-            estatus_csv: col(r,['Estatus', 'ESTATUS', 'estatus', 'Status']),
-            entidad: col(r,['ENTIDAD', 'Entidad', 'entidad']),
-            municipio: col(r,['MUNICIPIO', 'Municipio', 'municipio']),
-            localidad: col(r,['LOCALIDAD', 'Localidad', 'localidad']),
-            beneficiario: col(r,['Beneficiario / Hogar', 'Beneficiario', 'beneficiario', 'BENEFICIARIO']),
-            espacio_listo: col(r,['Espacio listo', 'ESPACIO_LISTO', 'espacio_listo']),
-            materiales: col(r,['Materiales entregados', 'Materiales', 'MATERIALES', 'materiales']),
-            funcion: col(r,['Funcionamiento', 'FUNCIONAMIENTO', 'funcionamiento']),
-            piezas: col(r,['Checklist piezas', 'Piezas', 'PIEZAS', 'piezas']),
-            satisfaccion: col(r,['Satisfacción', 'SATISFACCION', 'satisfaccion']),
-            observaciones: col(r,['Observaciones', 'OBSERVACIONES', 'observaciones'])
+        const seg = [];
+        const con = [];
+        rows.forEach(r=>{
+          const tipo = (col(r,['tipo','formato','fase'],'')||'').toString().toLowerCase();
+          const base = {
+            entidad: col(r,['entidad','estado']),
+            municipio: col(r,['municipio']),
+            localidad: col(r,['localidad','colonia','nom_loc']),
+            beneficiario: col(r,['nombre','nombre (s)','persona beneficiaria','beneficiario']),
+            fecha: col(r,['fecha','fecha de inicio','fecha de conclusión','fecha_conclusion','fecha_inicio']),
+            id_promotor: col(r,['id promotor','id_promotor','promotor id','id']),
+            observaciones: col(r,['observaciones','nota','comentarios'])
           };
-          
-          if(index < 3) console.log(`Registro ${index}:`, record);
-          allRecords.push(record);
+          if(tipo.includes('conclu')){
+            con.push({
+              ...base,
+              funcion: col(r,['funcionamiento','calienta correctamente','se expulsa el humo correctamente']),
+              piezas: col(r,['check list','piezas','partes','la estufa patsari cuenta con']),
+              satisfaccion: col(r,['satisfaccion','satisfacción','opinion final','opinión final'])
+            });
+          }else{
+            seg.push({
+              ...base,
+              espacio_listo: col(r,['el espacio ya se encuentra en condiciones','espacio listo','verificacion del espacio']),
+              materiales: col(r,['materiales entregados','entrega de materiales']),
+              fecha_inicio: col(r,['fecha de inicio de construccion','fecha de inicio']),
+            });
+          }
         });
-
-        console.log('Total de registros procesados:', allRecords.length);
 
         const lang = {
           decimal: ",", thousands: ".",
@@ -806,24 +620,33 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
           paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
         };
 
-        if (dtBitacora){ 
-          console.log('Destruyendo tabla anterior...');
-          dtBitacora.destroy(); 
-          dtBitacora = null; 
-        }
+        if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
+        if (dtCon){ dtCon.destroy(); dtCon = null; }
 
-        console.log('Creando nueva tabla con', allRecords.length, 'registros...');
-        dtBitacora = new DataTable('#tablaSeg',{
-          data: allRecords,
+        dtSeg = new DataTable('#tablaSeg',{
+          data: seg,
           columns:[
             {title:'Fecha', data:'fecha'},
-            {title:'Estatus', data:'estatus_csv'},
             {title:'Entidad', data:'entidad'},
             {title:'Municipio', data:'municipio'},
             {title:'Localidad', data:'localidad'},
             {title:'Beneficiario', data:'beneficiario'},
             {title:'Espacio listo', data:'espacio_listo'},
             {title:'Materiales', data:'materiales'},
+            {title:'ID Promotor', data:'id_promotor'},
+            {title:'Observaciones', data:'observaciones'}
+          ],
+          pageLength: 8, responsive:true, language: lang, dom:'ftip'
+        });
+
+        dtCon = new DataTable('#tablaCon',{
+          data: con,
+          columns:[
+            {title:'Fecha', data:'fecha'},
+            {title:'Entidad', data:'entidad'},
+            {title:'Municipio', data:'municipio'},
+            {title:'Localidad', data:'localidad'},
+            {title:'Beneficiario', data:'beneficiario'},
             {title:'Funcionamiento', data:'funcion'},
             {title:'Piezas/Checklist', data:'piezas'},
             {title:'Satisfacción', data:'satisfaccion'},
@@ -831,12 +654,8 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
           ],
           pageLength: 8, responsive:true, language: lang, dom:'ftip'
         });
-        console.log('Tabla creada exitosamente');
       },
-      error: (e)=> {
-        console.error('Error al cargar bitacora_actividades.csv:', e);
-        console.warn('No se pudo leer bitacora_actividades.csv', e);
-      }
+      error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
     });
   }
 
@@ -870,6 +689,7 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
         DATA.forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
         rows.forEach(r=>{
           const instaladas = installedByMun[r.MUNICIPIO] || 0;
+          r.instaladas = instaladas;
           const quiere = Number(r.quiere_estufa||0);
           r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
         });
@@ -976,8 +796,8 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
   initTablasCenso();
   cargarCensoCSV_yCombos();
 
-  // Mostrar estructura de la tabla de bitácora única desde el inicio
-  initEmptyBitacoraTable();
+  // Mostrar estructura de tablas de bitácora desde el inicio
+  initEmptyBitacoraTables();
   // Cargar CSV para bitácora
   cargarBitacora();
 
@@ -1043,4 +863,3 @@ ary: I removed the tab structure from the HTML and enhanced the CSV loading func
 </script>
 </body>
 </html>
-```
