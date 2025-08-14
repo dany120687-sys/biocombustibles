@@ -577,6 +577,10 @@
           paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
         };
 
+        // Destruir si ya existían (por recargas)
+        if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
+        if (dtCon){ dtCon.destroy(); dtCon = null; }
+
         // Seguimiento
         dtSeg = new DataTable('#tablaSeg',{
           data: seg,
