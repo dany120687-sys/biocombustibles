@@ -218,7 +218,7 @@ h1, h2, h3, .title, .card h2 {
   <!-- KPIs -->
   <section class="kpis">
     <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
-    <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
+    <div class="kpi"><div class="label">Población Beneficiada</div><div class="value" id="k_poblacion">–</div></div>
     <div class="kpi"><div class="label">Hogares que quieren estufa (censo)</div><div class="value" id="k_quiere_estufa">–</div></div>
     <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
   </section>
@@ -256,15 +256,14 @@ h1, h2, h3, .title, .card h2 {
         <canvas id="chartAhorro"></canvas>
       </div>
       <div class="card" style="overflow:auto">
-  <h2>Bitácora de actividades</h2>
-  <table id="tablaBitacora" class="display" style="width:100%"></table>
-</div>
-        <div id="tab-seg" class="tab-pane active">
-          <table id="tablaSeg" class="display" style="width:100%"></table>
-        </div>
-        <div id="tab-con" class="tab-pane">
-          <table id="tablaCon" class="display" style="width:100%"></table>
-        </div>
+        <h2>Bitácora de actividades</h2>
+        <table id="tablaBitacora" class="display" style="width:100%"></table>
+      </div>
+      <div id="tab-seg" class="tab-pane active">
+        <table id="tablaSeg" class="display" style="width:100%"></table>
+      </div>
+      <div id="tab-con" class="tab-pane">
+        <table id="tablaCon" class="display" style="width:100%"></table>
       </div>
     </div>
   </section>
@@ -418,9 +417,19 @@ h1, h2, h3, .title, .card h2 {
   function renderKPIs(rows){
     const total=rows.length;
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
-    $('#k_estufas').textContent=fmt(total);
-    $('#k_hogares').textContent=fmt(total);
-    $('#k_seguimiento').textContent= seg+" ("+(total?Math.round(seg/total*100):0)+"%)";
+
+    // Estufas instaladas
+    const elE = document.getElementById('k_estufas');
+    if (elE) elE.textContent = fmt(total);
+
+    // Población beneficiada = hogares * 4.2
+    const pobl = Math.round(total * 4.2);
+    const elP = document.getElementById('k_poblacion');
+    if (elP) elP.textContent = fmt(pobl);
+
+    // Seguimiento
+    const elS = document.getElementById('k_seguimiento');
+    if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
   /* ===================== MAPA ===================== */
@@ -607,89 +616,85 @@ h1, h2, h3, .title, .card h2 {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
+  /* ===================== BITÁCORA (ÚNICA, SIN CSV) ===================== */
+  let dtBitacora;
+  const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
-  
-  
-/* ===================== BITÁCORA (ÚNICA, SIN CSV) ===================== */
-let dtBitacora;
-const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
+  function initBitacoraEjemplo(){
+    const el = document.getElementById('tablaBitacora');
+    if(!el) return;
+    el.innerHTML = '';
 
-function initBitacoraEjemplo(){
-  // Limpia cualquier contenido previo
-  const el = document.getElementById('tablaBitacora');
-  if(!el) return;
-  el.innerHTML = '';
+    const rows = BITACORA_DATA;
 
-  const rows = BITACORA_DATA;
+    const dtLang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
 
-  const dtLang = {
-    decimal: ",", thousands: ".",
-    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-    infoEmpty: "Mostrando 0 a 0 de 0 registros",
-    infoFiltered: "(filtrado de _MAX_ en total)",
-    lengthMenu: "Mostrar _MENU_",
-    loadingRecords: "Cargando...",
-    processing: "Procesando...",
-    search: "Buscar:",
-    zeroRecords: "No se encontraron registros",
-    paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-  };
+    // Fallback básico si no carga DataTables
+    function renderBasico(rows){
+      const cols = ['fecha','entidad','municipio','localidad','beneficiario','estatus','espacio_listo','materiales','fecha_inicio','funcion','piezas','satisfaccion','observaciones'];
+      const headers = ['Fecha','Entidad','Municipio','Localidad','Beneficiario / Hogar','Estatus','Espacio listo','Materiales entregados','Fecha inicio obra','Funcionamiento','Checklist piezas','Satisfacción','Observaciones'];
+      const thead = document.createElement('thead');
+      const trh = document.createElement('tr');
+      headers.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; trh.appendChild(th); });
+      thead.appendChild(trh);
+      const tbody = document.createElement('tbody');
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        cols.forEach(c=>{ const td=document.createElement('td'); td.textContent = (r[c] ?? ''); tr.appendChild(td); });
+        tbody.appendChild(tr);
+      });
+      const table = document.getElementById('tablaBitacora');
+      table.appendChild(thead);
+      table.appendChild(tbody);
+    }
 
-  // Si no existe DataTables, renderiza una tabla básica
-  function renderBasico(rows){
-    const cols = ['fecha','entidad','municipio','localidad','beneficiario','estatus','espacio_listo','materiales','fecha_inicio','funcion','piezas','satisfaccion','observaciones'];
-    const headers = ['Fecha','Entidad','Municipio','Localidad','Beneficiario / Hogar','Estatus','Espacio listo','Materiales entregados','Fecha inicio obra','Funcionamiento','Checklist piezas','Satisfacción','Observaciones'];
-    const thead = document.createElement('thead');
-    const trh = document.createElement('tr');
-    headers.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; trh.appendChild(th); });
-    thead.appendChild(trh);
-    const tbody = document.createElement('tbody');
-    rows.forEach(r=>{
-      const tr=document.createElement('tr');
-      cols.forEach(c=>{ const td=document.createElement('td'); td.textContent = (r[c] ?? ''); tr.appendChild(td); });
-      tbody.appendChild(tr);
-    });
-    const table = document.getElementById('tablaBitacora');
-    table.appendChild(thead);
-    table.appendChild(tbody);
+    if (!(window.$ && $.fn && $.fn.DataTable)) {
+      renderBasico(rows);
+      return;
+    }
+
+    if (dtBitacora) {
+      dtBitacora.clear();
+      dtBitacora.rows.add(rows).draw();
+    } else {
+      dtBitacora = $('#tablaBitacora').DataTable({
+        data: rows,
+        columns: [
+          { title: 'Fecha', data: 'fecha' },
+          { title: 'Entidad', data: 'entidad' },
+          { title: 'Municipio', data: 'municipio' },
+          { title: 'Localidad', data: 'localidad' },
+          { title: 'Beneficiario / Hogar', data: 'beneficiario' },
+          { title: 'Estatus', data: 'estatus' },
+          { title: 'Espacio listo', data: 'espacio_listo' },
+          { title: 'Materiales entregados', data: 'materiales' },
+          { title: 'Fecha inicio obra', data: 'fecha_inicio' },
+          { title: 'Funcionamiento', data: 'funcion' },
+          { title: 'Checklist piezas', data: 'piezas' },
+          { title: 'Satisfacción', data: 'satisfaccion' },
+          { title: 'Observaciones', data: 'observaciones' }
+        ],
+        pageLength: 8,
+        responsive: true,
+        language: dtLang,
+        dom: 'ftip',
+        destroy: true
+      });
+    }
   }
 
-  if (!(window.$ && $.fn && $.fn.DataTable)) {
-    renderBasico(rows);
-    return;
-  }
-
-  if (dtBitacora) {
-    dtBitacora.clear();
-    dtBitacora.rows.add(rows).draw();
-  } else {
-    dtBitacora = $('#tablaBitacora').DataTable({
-      data: rows,
-      columns: [
-        { title: 'Fecha', data: 'fecha' },
-        { title: 'Entidad', data: 'entidad' },
-        { title: 'Municipio', data: 'municipio' },
-        { title: 'Localidad', data: 'localidad' },
-        { title: 'Beneficiario / Hogar', data: 'beneficiario' },
-        { title: 'Estatus', data: 'estatus' },
-        { title: 'Espacio listo', data: 'espacio_listo' },
-        { title: 'Materiales entregados', data: 'materiales' },
-        { title: 'Fecha inicio obra', data: 'fecha_inicio' },
-        { title: 'Funcionamiento', data: 'funcion' },
-        { title: 'Checklist piezas', data: 'piezas' },
-        { title: 'Satisfacción', data: 'satisfaccion' },
-        { title: 'Observaciones', data: 'observaciones' }
-      ],
-      pageLength: 8,
-      responsive: true,
-      language: dtLang,
-      dom: 'ftip',
-      destroy: true
-    });
-  }
-}
-/* ===================== TABLAS DE CENSO ===================== */
-
+  /* ===================== TABLAS DE CENSO ===================== */
   function initTablasCenso(){
     const dtLang = {
       decimal: ",", thousands: ".",
@@ -826,12 +831,10 @@ function initBitacoraEjemplo(){
   initTablasCenso();
   cargarCensoCSV_yCombos();
 
-  // Mostrar estructura de tablas de bitácora desde el inicio
-  // initEmptyBitacoraTables(); (eliminado)
-  // Cargar CSV para bitácora
+  // Bitácora
   initBitacoraEjemplo();
 
-  // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
+  // KPI censo (suma columna de censo)
   function encuentraColumna(headers){
     const objetivo = 'grupoprioritariosenerrembio';
     let mejor = null;
@@ -850,14 +853,14 @@ function initBitacoraEjemplo(){
       if(col){
         suma = rows.reduce((acc,r)=>{const v=(r[col]??'').toString().replace(/,/g,'').trim();const n=Number(v);return acc+(isFinite(n)?n:0)},0);
       }
-      $('#k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
+      document.getElementById('k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
     }
   });
 
   // Listeners filtros/cascadas
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  $('#f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  document.getElementById('f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  document.getElementById('f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  document.getElementById('f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
   // Leyenda del mapa
