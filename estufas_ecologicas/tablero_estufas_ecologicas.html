@@ -23,6 +23,15 @@
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
+  <!-- Enviar errores de DataTables a la consola (evita popups) -->
+  <script>
+    window.addEventListener('DOMContentLoaded', function(){
+      if (window.jQuery && $.fn.dataTable) {
+        $.fn.dataTable.ext.errMode = 'console';
+      }
+    });
+  </script>
+
   <style>
     :root{
       --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
@@ -198,10 +207,10 @@
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658,  lng:-102.048,  estatus:"Instalada",      fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",            consumo_base:120, consumo_post:60},
     {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Michoacán", municipio:"Charapan",     lat:19.593,  lng:-102.304,  estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo",   consumo_base:100, consumo_post:70},
     {id:"EST-0003", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Cherán",       lat:19.687,  lng:-101.953,  estatus:"Garantía",       fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve",   consumo_base:130, consumo_post:80},
-    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",            consumo_base:110, consumo_post:65},
-    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",            consumo_base:140, consumo_post:75},
-    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa",  consumo_base:115, consumo_post:115},
-    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
+    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", visita_ult_fecha:"2023-12-01", garantia_fin:"2023-07-22",  consumo_base:110, consumo_post:65},
+    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", consumo_base:140, consumo_post:75},
+    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", visita_ult_fecha:"2022-06-01", garantia_fin:"2022-05-12",  consumo_base:115, consumo_post:115},
+    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", visita_ult_fecha:"2024-05-10", garantia_fin:"2025-12-30",  consumo_base:118, consumo_post:62}
   ];
 </script>
 
@@ -214,7 +223,7 @@
 
   /* ===================== FUENTE PARA COMBOS (CSV de Vercel) ===================== */
   let CENSO_ROWS = [];             // contenido de Censo_estufas.csv (header:true)
-  let CSV_LOC_SET = null;          // Set "ENTIDAD|MUNICIPIO|LOCALIDAD" del CSV (para filtrar GeoJSON)
+  let CSV_LOC_SET = null;          // Set "ENTIDAD|MUNICIPIO|LOCALIDAD" del CSV
   let LOC_GEO = null;              // localidades geojson (para el mapa)
   let rowsLocalidadesAll = [];     // estufas_agg_localidad_detalle.json completo
   let dtLocalidades = null;        // DataTable de tablaLocalidades
@@ -229,7 +238,7 @@
     if(values.includes(current)) el.value=current;
   }
 
-  function fuenteCombos(){           // devuelve filas base para armar combos
+  function fuenteCombos(){
     if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
     const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     return feats.map(f=>f.properties||{});
@@ -261,7 +270,6 @@
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  // Carga CSV (Vercel o relativo)
   function cargarCensoCSV_yCombos(){
     Papa.parse('Censo_estufas.csv', {
       download:true, header:true, skipEmptyLines:true,
@@ -438,7 +446,6 @@
     if(!map){
       map = L.map('map').setView([22.5,-102],5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-      // IMPORTANTE: usar overlays para evitar "Localidades" duplicado
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
       loadMunicipios();
       loadLocalidades();
@@ -456,7 +463,6 @@
     });
   }
 
-  // Mostrar localidades filtradas en el mapa y alternar capas
   function showLocalidadesFiltered(){
     if(!LOC_GEO || !map) return;
     const ent=$('#f_entidad').value, mun=$('#f_municipio').value, loc=$('#f_localidad').value;
@@ -514,12 +520,9 @@
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-
-  
   /* ===================== BITÁCORA (SEGUIMIENTO / CONCLUSIÓN) ===================== */
   let dtSeg, dtCon;
 
-  // Mostrar encabezados vacíos para que se vean las tablas aunque el CSV tarde en cargar
   function initEmptyBitacoraTables(){
     const lang = {
       decimal:",", thousands:".",
@@ -527,14 +530,13 @@
       infoEmpty:"Mostrando 0 a 0 de 0 registros",
       infoFiltered:"(filtrado de _MAX_ en total)",
       lengthMenu:"Mostrar _MENU_",
-      loadingRecords:"Cargando...",
-      processing:"Procesando...",
+      loadingRecords:"Cargando...", processing:"Procesando...",
       search:"Buscar:",
       zeroRecords:"No se encontraron registros",
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
-    if (!DataTable.isDataTable('#tablaSeg')) {
-      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
+    if (!$.fn.dataTable.isDataTable('#tablaSeg')) {
+      dtSeg = new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
         {title:'Fecha',data:'fecha'},
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
@@ -546,8 +548,8 @@
         {title:'Observaciones',data:'observaciones'}
       ]});
     }
-    if (!DataTable.isDataTable('#tablaCon')) {
-      new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
+    if (!$.fn.dataTable.isDataTable('#tablaCon')) {
+      dtCon = new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
         {title:'Fecha',data:'fecha'},
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
@@ -607,25 +609,19 @@
           }
         });
 
-        const lang = {
-          decimal: ",", thousands: ".",
-          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-          infoEmpty: "Mostrando 0 a 0 de 0 registros",
-          infoFiltered: "(filtrado de _MAX_ en total)",
-          lengthMenu: "Mostrar _MENU_",
-          loadingRecords: "Cargando...",
-          processing: "Procesando...",
-          search: "Buscar:",
-          zeroRecords: "No se encontraron registros",
-          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-        };
-
-        if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
-        if (dtCon){ dtCon.destroy(); dtCon = null; }
-
-        dtSeg = new DataTable('#tablaSeg',{
-          data: seg,
-          columns:[
+        if ($.fn.dataTable.isDataTable('#tablaSeg')) {
+          $('#tablaSeg').DataTable().clear().rows.add(seg).draw();
+        } else {
+          dtSeg = new DataTable('#tablaSeg',{data: seg,pageLength:8,responsive:true,dom:'ftip',language:{
+            decimal:",", thousands:".",
+            info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
+            infoEmpty:"Mostrando 0 a 0 de 0 registros",
+            infoFiltered:"(filtrado de _MAX_ en total)",
+            lengthMenu:"Mostrar _MENU_", loadingRecords:"Cargando...",
+            processing:"Procesando...", search:"Buscar:",
+            zeroRecords:"No se encontraron registros",
+            paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
+          },columns:[
             {title:'Fecha', data:'fecha'},
             {title:'Entidad', data:'entidad'},
             {title:'Municipio', data:'municipio'},
@@ -635,13 +631,22 @@
             {title:'Materiales', data:'materiales'},
             {title:'ID Promotor', data:'id_promotor'},
             {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
+          ]});
+        }
 
-        dtCon = new DataTable('#tablaCon',{
-          data: con,
-          columns:[
+        if ($.fn.dataTable.isDataTable('#tablaCon')) {
+          $('#tablaCon').DataTable().clear().rows.add(con).draw();
+        } else {
+          dtCon = new DataTable('#tablaCon',{data: con,pageLength:8,responsive:true,dom:'ftip',language:{
+            decimal:",", thousands:".",
+            info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
+            infoEmpty:"Mostrando 0 a 0 de 0 registros",
+            infoFiltered:"(filtrado de _MAX_ en total)",
+            lengthMenu:"Mostrar _MENU_", loadingRecords:"Cargando...",
+            processing:"Procesando...", search:"Buscar:",
+            zeroRecords:"No se encontraron registros",
+            paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
+          },columns:[
             {title:'Fecha', data:'fecha'},
             {title:'Entidad', data:'entidad'},
             {title:'Municipio', data:'municipio'},
@@ -651,9 +656,8 @@
             {title:'Piezas/Checklist', data:'piezas'},
             {title:'Satisfacción', data:'satisfaccion'},
             {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
+          ]});
+        }
       },
       error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
     });
@@ -796,9 +800,8 @@
   initTablasCenso();
   cargarCensoCSV_yCombos();
 
-  // Mostrar estructura de tablas de bitácora desde el inicio
+  // Bitácora: headers visibles + carga del CSV
   initEmptyBitacoraTables();
-  // Cargar CSV para bitácora
   cargarBitacora();
 
   // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
