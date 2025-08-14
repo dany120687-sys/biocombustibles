@@ -92,7 +92,98 @@
     .tab-btn.active{background:var(--guinda);color:#fff;border-color:var(--guinda)}
     .tab-pane{display:none}
     .tab-pane.active{display:block}
-  </style>
+  
+/* ====== Tipografía y colores institucionales ====== */
+:root{
+  --vino:#7A0019;
+  --oro:#B6864D;
+  --gris:#f6f7f9;
+  --borde:#e3e6ea;
+  --texto:#1c1f23;
+}
+html, body {
+  font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 11pt;
+  color: var(--texto);
+}
+h1, h2, h3, .title, .card h2 {
+  font-family: 'Patria', 'Noto Sans', serif;
+  letter-spacing:.2px;
+}
+.card h2{
+  font-size: 1.35rem;
+  margin: 0 0 .75rem 0;
+  color: var(--vino);
+}
+
+/* ====== Tarjetas ====== */
+.card{
+  border:1px solid var(--borde);
+  border-radius:16px;
+  background:white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  padding:18px 20px;
+}
+
+/* ====== Tabla Bitácora (DataTables y fallback) ====== */
+#tablaBitacora{
+  width:100% !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow:hidden;
+  border-radius:14px;
+  background:white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+}
+#tablaBitacora thead th{
+  position: sticky; top:0;
+  background: linear-gradient(0deg, var(--vino), #8b0e27);
+  color:white;
+  font-weight:600;
+  padding:10px 12px;
+  border-bottom:0;
+  z-index:1;
+}
+#tablaBitacora tbody td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--borde);
+  vertical-align: top;
+}
+#tablaBitacora tbody tr:nth-child(even){
+  background: var(--gris);
+}
+#tablaBitacora tbody tr:hover{
+  background: #eef3ff;
+}
+
+/* ====== Controles DataTables ====== */
+.dataTables_wrapper .dataTables_filter{
+  float:right; text-align:right; margin:12px 0;
+}
+.dataTables_wrapper .dataTables_filter input{
+  border:1px solid var(--borde);
+  border-radius:999px;
+  padding:8px 12px;
+  outline:none;
+}
+.dataTables_wrapper .dataTables_length select{
+  border:1px solid var(--borde);
+  border-radius:10px;
+  padding:6px 10px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+  border-radius:10px !important;
+  border:1px solid var(--borde) !important;
+  background:white !important;
+  margin:0 2px !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{
+  background: var(--oro) !important;
+  color:white !important;
+  border-color: var(--oro) !important;
+}
+
+</style>
 </head>
 <body>
 <header>
