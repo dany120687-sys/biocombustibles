@@ -283,7 +283,7 @@ h1, h2, h3, .title, .card h2 {
   <footer>Energia 2025. Dirección General de Energías Renovables</footer>
 </main>
 
-<!-- ===== Datos demo (instalaciones base) ===== -->
+<!-- ===== Datos demo base ===== -->
 <script>
   const DATA = [
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658,  lng:-102.048,  estatus:"Instalada",      fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",            consumo_base:120, consumo_post:60},
@@ -313,19 +313,17 @@ h1, h2, h3, .title, .card h2 {
   // Rango temporal para las instalaciones sintéticas
   const START_DATE = new Date('2025-08-01');
   const END_DATE   = new Date('2025-10-31');
-  const EJEMPLOS_POR_LOCALIDAD = 20;
-  const MAX_LOCALIDADES_SINTETICAS = 80; // seguridad si no hay filtros
+  const EJEMPLOS_POR_MUNICIPIO = 20;
+  const MAX_MUNICIPIOS_SINTETICOS = 50; // si no hay filtros, para no saturar
 
   let CENSO_ROWS = [];
   let CSV_LOC_SET = null;
   let LOC_GEO = null;
 
-  // Para regenerar
   let SYNTH = [];                 // registros sintéticos
   let csvReady = false, geoReady = false;
-  const CENSO_MAP = new Map();    // ENT|MUN|LOC -> fila CSV
 
-  /* =================== Filtros =================== */
+  /* =================== Filtros (combos) =================== */
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
 
   function setOptions(sel, values, firstLabel){
@@ -343,36 +341,27 @@ h1, h2, h3, .title, .card h2 {
     return feats.map(f=>f.properties||{});
   }
 
-  function keyEML(ent, mun, loc){
-    return [ent||'', mun||'', loc||''].map(x=>normaliza(x)).join('|');
-  }
-
-  function filterByQuiere(rows){
-    if (!rows || !rows.length) return [];
-    const hasCol = rows.some(r => r && Object.prototype.hasOwnProperty.call(r, QUIERE_COL));
-    return hasCol ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows;
-  }
-
   function buildEntidadFromFuente(){
-    const rows = filterByQuiere(fuenteCombos());
+    const rows = (fuenteCombos()||[]).filter(r=> num(r[QUIERE_COL] ?? r.quiere_estufa) > 0);
     const ents = uniqSorted(rows.map(r=> r.ENTIDAD || r.entidad));
     setOptions('#f_entidad', ents, 'Todas');
   }
   function cascadeMunicipios(){
     const ent = $('#f_entidad').value;
-    const base = fuenteCombos().filter(r => !ent || normaliza(r.ENTIDAD||r.entidad)===normaliza(ent));
-    const rows = filterByQuiere(base);
+    const rows = (fuenteCombos()||[]).filter(r=>{
+      const okE=!ent || normaliza(r.ENTIDAD||r.entidad)===normaliza(ent);
+      return okE && num(r[QUIERE_COL] ?? r.quiere_estufa) > 0;
+    });
     const muns = uniqSorted(rows.map(r=> r.MUNICIPIO || r.municipio));
     setOptions('#f_municipio', muns, 'Todos');
   }
   function cascadeLocalidades(){
     const ent=$('#f_entidad').value, mun=$('#f_municipio').value;
-    const base = fuenteCombos().filter(r=>{
+    const rows = (fuenteCombos()||[]).filter(r=>{
       const okE=!ent || normaliza(r.ENTIDAD||r.entidad)===normaliza(ent);
       const okM=!mun || normaliza(r.MUNICIPIO||r.municipio)===normaliza(mun);
-      return okE && okM;
+      return okE && okM && num(r[QUIERE_COL] ?? r.quiere_estufa) > 0;
     });
-    const rows = filterByQuiere(base);
     const locs = uniqSorted(rows.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
     setOptions('#f_localidad', locs, 'Todas');
   }
@@ -401,11 +390,9 @@ h1, h2, h3, .title, .card h2 {
           const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
           const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
           const LOC = r.LOCALIDAD || r.localidad || r['Localidad'] || r.NOM_LOC || '';
-          const row = { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
-          CENSO_MAP.set(keyEML(ENT,MUN,LOC), row);
-          return row;
+          return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
         });
-        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => keyEML(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
+        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => `${normaliza(r.ENTIDAD)}|${normaliza(r.MUNICIPIO)}|${normaliza(r.LOCALIDAD)}`));
 
         buildEntidadFromFuente();
         cascadeMunicipios();
@@ -457,53 +444,63 @@ h1, h2, h3, .title, .card h2 {
   }
   function jitter(val, span){ return val + (Math.random()-0.5)*span; }
 
-  /* =================== Generación sintética =================== */
-  function tryRegenerateSynthetic(){
-    if (!csvReady || !geoReady) return;
-    regenerateSyntheticForCurrentFilters();
-    buildWeeksFromData();
-    renderAll();
-  }
-
-  function localidadesFiltradasConGeo(){
-    if(!LOC_GEO) return [];
+  /* =================== Generación POR MUNICIPIO =================== */
+  function municipiosDesdeCensoFiltrado(){
     const f=getFilters();
-    const feats = (LOC_GEO.features||[]);
-    let filtered = feats.filter(ft=>{
-      const p=ft.properties||{};
-      const ent=gProp(p,'ENTIDAD','entidad');
-      const mun=gProp(p,'MUNICIPIO','municipio');
-      const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-      const okE=eqN(ent,f.entidad);
-      const okM=eqN(mun,f.municipio);
-      const okL=eqN(loc,f.localidad);
-      if(!(okE&&okM&&okL)) return false;
-      const k = keyEML(ent,mun,loc);
-      const rowCSV = CENSO_MAP.get(k);
-      return !!rowCSV && num(rowCSV[QUIERE_COL])>0 && ft.geometry && ft.geometry.type==='Point';
-    });
-
-    if (!f.municipio && !f.localidad && filtered.length > MAX_LOCALIDADES_SINTETICAS){
-      filtered = filtered.slice(0, MAX_LOCALIDADES_SINTETICAS);
+    let rows = CENSO_ROWS;
+    if (!rows.length && LOC_GEO){ // fallback
+      rows = (LOC_GEO.features||[]).map(ft=>ft.properties||{});
     }
-    return filtered;
+    let lista = [];
+    rows.forEach(r=>{
+      const ent = r.ENTIDAD || r.entidad;
+      const mun = r.MUNICIPIO || r.municipio;
+      if (!eqN(ent,f.entidad)) return;
+      if (!eqN(mun,f.municipio)) return;
+      if (num(r[QUIERE_COL] ?? r.quiere_estufa) <= 0) return;
+      lista.push(`${ent}|||${mun}`);
+    });
+    lista = [...new Set(lista)];
+    if (!f.municipio && lista.length > MAX_MUNICIPIOS_SINTETICOS){
+      lista = lista.slice(0, MAX_MUNICIPIOS_SINTETICOS);
+    }
+    return lista.map(s=>{ const [ent,mun]=s.split('|||'); return {ent,mun}; });
   }
 
-  function regenerateSyntheticForCurrentFilters(){
-    SYNTH = [];
-    const feats = localidadesFiltradasConGeo();
-    if(!feats.length) return;
-
-    let seq = 1;
-    feats.forEach(ft=>{
+  function pickLocalidadPoint(ent, mun, locFilter){
+    if(!LOC_GEO) return {lat:19.7, lng:-101.9, nombre: mun};
+    const feats = (LOC_GEO.features||[]).filter(ft=>{
       const p=ft.properties||{};
-      const ent=gProp(p,'ENTIDAD','entidad');
-      const mun=gProp(p,'MUNICIPIO','municipio');
-      const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-      const baseLng = ft.geometry.coordinates[0];
-      const baseLat = ft.geometry.coordinates[1];
+      const okE = eqN(gProp(p,'ENTIDAD','entidad'), ent);
+      const okM = eqN(gProp(p,'MUNICIPIO','municipio'), mun);
+      const okL = !locFilter || eqN(gProp(p,'LOCALIDAD','localidad','NOM_LOC'), locFilter);
+      return okE && okM && okL && ft.geometry && ft.geometry.type==='Point';
+    });
+    if(feats.length===0){
+      // Si hay localidades del municipio (ignorando localidad concreta), tómalas
+      const any = (LOC_GEO.features||[]).filter(ft=>{
+        const p=ft.properties||{};
+        return eqN(gProp(p,'ENTIDAD','entidad'), ent) && eqN(gProp(p,'MUNICIPIO','municipio'), mun) && ft.geometry && ft.geometry.type==='Point';
+      });
+      if(any.length){
+        const r = any[Math.floor(Math.random()*any.length)];
+        return {lat: r.geometry.coordinates[1], lng: r.geometry.coordinates[0], nombre: gProp(r.properties,'LOCALIDAD','localidad','NOM_LOC') || mun};
+      }
+      return {lat:19.7, lng:-101.9, nombre: mun};
+    }
+    const pick = feats[Math.floor(Math.random()*feats.length)];
+    return {lat: pick.geometry.coordinates[1], lng: pick.geometry.coordinates[0], nombre: gProp(pick.properties,'LOCALIDAD','localidad','NOM_LOC') || mun};
+  }
 
-      for(let i=0;i<EJEMPLOS_POR_LOCALIDAD;i++){
+  function regenerateSyntheticByMunicipio(){
+    SYNTH = [];
+    const f=getFilters();
+    const pairs = municipiosDesdeCensoFiltrado();
+    let seq = 1;
+
+    pairs.forEach(({ent,mun})=>{
+      const locChoice = pickLocalidadPoint(ent, mun, f.localidad);
+      for(let i=0;i<EJEMPLOS_POR_MUNICIPIO;i++){
         const fecha = randomDateWeighted();
         const modelo = MODELOS[Math.floor(Math.random()*MODELOS.length)];
         const programa = PROGRAMAS[Math.floor(Math.random()*PROGRAMAS.length)];
@@ -512,11 +509,11 @@ h1, h2, h3, .title, .card h2 {
         const consumo_post = Math.max(10, consumo_base - ahorro);
 
         SYNTH.push({
-          id: `${normaliza(loc)}-${String(seq++).padStart(5,'0')}`,
+          id: `${normaliza(mun)}-${String(seq++).padStart(5,'0')}`,
           programa, proveedor:'Proveedor Demo',
-          modelo, entidad: ent, municipio: mun, localidad: loc,
-          lat: jitter(baseLat, 0.01),
-          lng: jitter(baseLng, 0.01),
+          modelo, entidad: ent, municipio: mun, localidad: locChoice.nombre,
+          lat: jitter(locChoice.lat, 0.01),
+          lng: jitter(locChoice.lng, 0.01),
           estatus:'Instalada',
           fecha_instalacion: fecha.toISOString().slice(0,10),
           garantia_fin:'2027-12-31',
@@ -528,6 +525,13 @@ h1, h2, h3, .title, .card h2 {
     });
   }
 
+  function tryRegenerateSynthetic(){
+    if (!csvReady || !geoReady) return;
+    regenerateSyntheticByMunicipio();
+    buildWeeksFromData();
+    renderAll();
+  }
+
   /* =================== Aplicación de filtros =================== */
   function getAllRows(){ return DATA.concat(SYNTH); }
 
@@ -537,6 +541,7 @@ h1, h2, h3, .title, .card h2 {
       (!f.modelo   || d.modelo===f.modelo) &&
       (eqN(d.entidad, f.entidad)) &&
       (eqN(d.municipio, f.municipio)) &&
+      (eqN(d.localidad, f.localidad)) &&
       (!f.estatus  || d.estatus===f.estatus) &&
       (!f.week     || isoWeekKey(d.fecha_instalacion)===f.week)
     );
@@ -587,7 +592,7 @@ h1, h2, h3, .title, .card h2 {
   }
 
   /* ===================== MAPA ===================== */
-  let map, muniLayer, locaAllLayer, locaFiltered, layerControl, estufasLayer;
+  let map, muniLayer, locaAllLayer, layerControl, estufasLayer;
 
   function colorByRatio(ratio){
     return ratio > 0.95 ? '#bd0026' :
@@ -645,20 +650,12 @@ h1, h2, h3, .title, .card h2 {
         const ent = gProp(p,'ENTIDAD','entidad');
         const mun = gProp(p,'MUNICIPIO','municipio');
         const loc = gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-        return CSV_LOC_SET.has(keyEML(ent,mun,loc));
+        return CSV_LOC_SET.has(`${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`);
       },
       pointToLayer: (feature, latlng) => {
         const p=feature.properties||{};
         const ratio = (p.quiere_estufa && p.hogares) ? (p.quiere_estufa/p.hogares) : 0;
         return L.circleMarker(latlng,{radius:6,color:'#fff',weight:1,fillColor:colorByRatio(ratio),fillOpacity:.9});
-      },
-      onEachFeature:(feature,lyr)=>{
-        const p=feature.properties||{};
-        const ent = gProp(p,'ENTIDAD','entidad');
-        const mun = gProp(p,'MUNICIPIO','municipio');
-        const loc = gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-        const pct = (p.hogares&&p.quiere_estufa)?((p.quiere_estufa/p.hogares)*100).toFixed(1):'0.0';
-        lyr.bindPopup(`<b>${loc}</b><br>${mun}, ${ent}<br>Hogares: ${Number(p.hogares||0).toLocaleString('es-MX')}<br>Quiere estufa: ${Number(p.quiere_estufa||0).toLocaleString('es-MX')} (${pct}%)`);
       }
     });
     if(layerControl && !window._addedLocalidades){
@@ -696,7 +693,7 @@ h1, h2, h3, .title, .card h2 {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
 
-      // Capa persistente de estufas controlada por el checkbox
+      // Capa persistente de estufas (toggle funciona siempre)
       estufasLayer = L.layerGroup().addTo(map);
       layerControl.addOverlay(estufasLayer, 'Estufas');
 
@@ -704,7 +701,7 @@ h1, h2, h3, .title, .card h2 {
       loadLocalidades();
     }
 
-    // Limpiar y volver a poblar la capa persistente
+    // Limpiar y volver a poblar
     estufasLayer.clearLayers();
 
     rows.forEach(r=>{
@@ -713,7 +710,7 @@ h1, h2, h3, .title, .card h2 {
                     r.estatus==='Garantía'      ? getCss('--verde')  : '#d62728';
       const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
       L.marker([r.lat,r.lng],{icon}).addTo(estufasLayer)
-        .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio||r.localidad||''}, ${r.entidad}<br/>Instalada: ${new Date(r.fecha_instalacion).toLocaleDateString('es-MX')}`);
+        .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${(r.localidad? r.localidad+', ' : '') + (r.municipio||'')}, ${r.entidad}<br/>Instalada: ${new Date(r.fecha_instalacion).toLocaleDateString('es-MX')}`);
     });
 
     try{
@@ -748,7 +745,7 @@ h1, h2, h3, .title, .card h2 {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== Bitácora (igual que tu versión) ===================== */
+  /* ===================== Bitácora / Tablas (igual que tu base) ===================== */
   let dtBitacora;
   const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
@@ -772,34 +769,8 @@ h1, h2, h3, .title, .card h2 {
       paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
     };
 
-    function renderBasico(rows){
-      const cols = ['fecha','entidad','municipio','localidad','beneficiario','estatus','espacio_listo','materiales','fecha_inicio','funcion','piezas','satisfaccion','observaciones'];
-      const headers = ['Fecha','Entidad','Municipio','Localidad','Beneficiario / Hogar','Estatus','Espacio listo','Materiales entregados','Fecha inicio obra','Funcionamiento','Checklist piezas','Satisfacción','Observaciones'];
-      const thead = document.createElement('thead');
-      const trh = document.createElement('tr');
-      headers.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; trh.appendChild(th); });
-      thead.appendChild(trh);
-      const tbody = document.createElement('tbody');
-      rows.forEach(r=>{
-        const tr=document.createElement('tr');
-        cols.forEach(c=>{ const td=document.createElement('td'); td.textContent = (r[c] ?? ''); tr.appendChild(td); });
-        tbody.appendChild(tr);
-      });
-      const table = document.getElementById('tablaBitacora');
-      table.appendChild(thead);
-      table.appendChild(tbody);
-    }
-
-    if (!(window.$ && $.fn && $.fn.DataTable)) {
-      renderBasico(rows);
-      return;
-    }
-
-    if (dtBitacora) {
-      dtBitacora.clear();
-      dtBitacora.rows.add(rows).draw();
-    } else {
-      dtBitacora = $('#tablaBitacora').DataTable({
+    if (window.$ && $.fn && $.fn.DataTable) {
+      $('#tablaBitacora').DataTable({
         data: rows,
         columns: [
           { title: 'Fecha', data: 'fecha' },
@@ -825,7 +796,7 @@ h1, h2, h3, .title, .card h2 {
     }
   }
 
-  /* ===================== TABLAS DE CENSO ===================== */
+  /* ===================== Tablas Censo ===================== */
   let rowsLocalidadesAll = [];
   let dtLocalidades = null;
 
@@ -928,12 +899,13 @@ h1, h2, h3, .title, .card h2 {
     const columns=[
       {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
       {title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
-      {title:'Estatus',data:'estatus'},{title:'Instalada',data:'fecha_instalacion'},
+      {title:'Localidad',data:'localidad'},{title:'Estatus',data:'estatus'},
+      {title:'Instalada',data:'fecha_instalacion'},
       {title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},
       {title:'Ahorro (kg/mes)',data:'ahorro'}
     ];
     const data=rows.map(r=>({
-      id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,estatus:r.estatus,
+      id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,localidad:r.localidad,estatus:r.estatus,
       fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),
       garantia_fin:new Date(r.garantia_fin).toLocaleDateString('es-MX'),
       visita_ult_fecha:new Date(r.visita_ult_fecha).toLocaleDateString('es-MX'),
@@ -944,7 +916,7 @@ h1, h2, h3, .title, .card h2 {
 
   /* ===================== REFRESH GENERAL ===================== */
   function renderAll(){
-    const rows=applyFilters(getAllRows());
+    const rows=applyFilters(DATA.concat(SYNTH));
     renderKPIs(rows);
     renderMap(rows);
     renderCharts(rows);
@@ -953,7 +925,7 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function buildWeeksFromData(){
-    const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
+    const weeks=[...new Set(DATA.concat(SYNTH).map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
     if($('#f_week') && $('#f_week').options.length<=1){
       weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);});
     }
@@ -968,13 +940,13 @@ h1, h2, h3, .title, .card h2 {
   initBitacoraEjemplo();
 
   // Listeners filtros/cascadas + regeneración sintética
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticForCurrentFilters(); renderAll(); renderTablaLocalidades(); });
-  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticForCurrentFilters(); renderAll(); renderTablaLocalidades(); });
-  $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticForCurrentFilters(); renderAll(); renderTablaLocalidades(); });
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
+  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
+  $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
-  // Cargar y preparar mapa
-  (function initMapLegend(){
+  // Leyenda y capas
+  (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
     legend.onAdd = function () {
@@ -994,7 +966,7 @@ h1, h2, h3, .title, .card h2 {
     setTimeout(()=>legend.addTo(map),1000);
   })();
 
-  // Carga geo y muestra leyenda cuando haya mapa
+  // Cargar geo
   loadLocalidades();
 
   // Lightbox
