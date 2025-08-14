@@ -101,30 +101,96 @@
   --borde:#e3e6ea;
   --texto:#1c1f23;
 }
-html, body { font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 11pt; color: var(--texto); }
-h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter-spacing:.2px; }
-.card h2{ font-size: 1.35rem; margin: 0 0 .75rem 0; color: var(--vino); }
+html, body {
+  font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 11pt;
+  color: var(--texto);
+}
+h1, h2, h3, .title, .card h2 {
+  font-family: 'Patria', 'Noto Sans', serif;
+  letter-spacing:.2px;
+}
+.card h2{
+  font-size: 1.35rem;
+  margin: 0 0 .75rem 0;
+  color: var(--vino);
+}
 
 /* ====== Tarjetas ====== */
-.card{ border:1px solid var(--borde); border-radius:16px; background:white; box-shadow: 0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
+.card{
+  border:1px solid var(--borde);
+  border-radius:16px;
+  background:white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  padding:18px 20px;
+}
 
-/* ====== Tabla Bitácora ====== */
-#tablaBitacora{ width:100%!important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:white; box-shadow:0 4px 14px rgba(0,0,0,.04);}
-#tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg, var(--vino), #8b0e27); color:white; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1;}
-#tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top;}
-#tablaBitacora tbody tr:nth-child(even){ background: #f6f7f9;}
-#tablaBitacora tbody tr:hover{ background:#eef3ff;}
+/* ====== Tabla Bitácora (DataTables y fallback) ====== */
+#tablaBitacora{
+  width:100% !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow:hidden;
+  border-radius:14px;
+  background:white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+}
+#tablaBitacora thead th{
+  position: sticky; top:0;
+  background: linear-gradient(0deg, var(--vino), #8b0e27);
+  color:white;
+  font-weight:600;
+  padding:10px 12px;
+  border-bottom:0;
+  z-index:1;
+}
+#tablaBitacora tbody td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--borde);
+  vertical-align: top;
+}
+#tablaBitacora tbody tr:nth-child(even){
+  background: var(--gris);
+}
+#tablaBitacora tbody tr:hover{
+  background: #eef3ff;
+}
 
-.dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0;}
-.dataTables_wrapper .dataTables_filter input{ border:1px solid var(--borde); border-radius:999px; padding:8px 12px; outline:none;}
-.dataTables_wrapper .dataTables_length select{ border:1px solid var(--borde); border-radius:10px; padding:6px 10px;}
-.dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px!important; border:1px solid var(--borde)!important; background:white!important; margin:0 2px!important;}
-.dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:#B6864D!important; color:white!important; border-color:#B6864D!important;}
-  </style>
+/* ====== Controles DataTables ====== */
+.dataTables_wrapper .dataTables_filter{
+  float:right; text-align:right; margin:12px 0;
+}
+.dataTables_wrapper .dataTables_filter input{
+  border:1px solid var(--borde);
+  border-radius:999px;
+  padding:8px 12px;
+  outline:none;
+}
+.dataTables_wrapper .dataTables_length select{
+  border:1px solid var(--borde);
+  border-radius:10px;
+  padding:6px 10px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+  border-radius:10px !important;
+  border:1px solid var(--borde) !important;
+  background:white !important;
+  margin:0 2px !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{
+  background: var(--oro) !important;
+  color:white !important;
+  border-color: var(--oro) !important;
+}
+
+</style>
 </head>
 <body>
 <header>
-  <img src="logo_estufas.png" alt="Estufas Eficientes de Leña" style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
+  <!-- Logo en lugar de “DG” -->
+  <img src="logo_estufas.png"
+       alt="Estufas Eficientes de Leña"
+       style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
   <div class="brand">
     DIRECCIÓN GENERAL DE ENERGÍAS RENOVABLES
     <small>Programa Nacional de Estufas Eficientes de Leña para el Bienestar</small>
@@ -189,8 +255,6 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
-
-      <!-- === Bitácora (mismo formato que versión estable) === -->
       <div class="card" style="overflow:auto">
         <h2>Bitácora de actividades</h2>
         <table id="tablaBitacora" class="display" style="width:100%"></table>
@@ -240,29 +304,24 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
   const num = v => { const n = Number(String(v??'').replace(/,/g,'').trim()); return isFinite(n)? n : 0; };
-  const eqN = (a,b)=> !b || normaliza(a)===normaliza(b);
+  const eqN = (a,b)=> !b || normaliza(a)===normaliza(b);  // igualdad normalizada
 
   const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO'; // columna del censo
   const MODELOS = ['Modelo A','Modelo B','Modelo C'];
   const PROGRAMAS = ['Transición Energética','Calor Seguro','Bienestar'];
 
-  // Rango temporal para instalaciones sintéticas
+  // Rango temporal para las instalaciones sintéticas
   const START_DATE = new Date('2025-08-01');
   const END_DATE   = new Date('2025-10-31');
   const EJEMPLOS_POR_MUNICIPIO = 20;
-  const MAX_MUNICIPIOS_SINTETICOS = 50;
+  const MAX_MUNICIPIOS_SINTETICOS = 50; // si no hay filtros, para no saturar
 
   let CENSO_ROWS = [];
   let CSV_LOC_SET = null;
   let LOC_GEO = null;
 
-  let SYNTH = [];
+  let SYNTH = [];                 // registros sintéticos
   let csvReady = false, geoReady = false;
-
-  /* ===== claves para hogares (fallback JSON) ===== */
-  const key3 = (ent,mun,loc='') => `${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`;
-  let HOGARES_LOC_FALL = new Map(); // ENT|MUN|LOC -> hogares
-  let HOGARES_MUN_FALL = new Map(); // ENT|MUN     -> hogares
 
   /* =================== Filtros (combos) =================== */
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
@@ -308,7 +367,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
   }
 
   function bootstrapFiltersSimple(){
-    setOptions('#f_modelo', ['Modelo A','Modelo B','Modelo C'], 'Todos');
+    setOptions('#f_modelo', MODELOS, 'Todos');
   }
 
   function getFilters(){
@@ -322,7 +381,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
     }
   }
 
-  /* =================== CSV censo =================== */
+  /* =================== Carga CSV para filtros y KPI =================== */
   function cargarCensoCSV_yCombos(){
     Papa.parse('Censo_estufas.csv', {
       download:true, header:true, skipEmptyLines:true,
@@ -333,7 +392,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
           const LOC = r.LOCALIDAD || r.localidad || r['Localidad'] || r.NOM_LOC || '';
           return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
         });
-        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
+        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => `${normaliza(r.ENTIDAD)}|${normaliza(r.MUNICIPIO)}|${normaliza(r.LOCALIDAD)}`));
 
         buildEntidadFromFuente();
         cascadeMunicipios();
@@ -342,20 +401,12 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
 
         csvReady = true;
         tryRegenerateSynthetic();
-
-        // ranking/tablas: si aún no tenemos hogares fallback, esperamos al JSON
-        if (HOGARES_MUN_FALL.size>0 || findHogaresColumn()){
-          buildRankingFromCSV();
-        }
-        if (HOGARES_LOC_FALL.size>0 || findHogaresColumn()){
-          renderTablaLocalidades();
-        }
       },
       error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
     });
   }
 
-  /* =================== Semana ISO y fechas =================== */
+  /* =================== Semana ISO y helpers de fechas =================== */
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
     const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day+3);
@@ -366,7 +417,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
   function sortWeekKeys(a,b){const [ya,wa]=a.split('-W').map(Number);const [yb,wb]=b.split('-W').map(Number);return ya===yb?wa-wb:ya-yb;}
 
   function buildWeightedWeeks(){
-    const start = new Date('2025-08-01');
+    const start = new Date(START_DATE);
     start.setDate(start.getDate() - ((start.getDay()+6)%7));
     const weeks = [];
     while (start <= END_DATE){
@@ -393,11 +444,11 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
   }
   function jitter(val, span){ return val + (Math.random()-0.5)*span; }
 
-  /* =================== Ejemplos POR MUNICIPIO =================== */
+  /* =================== Generación POR MUNICIPIO =================== */
   function municipiosDesdeCensoFiltrado(){
     const f=getFilters();
     let rows = CENSO_ROWS;
-    if (!rows.length && LOC_GEO){
+    if (!rows.length && LOC_GEO){ // fallback
       rows = (LOC_GEO.features||[]).map(ft=>ft.properties||{});
     }
     let lista = [];
@@ -426,6 +477,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
       return okE && okM && okL && ft.geometry && ft.geometry.type==='Point';
     });
     if(feats.length===0){
+      // Si hay localidades del municipio (ignorando localidad concreta), tómalas
       const any = (LOC_GEO.features||[]).filter(ft=>{
         const p=ft.properties||{};
         return eqN(gProp(p,'ENTIDAD','entidad'), ent) && eqN(gProp(p,'MUNICIPIO','municipio'), mun) && ft.geometry && ft.geometry.type==='Point';
@@ -478,9 +530,6 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
     regenerateSyntheticByMunicipio();
     buildWeeksFromData();
     renderAll();
-    if (HOGARES_MUN_FALL.size>0 || findHogaresColumn()){
-      buildRankingFromCSV();
-    }
   }
 
   /* =================== Aplicación de filtros =================== */
@@ -502,11 +551,18 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
     const total=rows.length;
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
 
-    $('#k_estufas').textContent = fmt(total);
-    $('#k_poblacion').textContent = fmt(Math.round(total*4.2));
-    $('#k_seguimiento').textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
+    const elE = document.getElementById('k_estufas');
+    if (elE) elE.textContent = fmt(total);
+
+    const pobl = Math.round(total * 4.2);
+    const elP = document.getElementById('k_poblacion');
+    if (elP) elP.textContent = fmt(pobl);
+
+    const elS = document.getElementById('k_seguimiento');
+    if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
+  // KPI “Quiere estufa” basado en QUIERE_COL
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
@@ -519,7 +575,8 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         if (okE && okM && okL) totalQuiere += num(r[QUIERE_COL]);
       });
     } else if (LOC_GEO) {
-      (LOC_GEO.features||[]).forEach(({properties:p={}})=>{
+      const feats = (LOC_GEO.features||[]);
+      feats.forEach(({properties:p={}})=>{
         const ent=gProp(p,'ENTIDAD','entidad');
         const mun=gProp(p,'MUNICIPIO','municipio');
         const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
@@ -529,7 +586,9 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         if (okE && okM && okL) totalQuiere += num(p.quiere_estufa);
       });
     }
-    $('#k_quiere_estufa').textContent = fmt(totalQuiere);
+
+    const elQ = document.getElementById('k_quiere_estufa');
+    if (elQ) elQ.textContent = fmt(totalQuiere);
   }
 
   /* ===================== MAPA ===================== */
@@ -591,7 +650,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         const ent = gProp(p,'ENTIDAD','entidad');
         const mun = gProp(p,'MUNICIPIO','municipio');
         const loc = gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-        return CSV_LOC_SET.has(key3(ent,mun,loc));
+        return CSV_LOC_SET.has(`${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`);
       },
       pointToLayer: (feature, latlng) => {
         const p=feature.properties||{};
@@ -634,6 +693,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
 
+      // Capa persistente de estufas (toggle funciona siempre)
       estufasLayer = L.layerGroup().addTo(map);
       layerControl.addOverlay(estufasLayer, 'Estufas');
 
@@ -641,6 +701,7 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
       loadLocalidades();
     }
 
+    // Limpiar y volver a poblar
     estufasLayer.clearLayers();
 
     rows.forEach(r=>{
@@ -684,15 +745,33 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== Bitácora ===================== */
+  /* ===================== Bitácora / Tablas (igual que tu base) ===================== */
   let dtBitacora;
   const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
   function initBitacoraEjemplo(){
-    const dtLang = {decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }};
+    const el = document.getElementById('tablaBitacora');
+    if(!el) return;
+    el.innerHTML = '';
+
+    const rows = BITACORA_DATA;
+
+    const dtLang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
+
     if (window.$ && $.fn && $.fn.DataTable) {
       $('#tablaBitacora').DataTable({
-        data: BITACORA_DATA,
+        data: rows,
         columns: [
           { title: 'Fecha', data: 'fecha' },
           { title: 'Entidad', data: 'entidad' },
@@ -708,143 +787,80 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
           { title: 'Satisfacción', data: 'satisfaccion' },
           { title: 'Observaciones', data: 'observaciones' }
         ],
-        pageLength: 8, responsive: true, language: dtLang, dom: 'ftip', destroy: true
+        pageLength: 8,
+        responsive: true,
+        language: dtLang,
+        dom: 'ftip',
+        destroy: true
       });
     }
   }
 
   /* ===================== Tablas Censo ===================== */
-  let rowsLocalidadesAll = [];   // fallback (JSON)
+  let rowsLocalidadesAll = [];
   let dtLocalidades = null;
 
-  function findHogaresColumn(){
-    if(!CENSO_ROWS.length) return null;
-    const keys = Object.keys(CENSO_ROWS[0]||{});
-    const candidates = ['hogares','total_hogares','totalhogares','hogar','viviendas','total_viviendas','totalviviendas'];
-    let best = null, score=-1;
-    keys.forEach(k=>{
-      const nk = normaliza(k);
-      let s = -1;
-      if (nk==='hogares') s=100;
-      else if (nk==='totalhogares' || nk==='total_hogares') s=90;
-      else if (nk.includes('hogar')) s=80;
-      else if (nk==='viviendas' || nk.includes('vivienda')) s=60;
-      if (s>score){ score=s; best=k; }
-    });
-    return (score>=0) ? best : null;
+  function initTablasCenso(){
+    const dtLang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
+
+    fetch('estufas_agg_localidad_detalle.json')
+      .then(r => r.json())
+      .then(rows => {
+        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
+        rowsLocalidadesAll = rows;
+        renderTablaLocalidades();
+      });
+
+    fetch('ranking_priorizacion_municipio.json')
+      .then(r => r.json())
+      .then(rows => {
+        const installedByMun = {};
+        getAllRows().forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
+        rows.forEach(r=>{
+          const instaladas = installedByMun[r.MUNICIPIO] || 0;
+          r.instaladas = instaladas;
+          const quiere = Number(r.quiere_estufa||0);
+          r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
+        });
+        new DataTable('#tablaRanking', {
+          data: rows,
+          columns: [
+            { title: 'Entidad', data: 'ENTIDAD' },
+            { title: 'Municipio', data: 'MUNICIPIO' },
+            { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: 'Estufas instaladas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: '% Estufas instaladas Totales', data: 'pct_q_sobre_inst', render: d => `${Number(d||0).toFixed(1)}%` }
+          ],
+          order: [[5,'desc']],
+          pageLength: 8, responsive: true, language: dtLang, dom: 'ftip', lengthChange: false
+        });
+      });
   }
 
-  function aggregateCensoByLocalidad(){
-    const f = getFilters();
-    if(!CENSO_ROWS.length) return [];
-    const hogCol = findHogaresColumn();
-    const map = new Map();
-    CENSO_ROWS.forEach(r=>{
-      const ent = r.ENTIDAD, mun = r.MUNICIPIO, loc = r.LOCALIDAD;
-      if(!eqN(ent,f.entidad)) return;
-      if(!eqN(mun,f.municipio)) return;
-      if(!eqN(loc,f.localidad)) return;
-      const key = `${ent}|${mun}|${loc}`;
-      const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, LOCALIDAD:loc, hogares:0, quiere_estufa:0};
-      if (hogCol){ obj.hogares += num(r[hogCol]); }
-      else{
-        const k = key3(ent,mun,loc);
-        obj.hogares += (HOGARES_LOC_FALL.get(k) || 0);
-      }
-      obj.quiere_estufa += num(r[QUIERE_COL]);
-      map.set(key,obj);
-    });
-    return [...map.values()].map(o=>{
-      const porc = o.hogares ? (o.quiere_estufa/o.hogares)*100 : 0;
-      return {...o, porc_quiere: porc};
-    });
-  }
-
-  let rankingRows = [];
-  let dtRanking = null;
-
-  function aggregateCensoByMunicipio(){
-    const f = getFilters();
-    if(!CENSO_ROWS.length) return [];
-    const hogCol = findHogaresColumn();
-    const map = new Map();
-    CENSO_ROWS.forEach(r=>{
-      const ent = r.ENTIDAD, mun = r.MUNICIPIO;
-      if(!eqN(ent,f.entidad)) return;
-      const key = `${ent}|${mun}`;
-      const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, hogares:0, quiere_estufa:0};
-      if (hogCol){ obj.hogares += num(r[hogCol]); }
-      else{
-        obj.hogares += (HOGARES_MUN_FALL.get(key3(ent,mun,'')) || 0);
-      }
-      obj.quiere_estufa += num(r[QUIERE_COL]);
-      map.set(key,obj);
-    });
-    return [...map.values()];
-  }
-
-  function buildRankingFromCSV(){
-    // si CSV está listo pero aún no tenemos columna hogares ni fallback => no construir para evitar "0"
-    if (!findHogaresColumn() && HOGARES_MUN_FALL.size===0) return;
-    rankingRows = aggregateCensoByMunicipio();
-    if (dtRanking){ dtRanking.clear(); dtRanking.destroy(); dtRanking = null; }
-    recomputeRankingRows();
-  }
-
-  function recomputeRankingRows(){
-    if (!rankingRows.length) return;
-    const installedByMun = {};
-    getAllRows().forEach(d=>{
-      if(d.estatus==='Instalada'){
-        const k = normaliza(d.municipio||'');
-        installedByMun[k] = (installedByMun[k]||0) + 1;
-      }
-    });
-
-    const updated = rankingRows.map(r=>{
-      const k = normaliza(r.MUNICIPIO||'');
-      const instaladas = installedByMun[k] || 0;
-      const quiere = Number(r.quiere_estufa||0);
-      const pct = quiere > 0 ? (instaladas / quiere) * 100 : 0;
-      return {...r, instaladas, pct_instaladas: pct};
-    });
-
-    dtRanking = new DataTable('#tablaRanking', {
-      data: updated,
-      columns: [
-        { title: 'Entidad', data: 'ENTIDAD' },
-        { title: 'Municipio', data: 'MUNICIPIO' },
-        { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: 'Estufas construidas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: '% Estufas instaladas', data: 'pct_instaladas', render: d => `${Number(d||0).toFixed(1)}%` }
-      ],
-      order: [[5,'desc']],
-      pageLength: 8, responsive: true,
-      language: {decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }},
-      dom: 'ftip', lengthChange: false, destroy: true
-    });
-  }
-
-  function filasLocalidadesFiltradasFallback(){
+  function filasLocalidadesFiltradas(){
     const f=getFilters();
     return rowsLocalidadesAll.filter(r=>{
       const okE = eqN(r.ENTIDAD, f.entidad);
       const okM = eqN(r.MUNICIPIO, f.municipio);
       const okL = eqN(r.LOCALIDAD, f.localidad);
       return okE && okM && okL;
-    }).map(r=>({
-      ENTIDAD:r.ENTIDAD, MUNICIPIO:r.MUNICIPIO, LOCALIDAD:r.LOCALIDAD,
-      hogares:num(r.hogares), quiere_estufa:num(r.quiere_estufa),
-      porc_quiere:Number(r.porc_quiere||0)
-    }));
+    });
   }
 
   function renderTablaLocalidades(){
-    // Usar CSV sólo si: hay CSV y además HAY columna hogares o ya existe fallback cargado.
-    const usingCSV = CENSO_ROWS.length>0 && (findHogaresColumn() || HOGARES_LOC_FALL.size>0);
-    const data = usingCSV ? aggregateCensoByLocalidad() : filasLocalidadesFiltradasFallback();
-
+    const data = filasLocalidadesFiltradas();
     const cfg = {
       data,
       columns: [
@@ -852,8 +868,8 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         { title: 'Municipio', data: 'MUNICIPIO' },
         { title: 'Localidad', data: 'LOCALIDAD' },
         { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: '% Población que requiere estufa', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
+        { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+        { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
       ],
       pageLength: 10, responsive: true, language: {
         decimal: ",", thousands: ".",
@@ -867,53 +883,27 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
         zeroRecords: "No se encontraron registros",
         paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
       },
-      dom: 'ftip',
-      destroy: true
+      dom: 'ftip'
     };
-    if(window.DataTable && $.fn.DataTable.isDataTable('#tablaLocalidades')){
-      const dt = $('#tablaLocalidades').DataTable();
-      dt.clear(); dt.rows.add(data).draw();
+    if(dtLocalidades){
+      dtLocalidades.clear();
+      dtLocalidades.rows.add(data).draw();
     }else{
-      new DataTable('#tablaLocalidades', cfg);
+      dtLocalidades = new DataTable('#tablaLocalidades', cfg);
     }
-  }
-
-  function initTablasCenso(){
-    // Fallback de localidades (lo usamos también para hogares si el CSV no trae la columna)
-    fetch('estufas_agg_localidad_detalle.json')
-      .then(r => r.json())
-      .then(rows => {
-        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
-        rowsLocalidadesAll = rows;
-
-        // construir mapas de hogares fallback
-        HOGARES_LOC_FALL = new Map();
-        HOGARES_MUN_FALL = new Map();
-        rows.forEach(r=>{
-          HOGARES_LOC_FALL.set(key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD), num(r.hogares));
-          const kmun = key3(r.ENTIDAD, r.MUNICIPIO, '');
-          HOGARES_MUN_FALL.set(kmun, (HOGARES_MUN_FALL.get(kmun)||0) + num(r.hogares));
-        });
-
-        // (re)render ahora que ya hay fallback
-        renderTablaLocalidades();
-        if (csvReady) buildRankingFromCSV();
-      });
-
-    // Fallback de ranking si el CSV aún no carga
-    fetch('ranking_priorizacion_municipio.json')
-      .then(r => r.json())
-      .then(rows => {
-        if (!csvReady){
-          rankingRows = rows;
-          recomputeRankingRows();
-        }
-      });
   }
 
   /* ===================== Tabla simple (legacy) ===================== */
   let dt;
   function renderTable(rows){
+    const columns=[
+      {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
+      {title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
+      {title:'Localidad',data:'localidad'},{title:'Estatus',data:'estatus'},
+      {title:'Instalada',data:'fecha_instalacion'},
+      {title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},
+      {title:'Ahorro (kg/mes)',data:'ahorro'}
+    ];
     const data=rows.map(r=>({
       id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,localidad:r.localidad,estatus:r.estatus,
       fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),
@@ -949,13 +939,13 @@ h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter
   cargarCensoCSV_yCombos();
   initBitacoraEjemplo();
 
-  // Listeners filtros/cascadas + regeneración sintética + tablas
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); buildRankingFromCSV(); });
+  // Listeners filtros/cascadas + regeneración sintética
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
-  // Leyenda
+  // Leyenda y capas
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
