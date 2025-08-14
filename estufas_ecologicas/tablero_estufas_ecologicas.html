@@ -1,29 +1,24 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tablero de Estufas Ecológicas · DGEL</title>
-
-  <!-- Tipografía -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- jQuery + DataTables -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-  <!-- PapaParse -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Tablero de Estufas Ecológicas · DGEL</title>
+<!-- Tipografía -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Leaflet -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- jQuery + DataTables -->
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- PapaParse -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
     :root{
       --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
       --dorado:#BC955C; --beige:#DDC9A3; --gris-700:#6F7271; --gris-500:#98989A;
@@ -96,102 +91,91 @@
 </head>
 <body>
 <header>
-  <div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
-  <div class="brand">
+<div style="width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;color:var(--azul);font-weight:800">DG</div>
+<div class="brand">
     DIRECCIÓN GENERAL DE ENERGÍAS RENOVABLES
     <small>Programa nacional de estufas eficientes de leña para el Bienestar·Dirección de Biocombustibles</small>
-  </div>
-  <div class="logo-strip" aria-label="Dependencias participantes">
-    <img src="1. SENER.png" alt="Energía">
-    <img src="2. BIENESTAR.png" alt="Bienestar">
-    <img src="4. INPI.png" alt="INPI">
-  </div>
+</div>
+<div aria-label="Dependencias participantes" class="logo-strip">
+<img alt="Energía" src="1. SENER.png"/>
+<img alt="Bienestar" src="2. BIENESTAR.png"/>
+<img alt="INPI" src="4. INPI.png"/>
+</div>
 </header>
-
 <main class="container">
-  <!-- FILTROS -->
-  <section class="card">
-    <div class="filters">
-      <div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
-      <div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
-      <div><label>Municipio</label><select id="f_municipio"><option value="">Todos</option></select></div>
-      <div><label>Localidad</label><select id="f_localidad"><option value="">Todas</option></select></div>
-      <div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
-      <div><label>Año/Semana</label><select id="f_week"><option value="">Todos</option></select></div>
-    </div>
-  </section>
+<!-- FILTROS -->
+<section class="card">
+<div class="filters">
+<div><label>Modelo de estufa</label><select id="f_modelo"><option value="">Todos</option></select></div>
+<div><label>Entidad</label><select id="f_entidad"><option value="">Todas</option></select></div>
+<div><label>Municipio</label><select id="f_municipio"><option value="">Todos</option></select></div>
+<div><label>Localidad</label><select id="f_localidad"><option value="">Todas</option></select></div>
+<div><label>Estatus</label><select id="f_estatus"><option value="">Todos</option><option>Instalada</option><option>En seguimiento</option><option>Garantía</option><option>Baja</option></select></div>
+<div><label>Año/Semana</label><select id="f_week"><option value="">Todos</option></select></div>
+</div>
+</section>
+<!-- KPIs -->
+<section class="kpis">
+<div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
+<div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
+<div class="kpi"><div class="label">Hogares que quieren estufa (censo)</div><div class="value" id="k_quiere_estufa">–</div></div>
+<div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
+</section>
+<!-- MAPA + PANEL DERECHO -->
+<section class="layout">
+<div class="card">
+<h2>Mapa de instalaciones</h2>
+<div id="map"></div>
+<h3 style="margin:12px 0 6px;color:var(--azul)">Galería fotográfica del programa</h3>
+<div class="gallery">
+<figure class="thumb">
+<img alt="Instalación de estufa" onclick="openLightbox(this.src,this.alt)" src="./estufa_1.jpg"/>
+<figcaption>Instalación y capacitación en sitio</figcaption>
+</figure>
+<figure class="thumb">
+<img alt="Encendido de prueba y verificación de tiraje" onclick="openLightbox(this.src,this.alt)" src="./estufa_2.jpg"/>
+<figcaption>Encendido de prueba y verificación de tiraje</figcaption>
+</figure>
+<figure class="thumb">
+<img alt="Taller con promotores del programa" onclick="openLightbox(this.src,this.alt)" src="./estufa_3.jpg"/>
+<figcaption>Taller con promotores del programa</figcaption>
+</figure>
+</div>
+</div>
+<div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
+<div class="card" style="height:220px">
+<h2>Instalaciones por semana</h2>
+<canvas id="chartInstalaciones"></canvas>
+</div>
+<div class="card" style="height:220px">
+<h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
+<canvas id="chartAhorro"></canvas>
+</div>
+<div class="card" style="overflow:auto">
+<h2>Bitácora de actividades</h2>
 
-  <!-- KPIs -->
-  <section class="kpis">
-    <div class="kpi"><div class="label">Estufas instaladas</div><div class="value" id="k_estufas">–</div></div>
-    <div class="kpi"><div class="label">Hogares beneficiados</div><div class="value" id="k_hogares">–</div></div>
-    <div class="kpi"><div class="label">Hogares que quieren estufa (censo)</div><div class="value" id="k_quiere_estufa">–</div></div>
-    <div class="kpi"><div class="label">Seguimiento pos-instalación</div><div class="value" id="k_seguimiento">–</div></div>
-  </section>
-
-  <!-- MAPA + PANEL DERECHO -->
-  <section class="layout">
-    <div class="card">
-      <h2>Mapa de instalaciones</h2>
-      <div id="map"></div>
-
-      <h3 style="margin:12px 0 6px;color:var(--azul)">Galería fotográfica del programa</h3>
-      <div class="gallery">
-        <figure class="thumb">
-          <img src="./estufa_1.jpg" alt="Instalación de estufa" onclick="openLightbox(this.src,this.alt)">
-          <figcaption>Instalación y capacitación en sitio</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./estufa_2.jpg" alt="Encendido de prueba y verificación de tiraje" onclick="openLightbox(this.src,this.alt)">
-          <figcaption>Encendido de prueba y verificación de tiraje</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./estufa_3.jpg" alt="Taller con promotores del programa" onclick="openLightbox(this.src,this.alt)">
-          <figcaption>Taller con promotores del programa</figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
-      <div class="card" style="height:220px">
-        <h2>Instalaciones por semana</h2>
-        <canvas id="chartInstalaciones"></canvas>
-      </div>
-      <div class="card" style="height:220px">
-        <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
-        <canvas id="chartAhorro"></canvas>
-      </div>
-      <div class="card" style="overflow:auto">
-        <h2>Bitácora de actividades</h2>
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="seg">Seguimiento</button>
-          <button class="tab-btn" data-tab="con">Conclusión</button>
-        </div>
-        <div id="tab-seg" class="tab-pane active">
-          <table id="tablaSeg" class="display" style="width:100%"></table>
-        </div>
-        <div id="tab-con" class="tab-pane">
-          <table id="tablaCon" class="display" style="width:100%"></table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN DATOS DETALLADOS -->
-  <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
-    <div class="card" style="padding:14px;margin-bottom:16px">
-      <h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
-      <table id="tablaLocalidades" class="display" style="width:100%"></table>
-    </div>
-    <div class="card" style="padding:14px">
-      <h2 style="margin:0 0 10px;font-size:16px">Priorización por Municipio</h2>
-      <table id="tablaRanking" class="display" style="width:100%"></table>
-    </div>
-  </section>
-
-  <footer>Energia 2025. Dirección General de Energías Renovables</footer>
+<div class="tab-pane active" id="tab-seg">
+<table class="display" id="tablaSeg" style="width:100%"></table>
+</div>
+<div class="tab-pane" id="tab-con">
+<table class="display" id="tablaCon" style="width:100%"></table>
+</div>
+</div>
+</div>
+</section>
+<!-- SECCIÓN DATOS DETALLADOS -->
+<section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
+<div class="card" style="padding:14px;margin-bottom:16px">
+<h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
+<table class="display" id="tablaLocalidades" style="width:100%"></table>
+</div>
+<div class="card" style="padding:14px">
+<h2 style="margin:0 0 10px;font-size:16px">Priorización por Municipio</h2>
+<table class="display" id="tablaRanking" style="width:100%"></table>
+</div>
+</section>
+<footer>Energia 2025. Dirección General de Energías Renovables</footer>
 </main>
-
 <!-- ===== Datos demo (instalaciones) ===== -->
 <script>
   const DATA = [
@@ -204,7 +188,6 @@
     {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
   ];
 </script>
-
 <script>
   const $ = s=>document.querySelector(s);
   const fmt = n=> n.toLocaleString('es-MX');
@@ -534,17 +517,7 @@
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
     if (!DataTable.isDataTable('#tablaSeg')) {
-      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
-        {title:'Fecha',data:'fecha'},
-        {title:'Entidad',data:'entidad'},
-        {title:'Municipio',data:'municipio'},
-        {title:'Localidad',data:'localidad'},
-        {title:'Beneficiario',data:'beneficiario'},
-        {title:'Espacio listo',data:'espacio_listo'},
-        {title:'Materiales',data:'materiales'},
-        {title:'ID Promotor',data:'id_promotor'},
-        {title:'Observaciones',data:'observaciones'}
-      ]});
+      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[{title:'Fecha', data:'fecha'},{title:'Entidad', data:'entidad'},{title:'Municipio', data:'municipio'},{title:'Localidad', data:'localidad'},{title:'Beneficiario / Hogar', data:'beneficiario'},{title:'Estatus', data:'estatus'},{title:'Espacio listo', data:'espacio_listo'},{title:'Materiales entregados', data:'materiales'},{title:'Fecha inicio obra', data:'fecha_inicio'},{title:'Funcionamiento', data:'funcion'},{title:'Checklist piezas', data:'piezas'},{title:'Satisfacción', data:'satisfaccion'},{title:'Observaciones', data:'observaciones'}]});
     }
     if (!DataTable.isDataTable('#tablaCon')) {
       new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
