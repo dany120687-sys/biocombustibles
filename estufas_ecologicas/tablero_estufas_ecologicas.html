@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -305,30 +306,22 @@ h1, h2, h3, .title, .card h2 {
   const num = v => { const n = Number(String(v??'').replace(/,/g,'').trim()); return isFinite(n)? n : 0; };
 
   /* ======= CENSO (para filtros y KPI “Quiere estufa”) ======= */
+  const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO'; // <-- Columna base fija
   let CENSO_ROWS = [];       // filas del CSV
   let CSV_LOC_SET = null;    // ENTIDAD|MUNICIPIO|LOCALIDAD del CSV
-  let QUIERE_COL = null;     // nombre de columna con “quiere estufa”
   let LOC_GEO = null;        // geojson localidades (mapa)
   let rowsLocalidadesAll = [];
   let dtLocalidades = null;
 
-  function detectQuiereCSVColumn(headers){
-    // Normaliza encabezados y busca las variantes más comunes
-    let hit = null;
-    headers.forEach(h=>{
-      const n = normaliza(h);
-      if (n === 'quiereestufa' || n === 'quierenestufa') hit = h;
-    });
-    if (hit) return hit;
-    // Variante usada antes (REM_BIO)
-    headers.forEach(h=>{ if (normaliza(h)==='grupoprioritariosenerrembio') hit=h; });
-    if (hit) return hit;
-    // Heurística: contenga "quiere" + "estufa"
-    headers.forEach(h=>{ const n=normaliza(h); if(n.includes('quiere') && n.includes('estufa')) hit=h; });
-    return hit;
+  const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
+
+  // Si la fuente no tiene QUIERE_COL (p.ej. GeoJSON fallback), no filtramos por >0
+  function filterByQuiere(rows){
+    if (!rows || !rows.length) return [];
+    const hasCol = rows.some(r => r && Object.prototype.hasOwnProperty.call(r, QUIERE_COL));
+    return hasCol ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows;
   }
 
-  const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
   function setOptions(sel, values, firstLabel){
     const el = document.querySelector(sel);
     const current = el.value;
@@ -349,38 +342,34 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function buildEntidadFromFuente(){
-    const rows = fuenteCombos();
-    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
-    const ents = uniqSorted(rowsHasQ.map(r=> r.ENTIDAD || r.entidad));
+    const rows = filterByQuiere(fuenteCombos());
+    const ents = uniqSorted(rows.map(r=> r.ENTIDAD || r.entidad));
     setOptions('#f_entidad', ents, 'Todas');
   }
   function cascadeMunicipios(){
     const ent = $('#f_entidad').value;
-    const rows = fuenteCombos().filter(r => !ent || (r.ENTIDAD||r.entidad)===ent);
-    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
-    const muns = uniqSorted(rowsHasQ.map(r=> r.MUNICIPIO || r.municipio));
+    const base = fuenteCombos().filter(r => !ent || (r.ENTIDAD||r.entidad)===ent);
+    const rows = filterByQuiere(base);
+    const muns = uniqSorted(rows.map(r=> r.MUNICIPIO || r.municipio));
     setOptions('#f_municipio', muns, 'Todos');
   }
   function cascadeLocalidades(){
     const ent=$('#f_entidad').value, mun=$('#f_municipio').value;
-    const rows = fuenteCombos().filter(r=>{
+    const base = fuenteCombos().filter(r=>{
       const okE=!ent || (r.ENTIDAD||r.entidad)===ent;
       const okM=!mun || (r.MUNICIPIO||r.municipio)===mun;
       return okE && okM;
     });
-    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
-    const locs = uniqSorted(rowsHasQ.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
+    const rows = filterByQuiere(base);
+    const locs = uniqSorted(rows.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  // Lee CSV y arma combos (referenciados a “quiere estufa”)
+  // Lee CSV y arma combos (referenciados a QUIERE_COL)
   function cargarCensoCSV_yCombos(){
     Papa.parse('Censo_estufas.csv', {
       download:true, header:true, skipEmptyLines:true,
       complete:(res)=>{
-        const headers = (res.meta && res.meta.fields) ? res.meta.fields : Object.keys((res.data||[])[0]||{});
-        QUIERE_COL = detectQuiereCSVColumn(headers);
-
         CENSO_ROWS = (res.data||[]).map(r=>{
           const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
           const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
@@ -460,12 +449,12 @@ h1, h2, h3, .title, .card h2 {
     if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
-  // KPI “Hogares que quieren estufa (censo)” filtrado
+  // KPI “Hogares que quieren estufa (censo)” filtrado por QUIERE_COL
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
 
-    if (CENSO_ROWS.length && QUIERE_COL){
+    if (CENSO_ROWS.length){
       CENSO_ROWS.forEach(r=>{
         const okE = !f.entidad   || (r.ENTIDAD===f.entidad);
         const okM = !f.municipio || (r.MUNICIPIO===f.municipio);
@@ -473,7 +462,7 @@ h1, h2, h3, .title, .card h2 {
         if (okE && okM && okL) totalQuiere += num(r[QUIERE_COL]);
       });
     } else if (LOC_GEO) {
-      // Respaldo con GeoJSON si no hay columna detectada
+      // Respaldo con GeoJSON si el CSV no ha cargado aún (no filtra por QUIERE_COL)
       const feats = (LOC_GEO.features||[]);
       feats.forEach(({properties:p={}})=>{
         const ent=gProp(p,'ENTIDAD','entidad');
