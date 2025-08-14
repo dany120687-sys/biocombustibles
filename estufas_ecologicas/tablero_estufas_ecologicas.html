@@ -533,15 +533,14 @@ h1, h2, h3, .title, .card h2 {
       loadLocalidades();
     }
 
-    if(estufasLayer) estufasLayer.remove();
-    estufasLayer = L.layerGroup().addTo(map);
-    if(layerControl && !window._addedEstufas){ layerControl.addOverlay(estufasLayer, 'Estufas'); window._addedEstufas = true; }
+    if(layer) layer.remove();
+    layer = L.layerGroup().addTo(map);
     rows.forEach(r=>{
       const color = r.estatus==='Instalada'     ? getCss('--guinda') :
                     r.estatus==='En seguimiento'? getCss('--dorado') :
                     r.estatus==='Garantía'      ? getCss('--verde')  : '#d62728';
       const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
-      L.marker([r.lat,r.lng],{icon}).addTo(estufasLayer)
+      L.marker([r.lat,r.lng],{icon}).addTo(layer)
         .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
     });
   }
