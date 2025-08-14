@@ -162,11 +162,9 @@
         <canvas id="chartAhorro"></canvas>
       </div>
       <div class="card" style="overflow:auto">
-        <h2>Bitácora de actividades</h2>
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="seg">Seguimiento</button>
-          <button class="tab-btn" data-tab="con">Conclusión</button>
-        </div>
+  <h2>Bitácora de actividades</h2>
+  <table id="tablaBitacora" class="display" style="width:100%"></table>
+</div>
         <div id="tab-seg" class="tab-pane active">
           <table id="tablaSeg" class="display" style="width:100%"></table>
         </div>
@@ -516,150 +514,89 @@
 
 
   
-  /* ===================== BITÁCORA (SEGUIMIENTO / CONCLUSIÓN) ===================== */
-  let dtSeg, dtCon;
+  /* ===================== BITÁCORA (ÚNICA) ===================== */
+let dtBitacora;
 
-  // Mostrar encabezados vacíos para que se vean las tablas aunque el CSV tarde en cargar
-  function initEmptyBitacoraTables(){
-    const lang = {
-      decimal:",", thousands:".",
-      info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
-      infoEmpty:"Mostrando 0 a 0 de 0 registros",
-      infoFiltered:"(filtrado de _MAX_ en total)",
-      lengthMenu:"Mostrar _MENU_",
-      loadingRecords:"Cargando...",
-      processing:"Procesando...",
-      search:"Buscar:",
-      zeroRecords:"No se encontraron registros",
-      paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
-    };
-    if (!DataTable.isDataTable('#tablaSeg')) {
-      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
-        {title:'Fecha',data:'fecha'},
-        {title:'Entidad',data:'entidad'},
-        {title:'Municipio',data:'municipio'},
-        {title:'Localidad',data:'localidad'},
-        {title:'Beneficiario',data:'beneficiario'},
-        {title:'Espacio listo',data:'espacio_listo'},
-        {title:'Materiales',data:'materiales'},
-        {title:'ID Promotor',data:'id_promotor'},
-        {title:'Observaciones',data:'observaciones'}
-      ]});
-    }
-    if (!DataTable.isDataTable('#tablaCon')) {
-      new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
-        {title:'Fecha',data:'fecha'},
-        {title:'Entidad',data:'entidad'},
-        {title:'Municipio',data:'municipio'},
-        {title:'Localidad',data:'localidad'},
-        {title:'Beneficiario',data:'beneficiario'},
-        {title:'Funcionamiento',data:'funcion'},
-        {title:'Piezas/Checklist',data:'piezas'},
-        {title:'Satisfacción',data:'satisfaccion'},
-        {title:'Observaciones',data:'observaciones'}
-      ]});
+function pick(obj, keys, defaultValue=''){
+  function norm(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+  for (const k of keys){
+    if (obj[k] != null && obj[k] !== '') return obj[k];
+    const nk = norm(k);
+    for (const key in obj){
+      if (norm(key) === nk) return obj[key];
     }
   }
+  return defaultValue;
+}
 
-  function col(obj, arrNombres, def=''){
-    for(const n of arrNombres){
-      if(obj[n]!=null && obj[n]!=='') return obj[n];
-      const nn = normaliza(n);
-      for(const k in obj){
-        if(normaliza(k)===nn) return obj[k];
+function cargarBitacoraUnica(){
+  Papa.parse('bitacora_actividades.csv', {
+    download: true, header: true, skipEmptyLines: true,
+    complete: (res) => {
+      const rowsRaw = res.data || [];
+
+      const rows = rowsRaw.map(r => ({
+        fecha:          pick(r, ['Fecha','fecha','Fecha inicio','Fecha de inicio','fecha_inicio','Fecha de conclusión','fecha_conclusion']),
+        entidad:        pick(r, ['Entidad','entidad','Estado']),
+        municipio:      pick(r, ['Municipio','municipio']),
+        localidad:      pick(r, ['Localidad','localidad','NOM_LOC','Colonia']),
+        beneficiario:   pick(r, ['Beneficiario / Hogar','beneficiario','persona beneficiaria','nombre','Nombre','Nombre (s)']),
+        estatus:        pick(r, ['Estatus','estatus','tipo','fase','formato']),
+        espacio_listo:  pick(r, ['Espacio listo','el espacio ya se encuentra en condiciones','verificacion del espacio']),
+        materiales:     pick(r, ['Materiales entregados','entrega de materiales','materiales']),
+        fecha_inicio:   pick(r, ['Fecha inicio obra','Fecha de inicio de construccion','Fecha de inicio','fecha de inicio']),
+        funcion:        pick(r, ['Funcionamiento','calienta correctamente','se expulsa el humo correctamente']),
+        piezas:         pick(r, ['Checklist piezas','check list','piezas','partes','la estufa patsari cuenta con']),
+        satisfaccion:   pick(r, ['Satisfacción','satisfaccion','opinión final','opinion final']),
+        observaciones:  pick(r, ['Observaciones','observaciones','nota','comentarios'])
+      }));
+
+      const dtLang = {
+        decimal: ",", thousands: ".",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        infoEmpty: "Mostrando 0 a 0 de 0 registros",
+        infoFiltered: "(filtrado de _MAX_ en total)",
+        lengthMenu: "Mostrar _MENU_",
+        loadingRecords: "Cargando...",
+        processing: "Procesando...",
+        search: "Buscar:",
+        zeroRecords: "No se encontraron registros",
+        paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+      };
+
+      if (dtBitacora) {
+        dtBitacora.clear();
+        dtBitacora.rows.add(rows).draw();
+      } else {
+        dtBitacora = $('#tablaBitacora').DataTable({
+          data: rows,
+          columns: [
+            { title: 'Fecha', data: 'fecha' },
+            { title: 'Entidad', data: 'entidad' },
+            { title: 'Municipio', data: 'municipio' },
+            { title: 'Localidad', data: 'localidad' },
+            { title: 'Beneficiario / Hogar', data: 'beneficiario' },
+            { title: 'Estatus', data: 'estatus' },
+            { title: 'Espacio listo', data: 'espacio_listo' },
+            { title: 'Materiales entregados', data: 'materiales' },
+            { title: 'Fecha inicio obra', data: 'fecha_inicio' },
+            { title: 'Funcionamiento', data: 'funcion' },
+            { title: 'Checklist piezas', data: 'piezas' },
+            { title: 'Satisfacción', data: 'satisfaccion' },
+            { title: 'Observaciones', data: 'observaciones' }
+          ],
+          pageLength: 8,
+          responsive: true,
+          language: dtLang,
+          dom: 'ftip',
+          destroy: true
+        });
       }
-    }
-    return def;
-  }
-
-  function cargarBitacora(){
-    Papa.parse('bitacora_actividades.csv', {
-      download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>{
-        const rows = res.data||[];
-        const seg = [];
-        const con = [];
-        rows.forEach(r=>{
-          const tipo = (col(r,['tipo','formato','fase'],'')||'').toString().toLowerCase();
-          const base = {
-            entidad: col(r,['entidad','estado']),
-            municipio: col(r,['municipio']),
-            localidad: col(r,['localidad','colonia','nom_loc']),
-            beneficiario: col(r,['nombre','nombre (s)','persona beneficiaria','beneficiario']),
-            fecha: col(r,['fecha','fecha de inicio','fecha de conclusión','fecha_conclusion','fecha_inicio']),
-            id_promotor: col(r,['id promotor','id_promotor','promotor id','id']),
-            observaciones: col(r,['observaciones','nota','comentarios'])
-          };
-          if(tipo.includes('conclu')){
-            con.push({
-              ...base,
-              funcion: col(r,['funcionamiento','calienta correctamente','se expulsa el humo correctamente']),
-              piezas: col(r,['check list','piezas','partes','la estufa patsari cuenta con']),
-              satisfaccion: col(r,['satisfaccion','satisfacción','opinion final','opinión final'])
-            });
-          }else{
-            seg.push({
-              ...base,
-              espacio_listo: col(r,['el espacio ya se encuentra en condiciones','espacio listo','verificacion del espacio']),
-              materiales: col(r,['materiales entregados','entrega de materiales']),
-              fecha_inicio: col(r,['fecha de inicio de construccion','fecha de inicio']),
-            });
-          }
-        });
-
-        const lang = {
-          decimal: ",", thousands: ".",
-          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-          infoEmpty: "Mostrando 0 a 0 de 0 registros",
-          infoFiltered: "(filtrado de _MAX_ en total)",
-          lengthMenu: "Mostrar _MENU_",
-          loadingRecords: "Cargando...",
-          processing: "Procesando...",
-          search: "Buscar:",
-          zeroRecords: "No se encontraron registros",
-          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-        };
-
-        if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
-        if (dtCon){ dtCon.destroy(); dtCon = null; }
-
-        dtSeg = new DataTable('#tablaSeg',{
-          data: seg,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Espacio listo', data:'espacio_listo'},
-            {title:'Materiales', data:'materiales'},
-            {title:'ID Promotor', data:'id_promotor'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
-
-        dtCon = new DataTable('#tablaCon',{
-          data: con,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Funcionamiento', data:'funcion'},
-            {title:'Piezas/Checklist', data:'piezas'},
-            {title:'Satisfacción', data:'satisfaccion'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
-      },
-      error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
-    });
-  }
-
-  /* ===================== TABLAS DE CENSO ===================== */
+    },
+    error: (e) => console.warn('No se pudo leer bitacora_actividades.csv', e)
+  });
+}
+/* ===================== TABLAS DE CENSO ===================== */
   function initTablasCenso(){
     const dtLang = {
       decimal: ",", thousands: ".",
@@ -797,9 +734,9 @@
   cargarCensoCSV_yCombos();
 
   // Mostrar estructura de tablas de bitácora desde el inicio
-  initEmptyBitacoraTables();
+  // initEmptyBitacoraTables(); (eliminado)
   // Cargar CSV para bitácora
-  cargarBitacora();
+  cargarBitacoraUnica();
 
   // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
   function encuentraColumna(headers){
