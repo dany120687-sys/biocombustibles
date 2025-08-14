@@ -477,7 +477,6 @@ h1, h2, h3, .title, .card h2 {
       return okE && okM && okL && ft.geometry && ft.geometry.type==='Point';
     });
     if(feats.length===0){
-      // Si hay localidades del municipio (ignorando localidad concreta), tómalas
       const any = (LOC_GEO.features||[]).filter(ft=>{
         const p=ft.properties||{};
         return eqN(gProp(p,'ENTIDAD','entidad'), ent) && eqN(gProp(p,'MUNICIPIO','municipio'), mun) && ft.geometry && ft.geometry.type==='Point';
@@ -530,6 +529,7 @@ h1, h2, h3, .title, .card h2 {
     regenerateSyntheticByMunicipio();
     buildWeeksFromData();
     renderAll();
+    recomputeRankingRows(); // ← actualizar tabla inferior
   }
 
   /* =================== Aplicación de filtros =================== */
@@ -800,20 +800,65 @@ h1, h2, h3, .title, .card h2 {
   let rowsLocalidadesAll = [];
   let dtLocalidades = null;
 
-  function initTablasCenso(){
-    const dtLang = {
-      decimal: ",", thousands: ".",
-      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-      infoEmpty: "Mostrando 0 a 0 de 0 registros",
-      infoFiltered: "(filtrado de _MAX_ en total)",
-      lengthMenu: "Mostrar _MENU_",
-      loadingRecords: "Cargando...",
-      processing: "Procesando...",
-      search: "Buscar:",
-      zeroRecords: "No se encontraron registros",
-      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-    };
+  // -------- NUEVO: tabla de ranking que se actualiza --------
+  let rankingRows = [];
+  let dtRanking = null;
+  function recomputeRankingRows(){
+    if (!rankingRows.length) return;
+    // Conteo de estufas construidas por municipio (datos reales + sintéticos)
+    const installedByMun = {};
+    getAllRows().forEach(d=>{
+      if(d.estatus==='Instalada'){
+        const k = normaliza(d.municipio||'');
+        installedByMun[k] = (installedByMun[k]||0) + 1;
+      }
+    });
 
+    const updated = rankingRows.map(r=>{
+      const k = normaliza(r.MUNICIPIO||'');
+      const instaladas = installedByMun[k] || 0;
+      const quiere = Number(r.quiere_estufa||0);
+      const pct = quiere > 0 ? (instaladas / quiere) * 100 : 0;
+      return {...r, instaladas, pct_instaladas: pct};
+    });
+
+    if (dtRanking){
+      dtRanking.clear();
+      dtRanking.rows.add(updated).draw();
+    } else {
+      dtRanking = new DataTable('#tablaRanking', {
+        data: updated,
+        columns: [
+          { title: 'Entidad', data: 'ENTIDAD' },
+          { title: 'Municipio', data: 'MUNICIPIO' },
+          { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
+          { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+          { title: 'Estufas construidas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
+          { title: '% Estufas instaladas', data: 'pct_instaladas', render: d => `${Number(d||0).toFixed(1)}%` }
+        ],
+        order: [[5,'desc']],
+        pageLength: 8, responsive: true,
+        language: {
+          decimal: ",", thousands: ".",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          infoEmpty: "Mostrando 0 a 0 de 0 registros",
+          infoFiltered: "(filtrado de _MAX_ en total)",
+          lengthMenu: "Mostrar _MENU_",
+          loadingRecords: "Cargando...",
+          processing: "Procesando...",
+          search: "Buscar:",
+          zeroRecords: "No se encontraron registros",
+          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+        },
+        dom: 'ftip',
+        lengthChange: false,
+        destroy: true
+      });
+    }
+  }
+  // ---------------------------------------------------------
+
+  function initTablasCenso(){
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
@@ -825,27 +870,8 @@ h1, h2, h3, .title, .card h2 {
     fetch('ranking_priorizacion_municipio.json')
       .then(r => r.json())
       .then(rows => {
-        const installedByMun = {};
-        getAllRows().forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
-        rows.forEach(r=>{
-          const instaladas = installedByMun[r.MUNICIPIO] || 0;
-          r.instaladas = instaladas;
-          const quiere = Number(r.quiere_estufa||0);
-          r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
-        });
-        new DataTable('#tablaRanking', {
-          data: rows,
-          columns: [
-            { title: 'Entidad', data: 'ENTIDAD' },
-            { title: 'Municipio', data: 'MUNICIPIO' },
-            { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: 'Estufas instaladas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: '% Estufas instaladas Totales', data: 'pct_q_sobre_inst', render: d => `${Number(d||0).toFixed(1)}%` }
-          ],
-          order: [[5,'desc']],
-          pageLength: 8, responsive: true, language: dtLang, dom: 'ftip', lengthChange: false
-        });
+        rankingRows = rows;     // guardamos original
+        recomputeRankingRows(); // primera carga
       });
   }
 
@@ -940,10 +966,10 @@ h1, h2, h3, .title, .card h2 {
   initBitacoraEjemplo();
 
   // Listeners filtros/cascadas + regeneración sintética
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
-  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
-  $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
-  ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); recomputeRankingRows(); });
+  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); recomputeRankingRows(); });
+  $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); recomputeRankingRows(); });
+  ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); recomputeRankingRows(); }));
 
   // Leyenda y capas
   (function addLegend(){
