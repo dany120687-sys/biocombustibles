@@ -283,7 +283,7 @@ h1, h2, h3, .title, .card h2 {
   <footer>Energia 2025. Dirección General de Energías Renovables</footer>
 </main>
 
-<!-- ===== Datos demo (instalaciones) ===== -->
+<!-- ===== Datos demo (instalaciones base) ===== -->
 <script>
   const DATA = [
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658,  lng:-102.048,  estatus:"Instalada",      fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",            consumo_base:120, consumo_post:60},
@@ -297,6 +297,7 @@ h1, h2, h3, .title, .card h2 {
 </script>
 
 <script>
+  /* =================== Helpers & estado =================== */
   const $ = s=>document.querySelector(s);
   const fmt = n=> n.toLocaleString('es-MX');
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -304,22 +305,27 @@ h1, h2, h3, .title, .card h2 {
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
   const num = v => { const n = Number(String(v??'').replace(/,/g,'').trim()); return isFinite(n)? n : 0; };
 
-  /* ======= CENSO (para filtros y KPI “Quiere estufa”) ======= */
-  const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO'; // <-- Columna base fija
-  let CENSO_ROWS = [];       // filas del CSV
-  let CSV_LOC_SET = null;    // ENTIDAD|MUNICIPIO|LOCALIDAD del CSV
-  let LOC_GEO = null;        // geojson localidades (mapa)
-  let rowsLocalidadesAll = [];
-  let dtLocalidades = null;
+  const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO'; // columna del censo
+  const MODELOS = ['Modelo A','Modelo B','Modelo C'];
+  const PROGRAMAS = ['Transición Energética','Calor Seguro','Bienestar'];
 
+  // Rango temporal para las instalaciones sintéticas
+  const START_DATE = new Date('2025-08-01');
+  const END_DATE   = new Date('2025-10-31');
+  const EJEMPLOS_POR_LOCALIDAD = 20;
+  const MAX_LOCALIDADES_SINTETICAS = 80; // seguridad si no hay filtros (puedes subirlo)
+
+  let CENSO_ROWS = [];
+  let CSV_LOC_SET = null;
+  let LOC_GEO = null;
+
+  // Para regenerar
+  let SYNTH = [];                 // registros sintéticos
+  let csvReady = false, geoReady = false;
+  const CENSO_MAP = new Map();    // ENT|MUN|LOC -> fila CSV
+
+  /* =================== Filtros =================== */
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
-
-  // Si la fuente no tiene QUIERE_COL (p.ej. GeoJSON fallback), no filtramos por >0
-  function filterByQuiere(rows){
-    if (!rows || !rows.length) return [];
-    const hasCol = rows.some(r => r && Object.prototype.hasOwnProperty.call(r, QUIERE_COL));
-    return hasCol ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows;
-  }
 
   function setOptions(sel, values, firstLabel){
     const el = document.querySelector(sel);
@@ -330,7 +336,7 @@ h1, h2, h3, .title, .card h2 {
     if(values.includes(current)) el.value=current;
   }
 
-  function fuenteCombos(){ // base para combos: CENSO si existe; si no, LOC_GEO
+  function fuenteCombos(){
     if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
     const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     return feats.map(f=>f.properties||{});
@@ -338,6 +344,12 @@ h1, h2, h3, .title, .card h2 {
 
   function keyEML(ent, mun, loc){
     return [ent||'', mun||'', loc||''].map(x=>normaliza(x)).join('|');
+  }
+
+  function filterByQuiere(rows){
+    if (!rows || !rows.length) return [];
+    const hasCol = rows.some(r => r && Object.prototype.hasOwnProperty.call(r, QUIERE_COL));
+    return hasCol ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows;
   }
 
   function buildEntidadFromFuente(){
@@ -364,38 +376,8 @@ h1, h2, h3, .title, .card h2 {
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  // Lee CSV y arma combos (referenciados a QUIERE_COL)
-  function cargarCensoCSV_yCombos(){
-    Papa.parse('Censo_estufas.csv', {
-      download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>{
-        CENSO_ROWS = (res.data||[]).map(r=>{
-          const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
-          const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
-          const LOC = r.LOCALIDAD || r.localidad || r['Localidad'] || r.NOM_LOC || '';
-          return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
-        });
-        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => keyEML(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
-
-        buildEntidadFromFuente();
-        cascadeMunicipios();
-        cascadeLocalidades();
-        renderKPIQuiereEstufa(); // KPI dinámico por filtros
-
-        // Si ya estaba el mapa, rearmar capa de localidades filtradas por CSV
-        if (LOC_GEO && locaAllLayer){
-          map.removeLayer(locaAllLayer);
-          crearCapaLocalidades();
-        }
-      },
-      error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
-    });
-  }
-
-  /* ===================== FILTROS / APLICACIÓN ===================== */
   function bootstrapFiltersSimple(){
-    const modelos=[...new Set(DATA.map(x=>x.modelo))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
-    setOptions('#f_modelo', modelos, 'Todos');
+    setOptions('#f_modelo', MODELOS, 'Todos');
   }
 
   function getFilters(){
@@ -409,7 +391,34 @@ h1, h2, h3, .title, .card h2 {
     }
   }
 
-  // Semana ISO
+  /* =================== Carga CSV para filtros y KPI =================== */
+  function cargarCensoCSV_yCombos(){
+    Papa.parse('Censo_estufas.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
+        CENSO_ROWS = (res.data||[]).map(r=>{
+          const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
+          const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
+          const LOC = r.LOCALIDAD || r.localidad || r['Localidad'] || r.NOM_LOC || '';
+          const row = { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
+          CENSO_MAP.set(keyEML(ENT,MUN,LOC), row);
+          return row;
+        });
+        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => keyEML(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
+
+        buildEntidadFromFuente();
+        cascadeMunicipios();
+        cascadeLocalidades();
+        renderKPIQuiereEstufa();
+
+        csvReady = true;
+        tryRegenerateSynthetic();
+      },
+      error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
+    });
+  }
+
+  /* =================== Semana ISO y helpers de fechas =================== */
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
     const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day+3);
@@ -418,6 +427,111 @@ h1, h2, h3, .title, .card h2 {
     const y=d.getFullYear(); return `${y}-W${String(week).padStart(2,'0')}`;
   }
   function sortWeekKeys(a,b){const [ya,wa]=a.split('-W').map(Number);const [yb,wb]=b.split('-W').map(Number);return ya===yb?wa-wb:ya-yb;}
+
+  function buildWeightedWeeks(){
+    const start = new Date(START_DATE);
+    start.setDate(start.getDate() - ((start.getDay()+6)%7)); // llevar a jueves ISO de esa semana
+    const weeks = [];
+    while (start <= END_DATE){
+      weeks.push(new Date(start));
+      start.setDate(start.getDate()+7);
+    }
+    // peso no lineal
+    const weights = weeks.map((_,i)=> Math.max(1, Math.round(1 + Math.abs(Math.sin(i*0.9))*6 + Math.random()*2)));
+    return {weeks, weights};
+  }
+  function pickWeighted(arr, weights){
+    const sum = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random()*sum;
+    for(let i=0;i<arr.length;i++){ if((r-=weights[i])<0) return i; }
+    return arr.length-1;
+  }
+  function randomDateWeighted(){
+    const {weeks, weights} = buildWeightedWeeks();
+    const idx = pickWeighted(weeks, weights);
+    const d = new Date(weeks[idx]);
+    d.setDate(d.getDate() + Math.floor(Math.random()*7)); // dentro de la semana
+    if (d < START_DATE) return new Date(START_DATE);
+    if (d > END_DATE)   return new Date(END_DATE);
+    return d;
+  }
+  function jitter(val, span){ return val + (Math.random()-0.5)*span; }
+
+  /* =================== Generación sintética =================== */
+  function tryRegenerateSynthetic(){
+    if (!csvReady || !geoReady) return;
+    regenerateSyntheticForCurrentFilters();
+    buildWeeksFromData();
+    renderAll();
+  }
+
+  function localidadesFiltradasConGeo(){
+    if(!LOC_GEO) return [];
+    const f=getFilters();
+    const feats = (LOC_GEO.features||[]);
+    let filtered = feats.filter(ft=>{
+      const p=ft.properties||{};
+      const ent=gProp(p,'ENTIDAD','entidad');
+      const mun=gProp(p,'MUNICIPIO','municipio');
+      const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
+      const okE=!f.entidad || ent===f.entidad;
+      const okM=!f.municipio || mun===f.municipio;
+      const okL=!f.localidad || loc===f.localidad;
+      if(!(okE&&okM&&okL)) return false;
+      const k = keyEML(ent,mun,loc);
+      const rowCSV = CENSO_MAP.get(k);
+      // Debe existir en CSV y tener >0 en QUIERE_COL
+      return !!rowCSV && num(rowCSV[QUIERE_COL])>0 && ft.geometry && ft.geometry.type==='Point';
+    });
+
+    // Si no hay filtros (todo) y es enorme, recortar para no saturar
+    if (!f.municipio && !f.localidad && filtered.length > MAX_LOCALIDADES_SINTETICAS){
+      filtered = filtered.slice(0, MAX_LOCALIDADES_SINTETICAS);
+    }
+    return filtered;
+  }
+
+  function regenerateSyntheticForCurrentFilters(){
+    SYNTH = [];
+    const feats = localidadesFiltradasConGeo();
+    if(!feats.length) return;
+
+    let seq = 1;
+    feats.forEach(ft=>{
+      const p=ft.properties||{};
+      const ent=gProp(p,'ENTIDAD','entidad');
+      const mun=gProp(p,'MUNICIPIO','municipio');
+      const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
+      const baseLng = ft.geometry.coordinates[0];
+      const baseLat = ft.geometry.coordinates[1];
+
+      for(let i=0;i<EJEMPLOS_POR_LOCALIDAD;i++){
+        const fecha = randomDateWeighted();
+        const modelo = MODELOS[Math.floor(Math.random()*MODELOS.length)];
+        const programa = PROGRAMAS[Math.floor(Math.random()*PROGRAMAS.length)];
+        const consumo_base = 90 + Math.floor(Math.random()*60);
+        const ahorro = 30 + Math.floor(Math.random()*40);
+        const consumo_post = Math.max(10, consumo_base - ahorro);
+
+        SYNTH.push({
+          id: `${normaliza(loc)}-${String(seq++).padStart(5,'0')}`,
+          programa, proveedor:'Proveedor Demo',
+          modelo, entidad: ent, municipio: mun,
+          lat: jitter(baseLat, 0.01),
+          lng: jitter(baseLng, 0.01),
+          estatus:'Instalada',
+          fecha_instalacion: fecha.toISOString().slice(0,10),
+          garantia_fin:'2027-12-31',
+          visita_ult_fecha: fecha.toISOString().slice(0,10),
+          visita_ult_hallazgo:'OK',
+          consumo_base, consumo_post
+        });
+      }
+    });
+  }
+
+  /* =================== Aplicación de filtros =================== */
+  function getAllRows(){ return DATA.concat(SYNTH); }
 
   function applyFilters(data){
     const f=getFilters();
@@ -434,21 +548,18 @@ h1, h2, h3, .title, .card h2 {
     const total=rows.length;
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
 
-    // Estufas instaladas
     const elE = document.getElementById('k_estufas');
     if (elE) elE.textContent = fmt(total);
 
-    // Población beneficiada = hogares * 4.2
     const pobl = Math.round(total * 4.2);
     const elP = document.getElementById('k_poblacion');
     if (elP) elP.textContent = fmt(pobl);
 
-    // Seguimiento
     const elS = document.getElementById('k_seguimiento');
     if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
-  // KPI “Hogares que quieren estufa (censo)” filtrado por QUIERE_COL
+  // KPI “Quiere estufa” basado en QUIERE_COL
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
@@ -461,7 +572,6 @@ h1, h2, h3, .title, .card h2 {
         if (okE && okM && okL) totalQuiere += num(r[QUIERE_COL]);
       });
     } else if (LOC_GEO) {
-      // Respaldo con GeoJSON si el CSV no ha cargado aún (no filtra por QUIERE_COL)
       const feats = (LOC_GEO.features||[]);
       feats.forEach(({properties:p={}})=>{
         const ent=gProp(p,'ENTIDAD','entidad');
@@ -575,6 +685,9 @@ h1, h2, h3, .title, .card h2 {
       if(!(CENSO_ROWS && CENSO_ROWS.length)){
         buildEntidadFromFuente(); cascadeMunicipios(); cascadeLocalidades();
       }
+
+      geoReady = true;
+      tryRegenerateSynthetic();
     }catch(err){
       console.error(err);
       alert('No se pudo cargar la capa de Localidades.\nVerifica nombre/ubicación del archivo.');
@@ -585,57 +698,30 @@ h1, h2, h3, .title, .card h2 {
     if(!map){
       map = L.map('map').setView([22.5,-102],5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-      // IMPORTANTE: usar overlays
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
       loadMunicipios();
       loadLocalidades();
     }
 
     if(layer) layer.remove();
-    layer = L.layerGroup();
+    layer = L.layerGroup().addTo(map);  /* <<--- IMPORTANTE: añadir la capa al mapa */
     if(layerControl && !window._addedEstufas){ layerControl.addOverlay(layer, 'Estufas'); window._addedEstufas = true; }
+
     rows.forEach(r=>{
       const color = r.estatus==='Instalada'     ? getCss('--guinda') :
                     r.estatus==='En seguimiento'? getCss('--dorado') :
                     r.estatus==='Garantía'      ? getCss('--verde')  : '#d62728';
       const icon=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)"></div>`});
       L.marker([r.lat,r.lng],{icon}).addTo(layer)
-        .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}`);
+        .bindPopup(`<b>${r.programa}</b><br/>${r.modelo} · ${r.estatus}<br/>${r.municipio}, ${r.entidad}<br/>Instalada: ${new Date(r.fecha_instalacion).toLocaleDateString('es-MX')}`);
     });
-  }
 
-  // Mostrar localidades filtradas en el mapa y alternar capas
-  function showLocalidadesFiltered(){
-    if(!LOC_GEO || !map) return;
-    const ent=$('#f_entidad').value, mun=$('#f_municipio').value, loc=$('#f_localidad').value;
-
-    if(locaFiltered){ map.removeLayer(locaFiltered); locaFiltered=null; }
-    if(!mun && !loc){ return; }
-
-    if(locaAllLayer && !map.hasLayer(locaAllLayer)) map.addLayer(locaAllLayer);
-    if(muniLayer && map.hasLayer(muniLayer)) map.removeLayer(muniLayer);
-
-    const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
-    const subset = {
-      type:'FeatureCollection',
-      features: feats.filter(f=>{
-        const p=f.properties||{};
-        const entP=gProp(p,'ENTIDAD','entidad');
-        const munP=gProp(p,'MUNICIPIO','municipio');
-        const locP=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-        const okE=!ent || entP===ent;
-        const okM=!mun || munP===mun;
-        const okL=!loc || locP===loc;
-        const okCSV = !CSV_LOC_SET || CSV_LOC_SET.has(keyEML(entP,munP,locP));
-        return okE && okM && okL && okCSV;
-      })
-    };
-    if(subset.features.length===0) return;
-
-    locaFiltered = L.geoJSON(subset,{
-      pointToLayer:(feature,latlng)=> L.circleMarker(latlng,{radius:8,color:'#fff',weight:2,fillColor:'#9F2241',fillOpacity:.95})
-    }).addTo(map);
-    try{ map.fitBounds(locaFiltered.getBounds(),{maxZoom:13,padding:[20,20]}); }catch(e){}
+    try{
+      if(rows.length){
+        const g = L.featureGroup(rows.map(r=>L.marker([r.lat,r.lng])));
+        map.fitBounds(g.getBounds(),{padding:[20,20], maxZoom:12});
+      }
+    }catch(e){}
   }
 
   /* ===================== GRÁFICAS ===================== */
@@ -662,7 +748,7 @@ h1, h2, h3, .title, .card h2 {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== BITÁCORA (ÚNICA, SIN CSV) ===================== */
+  /* ===================== Bitácora (igual que tu versión) ===================== */
   let dtBitacora;
   const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
@@ -741,6 +827,9 @@ h1, h2, h3, .title, .card h2 {
   }
 
   /* ===================== TABLAS DE CENSO ===================== */
+  let rowsLocalidadesAll = [];
+  let dtLocalidades = null;
+
   function initTablasCenso(){
     const dtLang = {
       decimal: ",", thousands: ".",
@@ -767,7 +856,7 @@ h1, h2, h3, .title, .card h2 {
       .then(r => r.json())
       .then(rows => {
         const installedByMun = {};
-        DATA.forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
+        getAllRows().forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
         rows.forEach(r=>{
           const instaladas = installedByMun[r.MUNICIPIO] || 0;
           r.instaladas = instaladas;
@@ -834,7 +923,7 @@ h1, h2, h3, .title, .card h2 {
     }
   }
 
-  /* ===================== TABLA SIMPLE BITÁCORA (legacy) ===================== */
+  /* ===================== Tabla simple (legacy) ===================== */
   let dt;
   function renderTable(rows){
     const columns=[
@@ -856,16 +945,16 @@ h1, h2, h3, .title, .card h2 {
 
   /* ===================== REFRESH GENERAL ===================== */
   function renderAll(){
-    const rows=applyFilters(DATA);
+    const rows=applyFilters(getAllRows());
     renderKPIs(rows);
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
-    renderKPIQuiereEstufa(); // <- actualizar KPI de censo
+    renderKPIQuiereEstufa();
   }
 
   function buildWeeksFromData(){
-    const weeks=[...new Set(DATA.map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
+    const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
     if($('#f_week') && $('#f_week').options.length<=1){
       weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);});
     }
@@ -877,14 +966,12 @@ h1, h2, h3, .title, .card h2 {
   renderAll();
   initTablasCenso();
   cargarCensoCSV_yCombos();
-
-  // Bitácora
   initBitacoraEjemplo();
 
-  // Listeners filtros/cascadas (incluye KPI censo)
-  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  $('#f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  // Listeners filtros/cascadas + regeneración sintética
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticForCurrentFilters(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticForCurrentFilters(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticForCurrentFilters(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
   // Leyenda del mapa
