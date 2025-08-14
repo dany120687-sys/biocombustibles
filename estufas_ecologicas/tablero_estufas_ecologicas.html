@@ -534,7 +534,7 @@ h1, h2, h3, .title, .card h2 {
     }
 
     if(layer) layer.remove();
-    layer = L.layerGroup().addTo(map);
+    layer = L.layerGroup();
     if(layerControl && !window._addedEstufas){ layerControl.addOverlay(layer, 'Estufas'); window._addedEstufas = true; }
     rows.forEach(r=>{
       const color = r.estatus==='Instalada'     ? getCss('--guinda') :
