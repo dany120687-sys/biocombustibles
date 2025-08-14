@@ -229,7 +229,7 @@
     if(values.includes(current)) el.value=current;
   }
 
-  function fuenteCombos(){           // devuelve filas base para armar combos
+  function fuenteCombos(){
     if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
     const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     return feats.map(f=>f.properties||{});
@@ -261,7 +261,6 @@
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  // Carga CSV (Vercel o relativo)
   function cargarCensoCSV_yCombos(){
     Papa.parse('Censo_estufas.csv', {
       download:true, header:true, skipEmptyLines:true,
@@ -438,7 +437,6 @@
     if(!map){
       map = L.map('map').setView([22.5,-102],5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-      // IMPORTANTE: usar overlays para evitar "Localidades" duplicado
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
       loadMunicipios();
       loadLocalidades();
@@ -456,7 +454,6 @@
     });
   }
 
-  // Mostrar localidades filtradas en el mapa y alternar capas
   function showLocalidadesFiltered(){
     if(!LOC_GEO || !map) return;
     const ent=$('#f_entidad').value, mun=$('#f_municipio').value, loc=$('#f_localidad').value;
@@ -514,10 +511,19 @@
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
+  /* ====== DataTables: mandar errores a consola (no popups) ====== */
+  <script>
+    if (window.jQuery && $.fn.dataTable) {
+      $.fn.dataTable.ext.errMode = 'console';
+    }
+  </script>
+</script>
+
+<script>
   /* ===================== BITÁCORA (SEGUIMIENTO / CONCLUSIÓN) ===================== */
   let dtSeg, dtCon;
 
-  // Mostrar encabezados vacíos para que se vean las tablas aunque el CSV tarde en cargar
+  // Estructura inicial vacía para que se vea el header desde el arranque
   function initEmptyBitacoraTables(){
     const lang = {
       decimal:",", thousands:".",
@@ -525,14 +531,13 @@
       infoEmpty:"Mostrando 0 a 0 de 0 registros",
       infoFiltered:"(filtrado de _MAX_ en total)",
       lengthMenu:"Mostrar _MENU_",
-      loadingRecords:"Cargando...",
-      processing:"Procesando...",
+      loadingRecords:"Cargando...", processing:"Procesando...",
       search:"Buscar:",
       zeroRecords:"No se encontraron registros",
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
-    if (!DataTable.isDataTable('#tablaSeg')) {
-      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
+    if (!$.fn.dataTable.isDataTable('#tablaSeg')) {
+      dtSeg = new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
         {title:'Fecha',data:'fecha'},
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
@@ -544,8 +549,8 @@
         {title:'Observaciones',data:'observaciones'}
       ]});
     }
-    if (!DataTable.isDataTable('#tablaCon')) {
-      new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',columns:[
+    if (!$.fn.dataTable.isDataTable('#tablaCon')) {
+      dtCon = new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
         {title:'Fecha',data:'fecha'},
         {title:'Entidad',data:'entidad'},
         {title:'Municipio',data:'municipio'},
@@ -605,58 +610,71 @@
           }
         });
 
-        const lang = {
-          decimal: ",", thousands: ".",
-          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-          infoEmpty: "Mostrando 0 a 0 de 0 registros",
-          infoFiltered: "(filtrado de _MAX_ en total)",
-          lengthMenu: "Mostrar _MENU_",
-          loadingRecords: "Cargando...",
-          processing: "Procesando...",
-          search: "Buscar:",
-          zeroRecords: "No se encontraron registros",
-          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-        };
+        // Si ya están inicializadas, solo refrescamos registros
+        if ($.fn.dataTable.isDataTable('#tablaSeg')) {
+          $('#tablaSeg').DataTable().clear().rows.add(seg).draw();
+        } else {
+          dtSeg = new DataTable('#tablaSeg',{
+            data: seg, pageLength: 8, responsive:true, dom:'ftip',
+            language:{
+              decimal:",", thousands:".",
+              info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
+              infoEmpty:"Mostrando 0 a 0 de 0 registros",
+              infoFiltered:"(filtrado de _MAX_ en total)",
+              lengthMenu:"Mostrar _MENU_", loadingRecords:"Cargando...",
+              processing:"Procesando...", search:"Buscar:",
+              zeroRecords:"No se encontraron registros",
+              paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
+            },
+            columns:[
+              {title:'Fecha', data:'fecha'},
+              {title:'Entidad', data:'entidad'},
+              {title:'Municipio', data:'municipio'},
+              {title:'Localidad', data:'localidad'},
+              {title:'Beneficiario', data:'beneficiario'},
+              {title:'Espacio listo', data:'espacio_listo'},
+              {title:'Materiales', data:'materiales'},
+              {title:'ID Promotor', data:'id_promotor'},
+              {title:'Observaciones', data:'observaciones'}
+            ]
+          });
+        }
 
-        if (dtSeg){ dtSeg.destroy(); dtSeg = null; }
-        if (dtCon){ dtCon.destroy(); dtCon = null; }
-
-        dtSeg = new DataTable('#tablaSeg',{
-          data: seg,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Espacio listo', data:'espacio_listo'},
-            {title:'Materiales', data:'materiales'},
-            {title:'ID Promotor', data:'id_promotor'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
-
-        dtCon = new DataTable('#tablaCon',{
-          data: con,
-          columns:[
-            {title:'Fecha', data:'fecha'},
-            {title:'Entidad', data:'entidad'},
-            {title:'Municipio', data:'municipio'},
-            {title:'Localidad', data:'localidad'},
-            {title:'Beneficiario', data:'beneficiario'},
-            {title:'Funcionamiento', data:'funcion'},
-            {title:'Piezas/Checklist', data:'piezas'},
-            {title:'Satisfacción', data:'satisfaccion'},
-            {title:'Observaciones', data:'observaciones'}
-          ],
-          pageLength: 8, responsive:true, language: lang, dom:'ftip'
-        });
+        if ($.fn.dataTable.isDataTable('#tablaCon')) {
+          $('#tablaCon').DataTable().clear().rows.add(con).draw();
+        } else {
+          dtCon = new DataTable('#tablaCon',{
+            data: con, pageLength: 8, responsive:true, dom:'ftip',
+            language:{
+              decimal:",", thousands:".",
+              info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
+              infoEmpty:"Mostrando 0 a 0 de 0 registros",
+              infoFiltered:"(filtrado de _MAX_ en total)",
+              lengthMenu:"Mostrar _MENU_", loadingRecords:"Cargando...",
+              processing:"Procesando...", search:"Buscar:",
+              zeroRecords:"No se encontraron registros",
+              paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
+            },
+            columns:[
+              {title:'Fecha', data:'fecha'},
+              {title:'Entidad', data:'entidad'},
+              {title:'Municipio', data:'municipio'},
+              {title:'Localidad', data:'localidad'},
+              {title:'Beneficiario', data:'beneficiario'},
+              {title:'Funcionamiento', data:'funcion'},
+              {title:'Piezas/Checklist', data:'piezas'},
+              {title:'Satisfacción', data:'satisfaccion'},
+              {title:'Observaciones', data:'observaciones'}
+            ]
+          });
+        }
       },
       error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
     });
   }
+</script>
 
+<script>
   /* ===================== TABLAS DE CENSO ===================== */
   function initTablasCenso(){
     const dtLang = {
@@ -794,9 +812,8 @@
   initTablasCenso();
   cargarCensoCSV_yCombos();
 
-  // Mostrar estructura de tablas de bitácora desde el inicio
+  // Bitácora: headers visibles + carga del CSV
   initEmptyBitacoraTables();
-  // Cargar CSV para bitácora
   cargarBitacora();
 
   // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
