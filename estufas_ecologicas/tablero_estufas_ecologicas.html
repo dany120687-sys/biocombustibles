@@ -86,92 +86,31 @@
     .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
     .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
 
-    /* Tabs bitácora */
-    .tabs{display:flex;gap:8px;margin-bottom:10px}
-    .tab-btn{padding:8px 12px;border:1px solid var(--borde);background:#fff;border-radius:10px;cursor:pointer;font-weight:600}
-    .tab-btn.active{background:var(--guinda);color:#fff;border-color:var(--guinda)}
-    .tab-pane{display:none}
-    .tab-pane.active{display:block}
-  
-/* ====== Tipografía y colores institucionales ====== */
-:root{
-  --vino:#7A0019;
-  --oro:#B6864D;
-  --gris:#f6f7f9;
-  --borde:#e3e6ea;
-  --texto:#1c1f23;
-}
-html, body {
-  font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 11pt;
-  color: var(--texto);
-}
-h1, h2, h3, .title, .card h2 {
-  font-family: 'Patria', 'Noto Sans', serif;
-  letter-spacing:.2px;
-}
-.card h2{
-  font-size: 1.35rem;
-  margin: 0 0 .75rem 0;
-  color: var(--vino);
-}
+    /* ====== Tipografía y colores institucionales ====== */
+    :root{ --vino:#7A0019; --oro:#B6864D; --gris:#f6f7f9; --borde:#e3e6ea; --texto:#1c1f23; }
+    h1, h2, h3, .title, .card h2 { font-family: 'Patria','Noto Sans',serif; letter-spacing:.2px; }
+    .card h2{ font-size:1.35rem; margin:0 0 .75rem 0; color:var(--vino); }
 
-/* ====== Tarjetas ====== */
-.card{
-  border:1px solid var(--borde);
-  border-radius:16px;
-  background:white;
-  box-shadow: 0 4px 14px rgba(0,0,0,.05);
-  padding:18px 20px;
-}
+    /* ====== Tarjetas ====== */
+    .card{ border:1px solid var(--borde); border-radius:16px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
 
-/* ====== Tabla Bitácora ====== */
-#tablaBitacora{
-  width:100% !important;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow:hidden;
-  border-radius:14px;
-  background:white;
-  box-shadow: 0 4px 14px rgba(0,0,0,.04);
-}
-#tablaBitacora thead th{
-  position: sticky; top:0;
-  background: linear-gradient(0deg, var(--vino), #8b0e27);
-  color:white;
-  font-weight:600;
-  padding:10px 12px;
-  border-bottom:0;
-  z-index:1;
-}
-#tablaBitacora tbody td{
-  padding:10px 12px;
-  border-bottom:1px solid var(--borde);
-  vertical-align: top;
-}
-#tablaBitacora tbody tr:nth-child(even){ background: var(--gris); }
-#tablaBitacora tbody tr:hover{ background: #eef3ff; }
+    /* ====== Tabla Bitácora ====== */
+    #tablaBitacora{ width:100% !important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.04); }
+    #tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg,var(--vino),#8b0e27); color:#fff; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1; }
+    #tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top; }
+    #tablaBitacora tbody tr:nth-child(even){ background:var(--gris); }
+    #tablaBitacora tbody tr:hover{ background:#eef3ff; }
 
-/* ====== Controles DataTables ====== */
-.dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0; }
-.dataTables_wrapper .dataTables_filter input{
-  border:1px solid var(--borde); border-radius:999px; padding:8px 12px; outline:none;
-}
-.dataTables_wrapper .dataTables_length select{
-  border:1px solid var(--borde); border-radius:10px; padding:6px 10px;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button{
-  border-radius:10px !important; border:1px solid var(--borde) !important; background:white !important; margin:0 2px !important;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button.current{
-  background: var(--oro) !important; color:white !important; border-color: var(--oro) !important;
-}
+    .dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0; }
+    .dataTables_wrapper .dataTables_filter input{ border:1px solid var(--borde); border-radius:999px; padding:8px 12px; outline:none; }
+    .dataTables_wrapper .dataTables_length select{ border:1px solid var(--borde); border-radius:10px; padding:6px 10px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px !important; border:1px solid var(--borde) !important; background:#fff !important; margin:0 2px !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
   </style>
 </head>
 <body>
 <header>
-  <img src="logo_estufas.png" alt="Estufas Eficientes de Leña"
-       style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
+  <img src="logo_estufas.png" alt="Estufas Eficientes de Leña" style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
   <div class="brand">
     DIRECCIÓN GENERAL DE ENERGÍAS RENOVABLES
     <small>Programa Nacional de Estufas Eficientes de Leña para el Bienestar</small>
@@ -236,13 +175,10 @@ h1, h2, h3, .title, .card h2 {
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
-
-      <!-- Bitácora -->
       <div class="card" style="overflow:auto">
         <h2>Bitácora de actividades</h2>
         <table id="tablaBitacora" class="display" style="width:100%"></table>
       </div>
-
       <div id="tab-seg" class="tab-pane active">
         <table id="tablaSeg" class="display" style="width:100%"></table>
       </div>
@@ -288,17 +224,15 @@ h1, h2, h3, .title, .card h2 {
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
   const num = v => { const n = Number(String(v??'').replace(/,/g,'').trim()); return isFinite(n)? n : 0; };
-  const eqN = (a,b)=> !b || normaliza(a)===normaliza(b);  // igualdad normalizada
+  const eqN = (a,b)=> !b || normaliza(a)===normaliza(b);
 
-  const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO'; // columna del censo
+  const QUIERE_COL = 'Grupo_Prioritario_SENER_REMBIO';
   const MODELOS = ['Modelo A','Modelo B','Modelo C'];
   const PROGRAMAS = ['Transición Energética','Calor Seguro','Bienestar'];
 
-  // Rango temporal para las instalaciones sintéticas
   const START_DATE = new Date('2025-08-01');
   const END_DATE   = new Date('2025-10-31');
   const EJEMPLOS_POR_MUNICIPIO = 20;
-  const MAX_MUNICIPIOS_SINTETICOS = 50;
 
   let CENSO_ROWS = [];
   let CSV_LOC_SET = null;
@@ -350,9 +284,7 @@ h1, h2, h3, .title, .card h2 {
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  function bootstrapFiltersSimple(){
-    setOptions('#f_modelo', MODELOS, 'Todos');
-  }
+  function bootstrapFiltersSimple(){ setOptions('#f_modelo', MODELOS, 'Todos'); }
 
   function getFilters(){
     return{
@@ -530,22 +462,15 @@ h1, h2, h3, .title, .card h2 {
     const total=rows.length;
     const seg=rows.filter(r=>r.estatus==='En seguimiento').length;
 
-    const elE = document.getElementById('k_estufas');
-    if (elE) elE.textContent = fmt(total);
-
+    const elE = document.getElementById('k_estufas'); if (elE) elE.textContent = fmt(total);
     const pobl = Math.round(total * 4.2);
-    const elP = document.getElementById('k_poblacion');
-    if (elP) elP.textContent = fmt(pobl);
-
-    const elS = document.getElementById('k_seguimiento');
-    if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
+    const elP = document.getElementById('k_poblacion'); if (elP) elP.textContent = fmt(pobl);
+    const elS = document.getElementById('k_seguimiento'); if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
-  // KPI “Quiere estufa”
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
-
     if (CENSO_ROWS.length){
       CENSO_ROWS.forEach(r=>{
         const okE = eqN(r.ENTIDAD,f.entidad);
@@ -565,9 +490,7 @@ h1, h2, h3, .title, .card h2 {
         if (okE && okM && okL) totalQuiere += num(p.quiere_estufa);
       });
     }
-
-    const elQ = document.getElementById('k_quiere_estufa');
-    if (elQ) elQ.textContent = fmt(totalQuiere);
+    const elQ = document.getElementById('k_quiere_estufa'); if (elQ) elQ.textContent = fmt(totalQuiere);
   }
 
   /* ===================== MAPA ===================== */
@@ -672,7 +595,6 @@ h1, h2, h3, .title, .card h2 {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
 
-      // Capa de estufas con toggle
       estufasLayer = L.layerGroup().addTo(map);
       layerControl.addOverlay(estufasLayer, 'Estufas');
 
@@ -681,7 +603,6 @@ h1, h2, h3, .title, .card h2 {
     }
 
     estufasLayer.clearLayers();
-
     rows.forEach(r=>{
       const color = r.estatus==='Instalada'     ? getCss('--guinda') :
                     r.estatus==='En seguimiento'? getCss('--dorado') :
@@ -723,23 +644,22 @@ h1, h2, h3, .title, .card h2 {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== Bitácora ===================== */
+  /* ===================== Bitácora / Tablas ===================== */
   let dtBitacora;
   const BITACORA_DATA = [
-    {"fecha": "2025-07-28","entidad": "Michoacán","municipio": "Charapan","localidad": "Ocumicho","beneficiario": "María Pérez","estatus": "Instalación","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-07-29","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Sin novedad"},
-    {"fecha": "2025-07-28","entidad": "Michoacán","municipio": "Charapan","localidad": "Cocucho","beneficiario": "Juan López","estatus": "Capacitación","espacio_listo": "Sí","materiales": "Pendientes","fecha_inicio": "2025-07-30","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Falta entregar accesorios"},
-    {"fecha": "2025-07-30","entidad": "Michoacán","municipio": "Charapan","localidad": "San Felipe","beneficiario": "Rosa García","estatus": "Seguimiento","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-07-31","funcion": "OK","piezas": "Completas","satisfaccion": "Media","observaciones": "Humo mínimo en arranque"},
-    {"fecha": "2025-08-02","entidad": "Michoacán","municipio": "Charapan","localidad": "Ocumicho","beneficiario": "Pedro Hernández","estatus": "Instalación","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-08-03","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Capacitación concluida"},
-    {"fecha": "2025-08-02","entidad": "Michoacán","municipio": "Paracho","localidad": "Aranza","beneficiario": "Lucía Martínez","estatus": "Instalación","espacio_listo": "No","materiales": "Parcial","fecha_inicio": "2025-08-05","funcion": "N/A","piezas": "Incompletas","satisfaccion": "N/A","observaciones": "Adecuar salida de humo"},
-    {"fecha": "2025-08-03","entidad": "Michoacán","municipio": "Paracho","localidad": "Cherán","beneficiario": "Miguel Torres","estatus": "Capacitación","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-08-04","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Se entregó tríptico"},
-    {"fecha": "2025-08-04","entidad": "Michoacán","municipio": "Charapan","localidad": "Cocucho","beneficiario": "Ana López","estatus": "Seguimiento","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-08-04","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Ajuste de campana"},
-    {"fecha": "2025-08-05","entidad": "Michoacán","municipio": "Charapan","localidad": "Ocumicho","beneficiario": "José Ramírez","estatus": "Instalación","espacio_listo": "Sí","materiales": "Entregados","fecha_inicio": "2025-08-05","funcion": "OK","piezas": "Completas","satisfaccion": "Alta","observaciones": "Listo para entrega final"}
+    {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"María Pérez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-29","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Sin novedad"},
+    {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Juan López","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Pendientes","fecha_inicio":"2025-07-30","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Falta entregar accesorios"},
+    {"fecha":"2025-07-30","entidad":"Michoacán","municipio":"Charapan","localidad":"San Felipe","beneficiario":"Rosa García","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-31","funcion":"OK","piezas":"Completas","satisfaccion":"Media","observaciones":"Humo mínimo en arranque"},
+    {"fecha":"2025-08-02","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"Pedro Hernández","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-03","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Capacitación concluida"},
+    {"fecha":"2025-08-02","entidad":"Michoacán","municipio":"Paracho","localidad":"Aranza","beneficiario":"Lucía Martínez","estatus":"Instalación","espacio_listo":"No","materiales":"Parcial","fecha_inicio":"2025-08-05","funcion":"N/A","piezas":"Incompletas","satisfaccion":"N/A","observaciones":"Adecuar salida de humo"},
+    {"fecha":"2025-08-03","entidad":"Michoacán","municipio":"Paracho","localidad":"Cherán","beneficiario":"Miguel Torres","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-04","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Se entregó tríptico"},
+    {"fecha":"2025-08-04","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Ana López","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-04","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Ajuste de campana"},
+    {"fecha":"2025-08-05","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"José Ramírez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-05","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Listo para entrega final"}
   ];
 
   function initBitacoraEjemplo(){
     const el = document.getElementById('tablaBitacora');
     if(!el) return;
-    el.innerHTML = '';
 
     const dtLang = {
       decimal: ",", thousands: ".",
@@ -754,13 +674,11 @@ h1, h2, h3, .title, .card h2 {
       paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
     };
 
-    if (!(window.$ && $.fn && $.fn.DataTable)) return;
-
     if (dtBitacora) {
       dtBitacora.clear();
       dtBitacora.rows.add(BITACORA_DATA).draw();
     } else {
-      dtBitacora = $('#tablaBitacora').DataTable({
+      dtBitacora = new DataTable('#tablaBitacora', {
         data: BITACORA_DATA,
         columns: [
           { title: 'Fecha', data: 'fecha' },
@@ -780,8 +698,7 @@ h1, h2, h3, .title, .card h2 {
         pageLength: 8,
         responsive: true,
         language: dtLang,
-        dom: 'ftip',
-        destroy: true
+        dom: 'ftip'
       });
     }
   }
@@ -886,14 +803,6 @@ h1, h2, h3, .title, .card h2 {
   /* ===================== Tabla simple (legacy) ===================== */
   let dt;
   function renderTable(rows){
-    const columns=[
-      {title:'ID',data:'id'},{title:'Programa',data:'programa'},{title:'Proveedor',data:'proveedor'},
-      {title:'Modelo',data:'modelo'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
-      {title:'Localidad',data:'localidad'},{title:'Estatus',data:'estatus'},
-      {title:'Instalada',data:'fecha_instalacion'},
-      {title:'Garantía fin',data:'garantia_fin'},{title:'Últ. visita',data:'visita_ult_fecha'},
-      {title:'Ahorro (kg/mes)',data:'ahorro'}
-    ];
     const data=rows.map(r=>({
       id:r.id,programa:r.programa,proveedor:r.proveedor,modelo:r.modelo,entidad:r.entidad,municipio:r.municipio,localidad:r.localidad,estatus:r.estatus,
       fecha_instalacion:new Date(r.fecha_instalacion).toLocaleDateString('es-MX'),
@@ -927,9 +836,9 @@ h1, h2, h3, .title, .card h2 {
   renderAll();
   initTablasCenso();
   cargarCensoCSV_yCombos();
-  initBitacoraEjemplo();  <!-- inicializa la tabla de Bitácora -->
+  initBitacoraEjemplo();
 
-  // Listeners
+  // Listeners filtros/cascadas + regeneración sintética
   $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
