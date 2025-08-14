@@ -520,6 +520,11 @@ let dtBitacora;
 const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
 function initBitacoraEjemplo(){
+  // Limpia cualquier contenido previo
+  const el = document.getElementById('tablaBitacora');
+  if(!el) return;
+  el.innerHTML = '';
+
   const rows = BITACORA_DATA;
 
   const dtLang = {
@@ -534,6 +539,30 @@ function initBitacoraEjemplo(){
     zeroRecords: "No se encontraron registros",
     paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
   };
+
+  // Si no existe DataTables, renderiza una tabla básica
+  function renderBasico(rows){
+    const cols = ['fecha','entidad','municipio','localidad','beneficiario','estatus','espacio_listo','materiales','fecha_inicio','funcion','piezas','satisfaccion','observaciones'];
+    const headers = ['Fecha','Entidad','Municipio','Localidad','Beneficiario / Hogar','Estatus','Espacio listo','Materiales entregados','Fecha inicio obra','Funcionamiento','Checklist piezas','Satisfacción','Observaciones'];
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    headers.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; trh.appendChild(th); });
+    thead.appendChild(trh);
+    const tbody = document.createElement('tbody');
+    rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      cols.forEach(c=>{ const td=document.createElement('td'); td.textContent = (r[c] ?? ''); tr.appendChild(td); });
+      tbody.appendChild(tr);
+    });
+    const table = document.getElementById('tablaBitacora');
+    table.appendChild(thead);
+    table.appendChild(tbody);
+  }
+
+  if (!(window.$ && $.fn && $.fn.DataTable)) {
+    renderBasico(rows);
+    return;
+  }
 
   if (dtBitacora) {
     dtBitacora.clear();
