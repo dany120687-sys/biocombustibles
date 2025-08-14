@@ -406,7 +406,7 @@ h1, h2, h3, .title, .card h2 {
     });
   }
 
-  /* =================== Semana ISO y helpers de fechas =================== */
+  /* =================== Semana ISO y helpers =================== */
   function isoWeekKey(dateStr){
     const d=new Date(dateStr);
     const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day+3);
@@ -448,9 +448,7 @@ h1, h2, h3, .title, .card h2 {
   function municipiosDesdeCensoFiltrado(){
     const f=getFilters();
     let rows = CENSO_ROWS;
-    if (!rows.length && LOC_GEO){ // fallback
-      rows = (LOC_GEO.features||[]).map(ft=>ft.properties||{});
-    }
+    if (!rows.length && LOC_GEO){ rows = (LOC_GEO.features||[]).map(ft=>ft.properties||{}); }
     let lista = [];
     rows.forEach(r=>{
       const ent = r.ENTIDAD || r.entidad;
@@ -461,9 +459,7 @@ h1, h2, h3, .title, .card h2 {
       lista.push(`${ent}|||${mun}`);
     });
     lista = [...new Set(lista)];
-    if (!f.municipio && lista.length > MAX_MUNICIPIOS_SINTETICOS){
-      lista = lista.slice(0, MAX_MUNICIPIOS_SINTETICOS);
-    }
+    if (!f.municipio && lista.length > 50){ lista = lista.slice(0, 50); }
     return lista.map(s=>{ const [ent,mun]=s.split('|||'); return {ent,mun}; });
   }
 
@@ -477,7 +473,6 @@ h1, h2, h3, .title, .card h2 {
       return okE && okM && okL && ft.geometry && ft.geometry.type==='Point';
     });
     if(feats.length===0){
-      // Si hay localidades del municipio (ignorando localidad concreta), tómalas
       const any = (LOC_GEO.features||[]).filter(ft=>{
         const p=ft.properties||{};
         return eqN(gProp(p,'ENTIDAD','entidad'), ent) && eqN(gProp(p,'MUNICIPIO','municipio'), mun) && ft.geometry && ft.geometry.type==='Point';
@@ -745,7 +740,7 @@ h1, h2, h3, .title, .card h2 {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== Bitácora / Tablas (igual que tu base) ===================== */
+  /* ===================== Bitácora / Tablas ===================== */
   let dtBitacora;
   const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
@@ -839,9 +834,9 @@ h1, h2, h3, .title, .card h2 {
             { title: 'Entidad', data: 'ENTIDAD' },
             { title: 'Municipio', data: 'MUNICIPIO' },
             { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: 'Estufas instaladas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
-            { title: '% Estufas instaladas Totales', data: 'pct_q_sobre_inst', render: d => `${Number(d||0).toFixed(1)}%` }
+            { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: 'Estufas construidas', data: 'instaladas', render: d => Number(d||0).toLocaleString('es-MX') },
+            { title: '% Estufas instaladas', data: 'pct_q_sobre_inst', render: d => `${Number(d||0).toFixed(1)}%` }
           ],
           order: [[5,'desc']],
           pageLength: 8, responsive: true, language: dtLang, dom: 'ftip', lengthChange: false
@@ -868,8 +863,8 @@ h1, h2, h3, .title, .card h2 {
         { title: 'Municipio', data: 'MUNICIPIO' },
         { title: 'Localidad', data: 'LOCALIDAD' },
         { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: 'Quiere estufa', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
+        { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
+        { title: '% Población que requiere estufa', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
       ],
       pageLength: 10, responsive: true, language: {
         decimal: ",", thousands: ".",
@@ -980,3 +975,4 @@ h1, h2, h3, .title, .card h2 {
 </script>
 </body>
 </html>
+
