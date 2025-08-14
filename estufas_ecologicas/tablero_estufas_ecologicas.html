@@ -101,96 +101,30 @@
   --borde:#e3e6ea;
   --texto:#1c1f23;
 }
-html, body {
-  font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 11pt;
-  color: var(--texto);
-}
-h1, h2, h3, .title, .card h2 {
-  font-family: 'Patria', 'Noto Sans', serif;
-  letter-spacing:.2px;
-}
-.card h2{
-  font-size: 1.35rem;
-  margin: 0 0 .75rem 0;
-  color: var(--vino);
-}
+html, body { font-family: 'Noto Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 11pt; color: var(--texto); }
+h1, h2, h3, .title, .card h2 { font-family: 'Patria', 'Noto Sans', serif; letter-spacing:.2px; }
+.card h2{ font-size: 1.35rem; margin: 0 0 .75rem 0; color: var(--vino); }
 
 /* ====== Tarjetas ====== */
-.card{
-  border:1px solid var(--borde);
-  border-radius:16px;
-  background:white;
-  box-shadow: 0 4px 14px rgba(0,0,0,.05);
-  padding:18px 20px;
-}
+.card{ border:1px solid var(--borde); border-radius:16px; background:white; box-shadow: 0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
 
-/* ====== Tabla Bitácora (DataTables y fallback) ====== */
-#tablaBitacora{
-  width:100% !important;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow:hidden;
-  border-radius:14px;
-  background:white;
-  box-shadow: 0 4px 14px rgba(0,0,0,.04);
-}
-#tablaBitacora thead th{
-  position: sticky; top:0;
-  background: linear-gradient(0deg, var(--vino), #8b0e27);
-  color:white;
-  font-weight:600;
-  padding:10px 12px;
-  border-bottom:0;
-  z-index:1;
-}
-#tablaBitacora tbody td{
-  padding:10px 12px;
-  border-bottom:1px solid var(--borde);
-  vertical-align: top;
-}
-#tablaBitacora tbody tr:nth-child(even){
-  background: var(--gris);
-}
-#tablaBitacora tbody tr:hover{
-  background: #eef3ff;
-}
+/* ====== Tabla Bitácora ====== */
+#tablaBitacora{ width:100%!important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:white; box-shadow:0 4px 14px rgba(0,0,0,.04);}
+#tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg, var(--vino), #8b0e27); color:white; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1;}
+#tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top;}
+#tablaBitacora tbody tr:nth-child(even){ background: #f6f7f9;}
+#tablaBitacora tbody tr:hover{ background:#eef3ff;}
 
-/* ====== Controles DataTables ====== */
-.dataTables_wrapper .dataTables_filter{
-  float:right; text-align:right; margin:12px 0;
-}
-.dataTables_wrapper .dataTables_filter input{
-  border:1px solid var(--borde);
-  border-radius:999px;
-  padding:8px 12px;
-  outline:none;
-}
-.dataTables_wrapper .dataTables_length select{
-  border:1px solid var(--borde);
-  border-radius:10px;
-  padding:6px 10px;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button{
-  border-radius:10px !important;
-  border:1px solid var(--borde) !important;
-  background:white !important;
-  margin:0 2px !important;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button.current{
-  background: var(--oro) !important;
-  color:white !important;
-  border-color: var(--oro) !important;
-}
-
-</style>
+.dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0;}
+.dataTables_wrapper .dataTables_filter input{ border:1px solid var(--borde); border-radius:999px; padding:8px 12px; outline:none;}
+.dataTables_wrapper .dataTables_length select{ border:1px solid var(--borde); border-radius:10px; padding:6px 10px;}
+.dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px!important; border:1px solid var(--borde)!important; background:white!important; margin:0 2px!important;}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:#B6864D!important; color:white!important; border-color:#B6864D!important;}
+  </style>
 </head>
 <body>
 <header>
-  <!-- Logo en lugar de “DG” -->
-  <img src="logo_estufas.png"
-       alt="Estufas Eficientes de Leña"
-       style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
+  <img src="logo_estufas.png" alt="Estufas Eficientes de Leña" style="height:44px;width:auto;border-radius:8px;background:#fff;padding:2px 4px;display:block" />
   <div class="brand">
     DIRECCIÓN GENERAL DE ENERGÍAS RENOVABLES
     <small>Programa Nacional de Estufas Eficientes de Leña para el Bienestar</small>
@@ -255,6 +189,8 @@ h1, h2, h3, .title, .card h2 {
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
+
+      <!-- === Bitácora (mismo formato que versión estable) === -->
       <div class="card" style="overflow:auto">
         <h2>Bitácora de actividades</h2>
         <table id="tablaBitacora" class="display" style="width:100%"></table>
@@ -323,7 +259,7 @@ h1, h2, h3, .title, .card h2 {
   let SYNTH = [];
   let csvReady = false, geoReady = false;
 
-  /* ===== claves para mapas de hogares (fallback JSON) ===== */
+  /* ===== claves para hogares (fallback JSON) ===== */
   const key3 = (ent,mun,loc='') => `${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`;
   let HOGARES_LOC_FALL = new Map(); // ENT|MUN|LOC -> hogares
   let HOGARES_MUN_FALL = new Map(); // ENT|MUN     -> hogares
@@ -406,9 +342,14 @@ h1, h2, h3, .title, .card h2 {
 
         csvReady = true;
         tryRegenerateSynthetic();
-        // construir tablas con CSV
-        buildRankingFromCSV();
-        renderTablaLocalidades();
+
+        // ranking/tablas: si aún no tenemos hogares fallback, esperamos al JSON
+        if (HOGARES_MUN_FALL.size>0 || findHogaresColumn()){
+          buildRankingFromCSV();
+        }
+        if (HOGARES_LOC_FALL.size>0 || findHogaresColumn()){
+          renderTablaLocalidades();
+        }
       },
       error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
     });
@@ -425,7 +366,7 @@ h1, h2, h3, .title, .card h2 {
   function sortWeekKeys(a,b){const [ya,wa]=a.split('-W').map(Number);const [yb,wb]=b.split('-W').map(Number);return ya===yb?wa-wb:ya-yb;}
 
   function buildWeightedWeeks(){
-    const start = new Date('2025-08-01'); // fijo para estabilidad
+    const start = new Date('2025-08-01');
     start.setDate(start.getDate() - ((start.getDay()+6)%7));
     const weeks = [];
     while (start <= END_DATE){
@@ -537,7 +478,9 @@ h1, h2, h3, .title, .card h2 {
     regenerateSyntheticByMunicipio();
     buildWeeksFromData();
     renderAll();
-    recomputeRankingRows();
+    if (HOGARES_MUN_FALL.size>0 || findHogaresColumn()){
+      buildRankingFromCSV();
+    }
   }
 
   /* =================== Aplicación de filtros =================== */
@@ -564,7 +507,6 @@ h1, h2, h3, .title, .card h2 {
     $('#k_seguimiento').textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
-  // KPI “Quiere estufa” con QUIERE_COL
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
@@ -747,16 +689,10 @@ h1, h2, h3, .title, .card h2 {
   const BITACORA_DATA = [{"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "María Pérez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-29", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Sin novedad"}, {"fecha": "2025-07-28", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Juan López", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Pendientes", "fecha_inicio": "2025-07-30", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Falta entregar accesorios"}, {"fecha": "2025-07-30", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "San Felipe", "beneficiario": "Rosa García", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-07-31", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Media", "observaciones": "Humo mínimo en arranque"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "Pedro Hernández", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-03", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Capacitación concluida"}, {"fecha": "2025-08-02", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Aranza", "beneficiario": "Lucía Martínez", "estatus": "Instalación", "espacio_listo": "No", "materiales": "Parcial", "fecha_inicio": "2025-08-05", "funcion": "N/A", "piezas": "Incompletas", "satisfaccion": "N/A", "observaciones": "Adecuar salida de humo"}, {"fecha": "2025-08-03", "entidad": "Michoacán", "municipio": "Paracho", "localidad": "Cherán", "beneficiario": "Miguel Torres", "estatus": "Capacitación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Se entregó tríptico"}, {"fecha": "2025-08-04", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Cocucho", "beneficiario": "Ana López", "estatus": "Seguimiento", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-04", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Ajuste de campana"}, {"fecha": "2025-08-05", "entidad": "Michoacán", "municipio": "Charapan", "localidad": "Ocumicho", "beneficiario": "José Ramírez", "estatus": "Instalación", "espacio_listo": "Sí", "materiales": "Entregados", "fecha_inicio": "2025-08-05", "funcion": "OK", "piezas": "Completas", "satisfaccion": "Alta", "observaciones": "Listo para entrega final"}];
 
   function initBitacoraEjemplo(){
-    const el = document.getElementById('tablaBitacora');
-    if(!el) return;
-    el.innerHTML = '';
-
-    const rows = BITACORA_DATA;
-    const dtLang = {decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
-
+    const dtLang = {decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }};
     if (window.$ && $.fn && $.fn.DataTable) {
       $('#tablaBitacora').DataTable({
-        data: rows,
+        data: BITACORA_DATA,
         columns: [
           { title: 'Fecha', data: 'fecha' },
           { title: 'Entidad', data: 'entidad' },
@@ -781,15 +717,10 @@ h1, h2, h3, .title, .card h2 {
   let rowsLocalidadesAll = [];   // fallback (JSON)
   let dtLocalidades = null;
 
-  // ---- detectar columna "hogares" en CSV; si no existe, usamos fallback JSON ----
   function findHogaresColumn(){
     if(!CENSO_ROWS.length) return null;
     const keys = Object.keys(CENSO_ROWS[0]||{});
-    // candidatos en orden de prioridad
-    const candidates = [
-      'hogares','total_hogares','totalhogares','hogar',
-      'viviendas','total_viviendas','totalviviendas'
-    ];
+    const candidates = ['hogares','total_hogares','totalhogares','hogar','viviendas','total_viviendas','totalviviendas'];
     let best = null, score=-1;
     keys.forEach(k=>{
       const nk = normaliza(k);
@@ -803,7 +734,6 @@ h1, h2, h3, .title, .card h2 {
     return (score>=0) ? best : null;
   }
 
-  // ---- agregar por localidad desde CSV + fallback hogares ----
   function aggregateCensoByLocalidad(){
     const f = getFilters();
     if(!CENSO_ROWS.length) return [];
@@ -816,7 +746,6 @@ h1, h2, h3, .title, .card h2 {
       if(!eqN(loc,f.localidad)) return;
       const key = `${ent}|${mun}|${loc}`;
       const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, LOCALIDAD:loc, hogares:0, quiere_estufa:0};
-      // hogares desde CSV si hay columna, si no, fallback del JSON agregado
       if (hogCol){ obj.hogares += num(r[hogCol]); }
       else{
         const k = key3(ent,mun,loc);
@@ -831,7 +760,6 @@ h1, h2, h3, .title, .card h2 {
     });
   }
 
-  // ---- agregar por municipio desde CSV + fallback hogares ----
   let rankingRows = [];
   let dtRanking = null;
 
@@ -842,12 +770,11 @@ h1, h2, h3, .title, .card h2 {
     const map = new Map();
     CENSO_ROWS.forEach(r=>{
       const ent = r.ENTIDAD, mun = r.MUNICIPIO;
-      if(!eqN(ent,f.entidad)) return; // ranking se filtra por entidad
+      if(!eqN(ent,f.entidad)) return;
       const key = `${ent}|${mun}`;
       const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, hogares:0, quiere_estufa:0};
       if (hogCol){ obj.hogares += num(r[hogCol]); }
       else{
-        // sumar hogares de fallback por municipio
         obj.hogares += (HOGARES_MUN_FALL.get(key3(ent,mun,'')) || 0);
       }
       obj.quiere_estufa += num(r[QUIERE_COL]);
@@ -857,6 +784,8 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function buildRankingFromCSV(){
+    // si CSV está listo pero aún no tenemos columna hogares ni fallback => no construir para evitar "0"
+    if (!findHogaresColumn() && HOGARES_MUN_FALL.size===0) return;
     rankingRows = aggregateCensoByMunicipio();
     if (dtRanking){ dtRanking.clear(); dtRanking.destroy(); dtRanking = null; }
     recomputeRankingRows();
@@ -897,34 +826,6 @@ h1, h2, h3, .title, .card h2 {
     });
   }
 
-  function initTablasCenso(){
-    // Fallback de localidades (lo usamos también para hogares si el CSV no trae la columna)
-    fetch('estufas_agg_localidad_detalle.json')
-      .then(r => r.json())
-      .then(rows => {
-        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
-        rowsLocalidadesAll = rows;
-
-        // construir mapas de hogares fallback
-        HOGARES_LOC_FALL = new Map();
-        HOGARES_MUN_FALL = new Map();
-        rows.forEach(r=>{
-          HOGARES_LOC_FALL.set(key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD), num(r.hogares));
-          const kmun = key3(r.ENTIDAD, r.MUNICIPIO, '');
-          HOGARES_MUN_FALL.set(kmun, (HOGARES_MUN_FALL.get(kmun)||0) + num(r.hogares));
-        });
-
-        renderTablaLocalidades(); // mostrará CSV si ya está disponible
-      });
-
-    // Fallback de ranking si el CSV aún no carga
-    fetch('ranking_priorizacion_municipio.json')
-      .then(r => r.json())
-      .then(rows => {
-        if (!csvReady){ rankingRows = rows; recomputeRankingRows(); }
-      });
-  }
-
   function filasLocalidadesFiltradasFallback(){
     const f=getFilters();
     return rowsLocalidadesAll.filter(r=>{
@@ -940,8 +841,9 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function renderTablaLocalidades(){
-    const usandoCSV = CENSO_ROWS.length>0;
-    const data = usandoCSV ? aggregateCensoByLocalidad() : filasLocalidadesFiltradasFallback();
+    // Usar CSV sólo si: hay CSV y además HAY columna hogares o ya existe fallback cargado.
+    const usingCSV = CENSO_ROWS.length>0 && (findHogaresColumn() || HOGARES_LOC_FALL.size>0);
+    const data = usingCSV ? aggregateCensoByLocalidad() : filasLocalidadesFiltradasFallback();
 
     const cfg = {
       data,
@@ -968,12 +870,45 @@ h1, h2, h3, .title, .card h2 {
       dom: 'ftip',
       destroy: true
     };
-    if(dtLocalidades){
-      dtLocalidades.clear();
-      dtLocalidades.rows.add(data).draw();
+    if(window.DataTable && $.fn.DataTable.isDataTable('#tablaLocalidades')){
+      const dt = $('#tablaLocalidades').DataTable();
+      dt.clear(); dt.rows.add(data).draw();
     }else{
-      dtLocalidades = new DataTable('#tablaLocalidades', cfg);
+      new DataTable('#tablaLocalidades', cfg);
     }
+  }
+
+  function initTablasCenso(){
+    // Fallback de localidades (lo usamos también para hogares si el CSV no trae la columna)
+    fetch('estufas_agg_localidad_detalle.json')
+      .then(r => r.json())
+      .then(rows => {
+        rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
+        rowsLocalidadesAll = rows;
+
+        // construir mapas de hogares fallback
+        HOGARES_LOC_FALL = new Map();
+        HOGARES_MUN_FALL = new Map();
+        rows.forEach(r=>{
+          HOGARES_LOC_FALL.set(key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD), num(r.hogares));
+          const kmun = key3(r.ENTIDAD, r.MUNICIPIO, '');
+          HOGARES_MUN_FALL.set(kmun, (HOGARES_MUN_FALL.get(kmun)||0) + num(r.hogares));
+        });
+
+        // (re)render ahora que ya hay fallback
+        renderTablaLocalidades();
+        if (csvReady) buildRankingFromCSV();
+      });
+
+    // Fallback de ranking si el CSV aún no carga
+    fetch('ranking_priorizacion_municipio.json')
+      .then(r => r.json())
+      .then(rows => {
+        if (!csvReady){
+          rankingRows = rows;
+          recomputeRankingRows();
+        }
+      });
   }
 
   /* ===================== Tabla simple (legacy) ===================== */
