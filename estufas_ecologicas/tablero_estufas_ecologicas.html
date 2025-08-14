@@ -1,3 +1,208 @@
+🔄 **HTML Edit Mode** - Processing your edit request...
+
+
+
+First, I need to remove the tabs section and simplify the bitácora structure:
+
+```diff
+<<<<<<< SEARCH
+      <div class="card" style="overflow:auto">
+        <h2>Bitácora de actividades</h2>
+        <!-- SE ELIMINAN LOS BOTONES DE PESTAÑAS -->
+        <div id="tab-seg" class="tab-pane active">
+          <table id="tablaSeg" class="display" style="width:100%"></table>
+        </div>
+        <!-- SE ELIMINA LA SECCIÓN DE LA SEGUNDA TABLA -->
+      </div>
+=======
+      <div class="card" style="overflow:auto">
+        <h2>Bitácora de actividades</h2>
+        <table id="tablaSeg" class="display" style="width:100%"></table>
+      </div>
+>>>>>>> REPLACE
+```
+
+
+Now I need to fix the main issue - the CSV loading function is not logging properly and the data mapping might be incorrect. Let me add debugging and fix the function:
+
+```diff
+<<<<<<< SEARCH
+  function cargarBitacora(){
+    Papa.parse('bitacora_actividades.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
+        const rows = res.data||[];
+        const allRecords = [];
+        rows.forEach(r=>{
+          const estatus_csv = col(r,['Estatus']); // Obtener el estatus original del CSV
+          const base = {
+            fecha: col(r,['Fecha']),
+            estatus_csv: estatus_csv, // Guardar el estatus original
+            entidad: col(r,['ENTIDAD']),
+            municipio: col(r,['MUNICIPIO']),
+            localidad: col(r,['LOCALIDAD']),
+            beneficiario: col(r,['Beneficiario / Hogar']),
+            observaciones: col(r,['Observaciones'])
+          };
+
+          // Añadir campos específicos de seguimiento o conclusión, si existen
+          if (estatus_csv.toLowerCase().includes('seguimiento')) {
+            allRecords.push({
+              ...base,
+              espacio_listo: col(r,['Espacio listo']),
+              materiales: col(r,['Materiales entregados']),
+              funcion: '', // Vacío para seguimiento
+              piezas: '', // Vacío para seguimiento
+              satisfaccion: '' // Vacío para seguimiento
+            });
+          } else if (estatus_csv.toLowerCase().includes('conclusión')) {
+            allRecords.push({
+              ...base,
+              espacio_listo: '', // Vacío para conclusión
+              materiales: '', // Vacío para conclusión
+              funcion: col(r,['Funcionamiento']),
+              piezas: col(r,['Checklist piezas']),
+              satisfaccion: col(r,['Satisfacción'])
+            });
+          } else {
+            // Para cualquier otro estatus, incluir todos los campos disponibles
+            allRecords.push({
+              ...base,
+              espacio_listo: col(r,['Espacio listo']),
+              materiales: col(r,['Materiales entregados']),
+              funcion: col(r,['Funcionamiento']),
+              piezas: col(r,['Checklist piezas']),
+              satisfaccion: col(r,['Satisfacción'])
+            });
+          }
+        });
+
+        const lang = {
+          decimal: ",", thousands: ".",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          infoEmpty: "Mostrando 0 a 0 de 0 registros",
+          infoFiltered: "(filtrado de _MAX_ en total)",
+          lengthMenu: "Mostrar _MENU_",
+          loadingRecords: "Cargando...",
+          processing: "Procesando...",
+          search: "Buscar:",
+          zeroRecords: "No se encontraron registros",
+          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+        };
+
+        if (dtBitacora){ dtBitacora.destroy(); dtBitacora = null; } // Destruir la instancia existente
+
+        dtBitacora = new DataTable('#tablaSeg',{ // Usar #tablaSeg para la tabla única
+          data: allRecords,
+          columns:[
+            {title:'Fecha', data:'fecha'},
+            {title:'Estatus', data:'estatus_csv'}, // Mostrar el estatus del CSV
+            {title:'Entidad', data:'entidad'},
+            {title:'Municipio', data:'municipio'},
+            {title:'Localidad', data:'localidad'},
+            {title:'Beneficiario', data:'beneficiario'},
+            {title:'Espacio listo', data:'espacio_listo'},
+            {title:'Materiales', data:'materiales'},
+            {title:'Funcionamiento', data:'funcion'},
+            {title:'Piezas/Checklist', data:'piezas'},
+            {title:'Satisfacción', data:'satisfaccion'},
+            {title:'Observaciones', data:'observaciones'}
+          ],
+          pageLength: 8, responsive:true, language: lang, dom:'ftip'
+        });
+      },
+      error: (e)=> console.warn('No se pudo leer bitacora_actividades.csv', e)
+    });
+  }
+=======
+  function cargarBitacora(){
+    console.log('Iniciando carga de bitacora_actividades.csv...');
+    Papa.parse('bitacora_actividades.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
+        console.log('CSV cargado. Filas encontradas:', res.data?.length);
+        console.log('Encabezados disponibles:', res.meta?.fields);
+        console.log('Primera fila de ejemplo:', res.data?.[0]);
+        
+        const rows = res.data||[];
+        const allRecords = [];
+        
+        rows.forEach((r, index)=>{
+          // Probar diferentes variaciones de nombres de columnas
+          const record = {
+            fecha: col(r,['Fecha', 'FECHA', 'fecha']),
+            estatus_csv: col(r,['Estatus', 'ESTATUS', 'estatus', 'Status']),
+            entidad: col(r,['ENTIDAD', 'Entidad', 'entidad']),
+            municipio: col(r,['MUNICIPIO', 'Municipio', 'municipio']),
+            localidad: col(r,['LOCALIDAD', 'Localidad', 'localidad']),
+            beneficiario: col(r,['Beneficiario / Hogar', 'Beneficiario', 'beneficiario', 'BENEFICIARIO']),
+            espacio_listo: col(r,['Espacio listo', 'ESPACIO_LISTO', 'espacio_listo']),
+            materiales: col(r,['Materiales entregados', 'Materiales', 'MATERIALES', 'materiales']),
+            funcion: col(r,['Funcionamiento', 'FUNCIONAMIENTO', 'funcionamiento']),
+            piezas: col(r,['Checklist piezas', 'Piezas', 'PIEZAS', 'piezas']),
+            satisfaccion: col(r,['Satisfacción', 'SATISFACCION', 'satisfaccion']),
+            observaciones: col(r,['Observaciones', 'OBSERVACIONES', 'observaciones'])
+          };
+          
+          if(index < 3) console.log(`Registro ${index}:`, record);
+          allRecords.push(record);
+        });
+
+        console.log('Total de registros procesados:', allRecords.length);
+
+        const lang = {
+          decimal: ",", thousands: ".",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          infoEmpty: "Mostrando 0 a 0 de 0 registros",
+          infoFiltered: "(filtrado de _MAX_ en total)",
+          lengthMenu: "Mostrar _MENU_",
+          loadingRecords: "Cargando...",
+          processing: "Procesando...",
+          search: "Buscar:",
+          zeroRecords: "No se encontraron registros",
+          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+        };
+
+        if (dtBitacora){ 
+          console.log('Destruyendo tabla anterior...');
+          dtBitacora.destroy(); 
+          dtBitacora = null; 
+        }
+
+        console.log('Creando nueva tabla con', allRecords.length, 'registros...');
+        dtBitacora = new DataTable('#tablaSeg',{
+          data: allRecords,
+          columns:[
+            {title:'Fecha', data:'fecha'},
+            {title:'Estatus', data:'estatus_csv'},
+            {title:'Entidad', data:'entidad'},
+            {title:'Municipio', data:'municipio'},
+            {title:'Localidad', data:'localidad'},
+            {title:'Beneficiario', data:'beneficiario'},
+            {title:'Espacio listo', data:'espacio_listo'},
+            {title:'Materiales', data:'materiales'},
+            {title:'Funcionamiento', data:'funcion'},
+            {title:'Piezas/Checklist', data:'piezas'},
+            {title:'Satisfacción', data:'satisfaccion'},
+            {title:'Observaciones', data:'observaciones'}
+          ],
+          pageLength: 8, responsive:true, language: lang, dom:'ftip'
+        });
+        console.log('Tabla creada exitosamente');
+      },
+      error: (e)=> {
+        console.error('Error al cargar bitacora_actividades.csv:', e);
+        console.warn('No se pudo leer bitacora_actividades.csv', e);
+      }
+    });
+  }
+>>>>>>> REPLACE
+
+Summ
+```
+ary: I removed the tab structure from the HTML and enhanced the CSV loading function with detailed console logging to help debug why the data isn't showing. The function now tries multiple column name variations and provides extensive logging to identify the exact issue with the CSV data loading.Here is the updated HTML content after applying above edits:
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,13 +228,6 @@
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- Mandar errores de DataTables a la consola (no popups) -->
-  <script>
-    window.addEventListener('DOMContentLoaded', function(){
-      if (window.jQuery && $.fn.dataTable) $.fn.dataTable.ext.errMode = 'console';
-    });
-  </script>
-
   <style>
     :root{
       --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
@@ -47,26 +245,31 @@
 
     .container{max-width:1200px;margin:24px auto;padding:0 16px}
 
+    /* Filtros */
     .filters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:18px}
     .filters label{font-size:10pt;opacity:.8}
     .filters select{width:100%;padding:10px 12px;border:1px solid var(--borde);border-radius:12px;background:#fff;outline:none}
     .filters select:focus{border-color:var(--guinda);box-shadow:0 0 0 3px #9f22412a}
 
+    /* KPIs */
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 18px}
     .kpi{background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:16px}
     .kpi .label{font-size:10pt;letter-spacing:.3px;color:var(--gris-700)}
     .kpi .value{font-size:24px;font-weight:800;color:var(--azul)}
 
+    /* Layout y tarjetas */
     .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
     .card{background:var(--panel);border:1px solid var(--borde);border-radius:16px;padding:16px}
     h2{margin:0 0 10px;font-size:16pt;color:var(--guinda-osc)}
     #map{height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--borde);background:#fff}
 
+    /* Galería */
     .gallery{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .thumb{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px}
     .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:zoom-in}
     .thumb figcaption{font-size:10pt;margin-top:6px;color:var(--gris-700)}
 
+    /* DataTables */
     table.dataTable thead th{background:#fff;color:var(--azul)}
     table.dataTable tbody tr:hover{background:#fafafa}
 
@@ -81,20 +284,19 @@
 
     .leaflet-container{z-index:0}.info.legend{z-index:400}
 
+    /* Lightbox */
     .lightbox{display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.85); align-items:center; justify-content:center; padding:24px;}
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw; max-height:86vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4)}
     .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
+    .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
 
+    /* Tabs bitácora - ESTO YA NO SE USARÁ PERO SE MANTIENE EL ESTILO POR SI ACASO */
     .tabs{display:flex;gap:8px;margin-bottom:10px}
     .tab-btn{padding:8px 12px;border:1px solid var(--borde);background:#fff;border-radius:10px;cursor:pointer;font-weight:600}
     .tab-btn.active{background:var(--guinda);color:#fff;border-color:var(--guinda)}
     .tab-pane{display:none}
     .tab-pane.active{display:block}
-
-    .status{font-size:10pt;color:var(--gris-700);margin:.25rem 0 .5rem}
-    .status.error{color:#b42318}
-    .status.ok{color:#0f7b0f}
   </style>
 </head>
 <body>
@@ -166,18 +368,7 @@
       </div>
       <div class="card" style="overflow:auto">
         <h2>Bitácora de actividades</h2>
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="seg">Seguimiento</button>
-          <button class="tab-btn" data-tab="con">Conclusión</button>
-        </div>
-        <div id="tab-seg" class="tab-pane active">
-          <div id="statusSeg" class="status">Cargando bitácora…</div>
-          <table id="tablaSeg" class="display" style="width:100%"></table>
-        </div>
-        <div id="tab-con" class="tab-pane">
-          <div id="statusCon" class="status">Cargando bitácora…</div>
-          <table id="tablaCon" class="display" style="width:100%"></table>
-        </div>
+        <table id="tablaSeg" class="display" style="width:100%"></table>
       </div>
     </div>
   </section>
@@ -186,7 +377,6 @@
   <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
     <div class="card" style="padding:14px;margin-bottom:16px">
       <h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
-      <div id="statusCenso" class="status">Cargando Censo_estufas.csv…</div>
       <table id="tablaLocalidades" class="display" style="width:100%"></table>
     </div>
     <div class="card" style="padding:14px">
@@ -204,10 +394,10 @@
     {id:"EST-0001", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",      lat:19.658,  lng:-102.048,  estatus:"Instalada",      fecha_instalacion:"2023-11-05", garantia_fin:"2025-11-05", visita_ult_fecha:"2024-05-20", visita_ult_hallazgo:"OK",            consumo_base:120, consumo_post:60},
     {id:"EST-0002", programa:"Transición Energética", proveedor:"EcoCalor SA", modelo:"Modelo B", entidad:"Michoacán", municipio:"Charapan",     lat:19.593,  lng:-102.304,  estatus:"En seguimiento", fecha_instalacion:"2024-02-14", garantia_fin:"2026-02-14", visita_ult_fecha:"2024-06-10", visita_ult_hallazgo:"Tiraje bajo",   consumo_base:100, consumo_post:70},
     {id:"EST-0003", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo A", entidad:"Michoacán", municipio:"Cherán",       lat:19.687,  lng:-101.953,  estatus:"Garantía",       fecha_instalacion:"2022-09-10", garantia_fin:"2024-09-10", visita_ult_fecha:"2024-04-02", visita_ult_hallazgo:"Fisura leve",   consumo_base:130, consumo_post:80},
-    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", visita_ult_fecha:"2023-12-01", garantia_fin:"2023-07-22",  consumo_base:110, consumo_post:65},
-    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", consumo_base:140, consumo_post:75},
-    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", visita_ult_fecha:"2022-06-01", garantia_fin:"2022-05-12",  consumo_base:115, consumo_post:115},
-    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", visita_ult_fecha:"2024-05-10", garantia_fin:"2025-12-30",  consumo_base:118, consumo_post:62}
+    {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",            consumo_base:110, consumo_post:65},
+    {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",            consumo_base:140, consumo_post:75},
+    {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa",  consumo_base:115, consumo_post:115},
+    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
   ];
 </script>
 
@@ -218,36 +408,12 @@
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
 
-  /* ======== Utilidad robusta para CSV (prueba varias rutas) ======== */
-  async function loadCSV(paths, onReady, onFail){
-    for (const raw of paths){
-      const url = raw + (raw.includes('?') ? '' : `?v=${Date.now()}`); // cache-bust
-      try{
-        const resp = await fetch(url, { method:'GET', cache:'no-store' });
-        if (resp.ok){
-          console.log('CSV encontrado:', raw);
-          Papa.parse(url, {
-            download:true, header:true, skipEmptyLines:true,
-            complete: onReady,
-            error: (e)=>{ console.warn('PapaParse error en', raw, e); if(onFail) onFail(e); }
-          });
-          return;
-        }else{
-          console.warn('No OK para', raw, resp.status);
-        }
-      }catch(e){
-        console.warn('Fallo fetch', raw, e);
-      }
-    }
-    if (onFail) onFail(new Error('No se encontró ningun CSV en rutas candidatas'));
-  }
-
   /* ===================== FUENTE PARA COMBOS (CSV de Vercel) ===================== */
-  let CENSO_ROWS = [];
-  let CSV_LOC_SET = null;
-  let LOC_GEO = null;
-  let rowsLocalidadesAll = [];
-  let dtLocalidades = null;
+  let CENSO_ROWS = [];             // contenido de Censo_estufas.csv (header:true)
+  let CSV_LOC_SET = null;          // Set "ENTIDAD|MUNICIPIO|LOCALIDAD" del CSV (para filtrar GeoJSON)
+  let LOC_GEO = null;              // localidades geojson (para el mapa)
+  let rowsLocalidadesAll = [];     // estufas_agg_localidad_detalle.json completo
+  let dtLocalidades = null;        // DataTable de tablaLocalidades
 
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
   function setOptions(sel, values, firstLabel){
@@ -259,7 +425,7 @@
     if(values.includes(current)) el.value=current;
   }
 
-  function fuenteCombos(){
+  function fuenteCombos(){           // devuelve filas base para armar combos
     if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
     const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     return feats.map(f=>f.properties||{});
@@ -291,16 +457,11 @@
     setOptions('#f_localidad', locs, 'Todas');
   }
 
+  // Carga CSV (Vercel o relativo)
   function cargarCensoCSV_yCombos(){
-    const status = $('#statusCenso');
-    loadCSV(
-      [
-        './Censo_estufas.csv',
-        './censo_estufas.csv',              // variante por si cambian mayúsculas
-        'Censo_estufas.csv',
-        'censo_estufas.csv'
-      ],
-      (res)=>{
+    Papa.parse('Censo_estufas.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
         CENSO_ROWS = (res.data||[]).map(r=>{
           const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
           const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
@@ -308,27 +469,16 @@
           return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
         });
         CSV_LOC_SET = new Set(CENSO_ROWS.map(r => keyEML(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
-        status.textContent = `Censo cargado (${CENSO_ROWS.length.toLocaleString('es-MX')} filas).`;
-        status.className = 'status ok';
-        buildEntidadFromFuente(); cascadeMunicipios(); cascadeLocalidades();
-        if (LOC_GEO && locaAllLayer){ map.removeLayer(locaAllLayer); crearCapaLocalidades(); }
-        // KPI censo
-        const headers = res.meta && res.meta.fields ? res.meta.fields : Object.keys((res.data||[])[0]||{});
-        const col = encuentraColumna(headers);
-        let suma=0;
-        if(col){
-          suma = (res.data||[]).reduce((acc,r)=>{
-            const v=(r[col]??'').toString().replace(/,/g,'').trim();const n=Number(v);return acc+(isFinite(n)?n:0)
-          },0);
+        buildEntidadFromFuente();
+        cascadeMunicipios();
+        cascadeLocalidades();
+        if (LOC_GEO && locaAllLayer){
+          map.removeLayer(locaAllLayer);
+          crearCapaLocalidades();
         }
-        $('#k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
       },
-      (e)=>{
-        status.textContent = 'No se pudo cargar Censo_estufas.csv (revisa nombre y carpeta).';
-        status.className = 'status error';
-        console.error('Censo_estufas.csv no encontrado', e);
-      }
-    );
+      error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
+    });
   }
 
   /* ===================== FILTROS / APLICACIÓN ===================== */
@@ -484,6 +634,7 @@
     if(!map){
       map = L.map('map').setView([22.5,-102],5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+      // IMPORTANTE: usar overlays para evitar "Localidades" duplicado
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
       loadMunicipios();
       loadLocalidades();
@@ -501,6 +652,7 @@
     });
   }
 
+  // Mostrar localidades filtradas en el mapa y alternar capas
   function showLocalidadesFiltered(){
     if(!LOC_GEO || !map) return;
     const ent=$('#f_entidad').value, mun=$('#f_municipio').value, loc=$('#f_localidad').value;
@@ -558,33 +710,39 @@
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ===================== BITÁCORA (SEGUIMIENTO / CONCLUSIÓN) ===================== */
-  let dtSeg, dtCon;
 
-  function initEmptyBitacoraTables(){
+  
+  /* ===================== BITÁCORA (TABLA ÚNICA) ===================== */
+  let dtBitacora; // Renombrado de dtSeg a dtBitacora para la tabla única
+
+  // Mostrar encabezados vacíos para que se vean las tablas aunque el CSV tarde en cargar
+  function initEmptyBitacoraTable(){
     const lang = {
       decimal:",", thousands:".",
       info:"Mostrando _START_ a _END_ de _TOTAL_ registros",
       infoEmpty:"Mostrando 0 a 0 de 0 registros",
       infoFiltered:"(filtrado de _MAX_ en total)",
       lengthMenu:"Mostrar _MENU_",
-      loadingRecords:"Cargando...", processing:"Procesando...",
+      loadingRecords:"Cargando...",
+      processing:"Procesando...",
       search:"Buscar:",
       zeroRecords:"No se encontraron registros",
       paginate:{ first:"Primera", last:"Última", next:"Siguiente", previous:"Anterior" }
     };
-    if (!$.fn.dataTable.isDataTable('#tablaSeg')) {
-      dtSeg = new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
-        {title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
-        {title:'Localidad',data:'localidad'},{title:'Beneficiario',data:'beneficiario'},{title:'Espacio listo',data:'espacio_listo'},
-        {title:'Materiales',data:'materiales'},{title:'ID Promotor',data:'id_promotor'},{title:'Observaciones',data:'observaciones'}
-      ]});
-    }
-    if (!$.fn.dataTable.isDataTable('#tablaCon')) {
-      dtCon = new DataTable('#tablaCon',{data:[],language:lang,dom:'ftip',pageLength:8,columns:[
-        {title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},
-        {title:'Localidad',data:'localidad'},{title:'Beneficiario',data:'beneficiario'},{title:'Funcionamiento',data:'funcion'},
-        {title:'Piezas/Checklist',data:'piezas'},{title:'Satisfacción',data:'satisfaccion'},{title:'Observaciones',data:'observaciones'}
+    if (!DataTable.isDataTable('#tablaSeg')) { // Se sigue usando #tablaSeg como ID
+      new DataTable('#tablaSeg',{data:[],language:lang,dom:'ftip',columns:[
+        {title:'Fecha',data:'fecha'},
+        {title:'Estatus',data:'estatus_csv'}, // Nueva columna para el estatus del CSV
+        {title:'Entidad',data:'entidad'},
+        {title:'Municipio',data:'municipio'},
+        {title:'Localidad',data:'localidad'},
+        {title:'Beneficiario',data:'beneficiario'},
+        {title:'Espacio listo',data:'espacio_listo'},
+        {title:'Materiales',data:'materiales'},
+        {title:'Funcionamiento',data:'funcion'},
+        {title:'Piezas/Checklist',data:'piezas'},
+        {title:'Satisfacción',data:'satisfaccion'},
+        {title:'Observaciones',data:'observaciones'}
       ]});
     }
   }
@@ -601,58 +759,85 @@
   }
 
   function cargarBitacora(){
-    const st1 = $('#statusSeg'), st2 = $('#statusCon');
-    loadCSV(
-      [
-        './bitacora_actividades.csv',
-        './Bitacora_actividades.csv',   // variantes por si cambian mayúsculas
-        'bitacora_actividades.csv',
-        'Bitacora_actividades.csv'
-      ],
-      (res)=>{
+    console.log('Iniciando carga de bitacora_actividades.csv...');
+    Papa.parse('bitacora_actividades.csv', {
+      download:true, header:true, skipEmptyLines:true,
+      complete:(res)=>{
+        console.log('CSV cargado. Filas encontradas:', res.data?.length);
+        console.log('Encabezados disponibles:', res.meta?.fields);
+        console.log('Primera fila de ejemplo:', res.data?.[0]);
+        
         const rows = res.data||[];
-        const seg = [], con = [];
-        rows.forEach(r=>{
-          const tipo = (col(r,['tipo','formato','fase'],'')||'').toString().toLowerCase();
-          const base = {
-            entidad: col(r,['entidad','estado']),
-            municipio: col(r,['municipio']),
-            localidad: col(r,['localidad','colonia','nom_loc']),
-            beneficiario: col(r,['nombre','nombre (s)','persona beneficiaria','beneficiario']),
-            fecha: col(r,['fecha','fecha de inicio','fecha de conclusión','fecha_conclusion','fecha_inicio']),
-            id_promotor: col(r,['id promotor','id_promotor','promotor id','id']),
-            observaciones: col(r,['observaciones','nota','comentarios'])
+        const allRecords = [];
+        
+        rows.forEach((r, index)=>{
+          // Probar diferentes variaciones de nombres de columnas
+          const record = {
+            fecha: col(r,['Fecha', 'FECHA', 'fecha']),
+            estatus_csv: col(r,['Estatus', 'ESTATUS', 'estatus', 'Status']),
+            entidad: col(r,['ENTIDAD', 'Entidad', 'entidad']),
+            municipio: col(r,['MUNICIPIO', 'Municipio', 'municipio']),
+            localidad: col(r,['LOCALIDAD', 'Localidad', 'localidad']),
+            beneficiario: col(r,['Beneficiario / Hogar', 'Beneficiario', 'beneficiario', 'BENEFICIARIO']),
+            espacio_listo: col(r,['Espacio listo', 'ESPACIO_LISTO', 'espacio_listo']),
+            materiales: col(r,['Materiales entregados', 'Materiales', 'MATERIALES', 'materiales']),
+            funcion: col(r,['Funcionamiento', 'FUNCIONAMIENTO', 'funcionamiento']),
+            piezas: col(r,['Checklist piezas', 'Piezas', 'PIEZAS', 'piezas']),
+            satisfaccion: col(r,['Satisfacción', 'SATISFACCION', 'satisfaccion']),
+            observaciones: col(r,['Observaciones', 'OBSERVACIONES', 'observaciones'])
           };
-          if(tipo.includes('conclu')){
-            con.push({...base,
-              funcion: col(r,['funcionamiento','calienta correctamente','se expulsa el humo correctamente']),
-              piezas: col(r,['check list','piezas','partes','la estufa patsari cuenta con']),
-              satisfaccion: col(r,['satisfaccion','satisfacción','opinion final','opinión final'])
-            });
-          }else{
-            seg.push({...base,
-              espacio_listo: col(r,['el espacio ya se encuentra en condiciones','espacio listo','verificacion del espacio']),
-              materiales: col(r,['materiales entregados','entrega de materiales']),
-              fecha_inicio: col(r,['fecha de inicio de construccion','fecha de inicio'])
-            });
-          }
+          
+          if(index < 3) console.log(`Registro ${index}:`, record);
+          allRecords.push(record);
         });
 
-        if ($.fn.dataTable.isDataTable('#tablaSeg')) {
-          $('#tablaSeg').DataTable().clear().rows.add(seg).draw();
+        console.log('Total de registros procesados:', allRecords.length);
+
+        const lang = {
+          decimal: ",", thousands: ".",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+          infoEmpty: "Mostrando 0 a 0 de 0 registros",
+          infoFiltered: "(filtrado de _MAX_ en total)",
+          lengthMenu: "Mostrar _MENU_",
+          loadingRecords: "Cargando...",
+          processing: "Procesando...",
+          search: "Buscar:",
+          zeroRecords: "No se encontraron registros",
+          paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+        };
+
+        if (dtBitacora){ 
+          console.log('Destruyendo tabla anterior...');
+          dtBitacora.destroy(); 
+          dtBitacora = null; 
         }
-        if ($.fn.dataTable.isDataTable('#tablaCon')) {
-          $('#tablaCon').DataTable().clear().rows.add(con).draw();
-        }
-        st1.textContent = `Registros de seguimiento: ${seg.length.toLocaleString('es-MX')}`; st1.className='status ok';
-        st2.textContent = `Registros de conclusión: ${con.length.toLocaleString('es-MX')}`;   st2.className='status ok';
+
+        console.log('Creando nueva tabla con', allRecords.length, 'registros...');
+        dtBitacora = new DataTable('#tablaSeg',{
+          data: allRecords,
+          columns:[
+            {title:'Fecha', data:'fecha'},
+            {title:'Estatus', data:'estatus_csv'},
+            {title:'Entidad', data:'entidad'},
+            {title:'Municipio', data:'municipio'},
+            {title:'Localidad', data:'localidad'},
+            {title:'Beneficiario', data:'beneficiario'},
+            {title:'Espacio listo', data:'espacio_listo'},
+            {title:'Materiales', data:'materiales'},
+            {title:'Funcionamiento', data:'funcion'},
+            {title:'Piezas/Checklist', data:'piezas'},
+            {title:'Satisfacción', data:'satisfaccion'},
+            {title:'Observaciones', data:'observaciones'}
+          ],
+          pageLength: 8, responsive:true, language: lang, dom:'ftip'
+        });
+        console.log('Tabla creada exitosamente');
       },
-      (e)=>{
-        st1.textContent = 'No se pudo cargar bitacora_actividades.csv.'; st1.className='status error';
-        st2.textContent = 'No se pudo cargar bitacora_actividades.csv.'; st2.className='status error';
-        console.error('bitacora_actividades.csv no encontrado', e);
+      error: (e)=> {
+        console.error('Error al cargar bitacora_actividades.csv:', e);
+        console.warn('No se pudo leer bitacora_actividades.csv', e);
       }
-    );
+    });
   }
 
   /* ===================== TABLAS DE CENSO ===================== */
@@ -685,7 +870,6 @@
         DATA.forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio] = (installedByMun[d.municipio]||0) + 1; }});
         rows.forEach(r=>{
           const instaladas = installedByMun[r.MUNICIPIO] || 0;
-          r.instaladas = instaladas;
           const quiere = Number(r.quiere_estufa||0);
           r.pct_q_sobre_inst = quiere > 0 ? (instaladas / quiere) * 100 : 0;
         });
@@ -792,11 +976,12 @@
   initTablasCenso();
   cargarCensoCSV_yCombos();
 
-  // Bitácora: headers visibles + carga del CSV
-  initEmptyBitacoraTables();
+  // Mostrar estructura de la tabla de bitácora única desde el inicio
+  initEmptyBitacoraTable();
+  // Cargar CSV para bitácora
   cargarBitacora();
 
-  // KPI de censo – función para detectar columna
+  // KPI de censo (suma Grupo_Prioritario_SENER_REMBIO)
   function encuentraColumna(headers){
     const objetivo = 'grupoprioritariosenerrembio';
     let mejor = null;
@@ -805,6 +990,19 @@
     headers.forEach(h=>{ const n=normaliza(h); if(n.includes('grupo') && n.includes('rembio')) mejor=h; });
     return mejor;
   }
+  Papa.parse('Censo_estufas.csv',{
+    download:true, header:true, skipEmptyLines:true,
+    complete:(result)=>{
+      const rows=result.data||[];
+      const headers=result.meta && result.meta.fields? result.meta.fields : Object.keys(rows[0]||{});
+      const col=encuentraColumna(headers);
+      let suma=0;
+      if(col){
+        suma = rows.reduce((acc,r)=>{const v=(r[col]??'').toString().replace(/,/g,'').trim();const n=Number(v);return acc+(isFinite(n)?n:0)},0);
+      }
+      $('#k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
+    }
+  });
 
   // Listeners filtros/cascadas
   $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
@@ -845,3 +1043,4 @@
 </script>
 </body>
 </html>
+```
