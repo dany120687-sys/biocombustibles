@@ -323,6 +323,11 @@ h1, h2, h3, .title, .card h2 {
   let SYNTH = [];
   let csvReady = false, geoReady = false;
 
+  /* ===== claves para mapas de hogares (fallback JSON) ===== */
+  const key3 = (ent,mun,loc='') => `${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`;
+  let HOGARES_LOC_FALL = new Map(); // ENT|MUN|LOC -> hogares
+  let HOGARES_MUN_FALL = new Map(); // ENT|MUN     -> hogares
+
   /* =================== Filtros (combos) =================== */
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
 
@@ -367,7 +372,7 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function bootstrapFiltersSimple(){
-    setOptions('#f_modelo', MODELOS, 'Todos');
+    setOptions('#f_modelo', ['Modelo A','Modelo B','Modelo C'], 'Todos');
   }
 
   function getFilters(){
@@ -392,7 +397,7 @@ h1, h2, h3, .title, .card h2 {
           const LOC = r.LOCALIDAD || r.localidad || r['Localidad'] || r.NOM_LOC || '';
           return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
         });
-        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => `${normaliza(r.ENTIDAD)}|${normaliza(r.MUNICIPIO)}|${normaliza(r.LOCALIDAD)}`));
+        CSV_LOC_SET = new Set(CENSO_ROWS.map(r => key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
 
         buildEntidadFromFuente();
         cascadeMunicipios();
@@ -401,9 +406,9 @@ h1, h2, h3, .title, .card h2 {
 
         csvReady = true;
         tryRegenerateSynthetic();
-        // armar tablas con el CSV
-        buildRankingFromCSV();   // ← ranking desde censo
-        renderTablaLocalidades();// ← localidades desde censo
+        // construir tablas con CSV
+        buildRankingFromCSV();
+        renderTablaLocalidades();
       },
       error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
     });
@@ -420,7 +425,7 @@ h1, h2, h3, .title, .card h2 {
   function sortWeekKeys(a,b){const [ya,wa]=a.split('-W').map(Number);const [yb,wb]=b.split('-W').map(Number);return ya===yb?wa-wb:ya-yb;}
 
   function buildWeightedWeeks(){
-    const start = new Date(START_DATE);
+    const start = new Date('2025-08-01'); // fijo para estabilidad
     start.setDate(start.getDate() - ((start.getDay()+6)%7));
     const weeks = [];
     while (start <= END_DATE){
@@ -644,7 +649,7 @@ h1, h2, h3, .title, .card h2 {
         const ent = gProp(p,'ENTIDAD','entidad');
         const mun = gProp(p,'MUNICIPIO','municipio');
         const loc = gProp(p,'LOCALIDAD','localidad','NOM_LOC');
-        return CSV_LOC_SET.has(`${normaliza(ent)}|${normaliza(mun)}|${normaliza(loc)}`);
+        return CSV_LOC_SET.has(key3(ent,mun,loc));
       },
       pointToLayer: (feature, latlng) => {
         const p=feature.properties||{};
@@ -776,19 +781,29 @@ h1, h2, h3, .title, .card h2 {
   let rowsLocalidadesAll = [];   // fallback (JSON)
   let dtLocalidades = null;
 
-  // ---- detectar columna "hogares" en CSV ----
+  // ---- detectar columna "hogares" en CSV; si no existe, usamos fallback JSON ----
   function findHogaresColumn(){
     if(!CENSO_ROWS.length) return null;
     const keys = Object.keys(CENSO_ROWS[0]||{});
-    let best = null;
+    // candidatos en orden de prioridad
+    const candidates = [
+      'hogares','total_hogares','totalhogares','hogar',
+      'viviendas','total_viviendas','totalviviendas'
+    ];
+    let best = null, score=-1;
     keys.forEach(k=>{
       const nk = normaliza(k);
-      if(nk==='hogares' || nk==='totalhogares' || nk.includes('hogar')) best = best || k;
+      let s = -1;
+      if (nk==='hogares') s=100;
+      else if (nk==='totalhogares' || nk==='total_hogares') s=90;
+      else if (nk.includes('hogar')) s=80;
+      else if (nk==='viviendas' || nk.includes('vivienda')) s=60;
+      if (s>score){ score=s; best=k; }
     });
-    return best;
+    return (score>=0) ? best : null;
   }
 
-  // ---- agregar por localidad desde CSV ----
+  // ---- agregar por localidad desde CSV + fallback hogares ----
   function aggregateCensoByLocalidad(){
     const f = getFilters();
     if(!CENSO_ROWS.length) return [];
@@ -801,14 +816,22 @@ h1, h2, h3, .title, .card h2 {
       if(!eqN(loc,f.localidad)) return;
       const key = `${ent}|${mun}|${loc}`;
       const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, LOCALIDAD:loc, hogares:0, quiere_estufa:0};
-      obj.hogares += num(hogCol ? r[hogCol] : 0);
+      // hogares desde CSV si hay columna, si no, fallback del JSON agregado
+      if (hogCol){ obj.hogares += num(r[hogCol]); }
+      else{
+        const k = key3(ent,mun,loc);
+        obj.hogares += (HOGARES_LOC_FALL.get(k) || 0);
+      }
       obj.quiere_estufa += num(r[QUIERE_COL]);
       map.set(key,obj);
     });
-    return [...map.values()].map(o=>({...o, porc_quiere: o.hogares ? (o.quiere_estufa/o.hogares)*100 : 0}));
+    return [...map.values()].map(o=>{
+      const porc = o.hogares ? (o.quiere_estufa/o.hogares)*100 : 0;
+      return {...o, porc_quiere: porc};
+    });
   }
 
-  // ---- agregar por municipio desde CSV ----
+  // ---- agregar por municipio desde CSV + fallback hogares ----
   let rankingRows = [];
   let dtRanking = null;
 
@@ -822,7 +845,11 @@ h1, h2, h3, .title, .card h2 {
       if(!eqN(ent,f.entidad)) return; // ranking se filtra por entidad
       const key = `${ent}|${mun}`;
       const obj = map.get(key) || {ENTIDAD:ent, MUNICIPIO:mun, hogares:0, quiere_estufa:0};
-      obj.hogares += num(hogCol ? r[hogCol] : 0);
+      if (hogCol){ obj.hogares += num(r[hogCol]); }
+      else{
+        // sumar hogares de fallback por municipio
+        obj.hogares += (HOGARES_MUN_FALL.get(key3(ent,mun,'')) || 0);
+      }
       obj.quiere_estufa += num(r[QUIERE_COL]);
       map.set(key,obj);
     });
@@ -871,12 +898,22 @@ h1, h2, h3, .title, .card h2 {
   }
 
   function initTablasCenso(){
-    // Fallback de localidades si no hay CSV (se reemplazará cuando cargue el CSV)
+    // Fallback de localidades (lo usamos también para hogares si el CSV no trae la columna)
     fetch('estufas_agg_localidad_detalle.json')
       .then(r => r.json())
       .then(rows => {
         rows.forEach(r => { r.porc_quiere = (Number(r.porc_quiere||0)*100).toFixed(1); });
         rowsLocalidadesAll = rows;
+
+        // construir mapas de hogares fallback
+        HOGARES_LOC_FALL = new Map();
+        HOGARES_MUN_FALL = new Map();
+        rows.forEach(r=>{
+          HOGARES_LOC_FALL.set(key3(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD), num(r.hogares));
+          const kmun = key3(r.ENTIDAD, r.MUNICIPIO, '');
+          HOGARES_MUN_FALL.set(kmun, (HOGARES_MUN_FALL.get(kmun)||0) + num(r.hogares));
+        });
+
         renderTablaLocalidades(); // mostrará CSV si ya está disponible
       });
 
@@ -895,7 +932,11 @@ h1, h2, h3, .title, .card h2 {
       const okM = eqN(r.MUNICIPIO, f.municipio);
       const okL = eqN(r.LOCALIDAD, f.localidad);
       return okE && okM && okL;
-    });
+    }).map(r=>({
+      ENTIDAD:r.ENTIDAD, MUNICIPIO:r.MUNICIPIO, LOCALIDAD:r.LOCALIDAD,
+      hogares:num(r.hogares), quiere_estufa:num(r.quiere_estufa),
+      porc_quiere:Number(r.porc_quiere||0)
+    }));
   }
 
   function renderTablaLocalidades(){
@@ -910,7 +951,7 @@ h1, h2, h3, .title, .card h2 {
         { title: 'Localidad', data: 'LOCALIDAD' },
         { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
         { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: '% Quiere', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
+        { title: '% Población que requiere estufa', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
       ],
       pageLength: 10, responsive: true, language: {
         decimal: ",", thousands: ".",
