@@ -302,13 +302,31 @@ h1, h2, h3, .title, .card h2 {
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
+  const num = v => { const n = Number(String(v??'').replace(/,/g,'').trim()); return isFinite(n)? n : 0; };
 
-  /* ===================== FUENTE PARA COMBOS (CSV de Vercel) ===================== */
-  let CENSO_ROWS = [];             // contenido de Censo_estufas.csv (header:true)
-  let CSV_LOC_SET = null;          // Set "ENTIDAD|MUNICIPIO|LOCALIDAD" del CSV (para filtrar GeoJSON)
-  let LOC_GEO = null;              // localidades geojson (para el mapa)
-  let rowsLocalidadesAll = [];     // estufas_agg_localidad_detalle.json completo
-  let dtLocalidades = null;        // DataTable de tablaLocalidades
+  /* ======= CENSO (para filtros y KPI “Quiere estufa”) ======= */
+  let CENSO_ROWS = [];       // filas del CSV
+  let CSV_LOC_SET = null;    // ENTIDAD|MUNICIPIO|LOCALIDAD del CSV
+  let QUIERE_COL = null;     // nombre de columna con “quiere estufa”
+  let LOC_GEO = null;        // geojson localidades (mapa)
+  let rowsLocalidadesAll = [];
+  let dtLocalidades = null;
+
+  function detectQuiereCSVColumn(headers){
+    // Normaliza encabezados y busca las variantes más comunes
+    let hit = null;
+    headers.forEach(h=>{
+      const n = normaliza(h);
+      if (n === 'quiereestufa' || n === 'quierenestufa') hit = h;
+    });
+    if (hit) return hit;
+    // Variante usada antes (REM_BIO)
+    headers.forEach(h=>{ if (normaliza(h)==='grupoprioritariosenerrembio') hit=h; });
+    if (hit) return hit;
+    // Heurística: contenga "quiere" + "estufa"
+    headers.forEach(h=>{ const n=normaliza(h); if(n.includes('quiere') && n.includes('estufa')) hit=h; });
+    return hit;
+  }
 
   const uniqSorted = arr => [...new Set(arr)].filter(v=>v!=='' && v!=null).sort((a,b)=>a.localeCompare(b,'es'));
   function setOptions(sel, values, firstLabel){
@@ -320,7 +338,7 @@ h1, h2, h3, .title, .card h2 {
     if(values.includes(current)) el.value=current;
   }
 
-  function fuenteCombos(){           // devuelve filas base para armar combos
+  function fuenteCombos(){ // base para combos: CENSO si existe; si no, LOC_GEO
     if (CENSO_ROWS && CENSO_ROWS.length) return CENSO_ROWS;
     const feats = (LOC_GEO && Array.isArray(LOC_GEO.features)) ? LOC_GEO.features : [];
     return feats.map(f=>f.properties||{});
@@ -332,13 +350,15 @@ h1, h2, h3, .title, .card h2 {
 
   function buildEntidadFromFuente(){
     const rows = fuenteCombos();
-    const ents = uniqSorted(rows.map(r=> r.ENTIDAD || r.entidad));
+    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
+    const ents = uniqSorted(rowsHasQ.map(r=> r.ENTIDAD || r.entidad));
     setOptions('#f_entidad', ents, 'Todas');
   }
   function cascadeMunicipios(){
     const ent = $('#f_entidad').value;
     const rows = fuenteCombos().filter(r => !ent || (r.ENTIDAD||r.entidad)===ent);
-    const muns = uniqSorted(rows.map(r=> r.MUNICIPIO || r.municipio));
+    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
+    const muns = uniqSorted(rowsHasQ.map(r=> r.MUNICIPIO || r.municipio));
     setOptions('#f_municipio', muns, 'Todos');
   }
   function cascadeLocalidades(){
@@ -348,15 +368,19 @@ h1, h2, h3, .title, .card h2 {
       const okM=!mun || (r.MUNICIPIO||r.municipio)===mun;
       return okE && okM;
     });
-    const locs = uniqSorted(rows.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
+    const rowsHasQ = (QUIERE_COL ? rows.filter(r=> num(r[QUIERE_COL])>0 ) : rows);
+    const locs = uniqSorted(rowsHasQ.map(r=> r.LOCALIDAD || r.localidad || r.NOM_LOC));
     setOptions('#f_localidad', locs, 'Todas');
   }
 
-  // Carga CSV (Vercel o relativo)
+  // Lee CSV y arma combos (referenciados a “quiere estufa”)
   function cargarCensoCSV_yCombos(){
     Papa.parse('Censo_estufas.csv', {
       download:true, header:true, skipEmptyLines:true,
       complete:(res)=>{
+        const headers = (res.meta && res.meta.fields) ? res.meta.fields : Object.keys((res.data||[])[0]||{});
+        QUIERE_COL = detectQuiereCSVColumn(headers);
+
         CENSO_ROWS = (res.data||[]).map(r=>{
           const ENT = r.ENTIDAD || r.entidad || r['Entidad'] || '';
           const MUN = r.MUNICIPIO || r.municipio || r['Municipio'] || '';
@@ -364,9 +388,13 @@ h1, h2, h3, .title, .card h2 {
           return { ENTIDAD: ENT, MUNICIPIO: MUN, LOCALIDAD: LOC, ...r };
         });
         CSV_LOC_SET = new Set(CENSO_ROWS.map(r => keyEML(r.ENTIDAD, r.MUNICIPIO, r.LOCALIDAD)));
+
         buildEntidadFromFuente();
         cascadeMunicipios();
         cascadeLocalidades();
+        renderKPIQuiereEstufa(); // KPI dinámico por filtros
+
+        // Si ya estaba el mapa, rearmar capa de localidades filtradas por CSV
         if (LOC_GEO && locaAllLayer){
           map.removeLayer(locaAllLayer);
           crearCapaLocalidades();
@@ -430,6 +458,36 @@ h1, h2, h3, .title, .card h2 {
     // Seguimiento
     const elS = document.getElementById('k_seguimiento');
     if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
+  }
+
+  // KPI “Hogares que quieren estufa (censo)” filtrado
+  function renderKPIQuiereEstufa(){
+    const f = getFilters();
+    let totalQuiere = 0;
+
+    if (CENSO_ROWS.length && QUIERE_COL){
+      CENSO_ROWS.forEach(r=>{
+        const okE = !f.entidad   || (r.ENTIDAD===f.entidad);
+        const okM = !f.municipio || (r.MUNICIPIO===f.municipio);
+        const okL = !f.localidad || (r.LOCALIDAD===f.localidad);
+        if (okE && okM && okL) totalQuiere += num(r[QUIERE_COL]);
+      });
+    } else if (LOC_GEO) {
+      // Respaldo con GeoJSON si no hay columna detectada
+      const feats = (LOC_GEO.features||[]);
+      feats.forEach(({properties:p={}})=>{
+        const ent=gProp(p,'ENTIDAD','entidad');
+        const mun=gProp(p,'MUNICIPIO','municipio');
+        const loc=gProp(p,'LOCALIDAD','localidad','NOM_LOC');
+        const okE=!f.entidad || ent===f.entidad;
+        const okM=!f.municipio || mun===f.municipio;
+        const okL=!f.localidad || loc===f.localidad;
+        if (okE && okM && okL) totalQuiere += num(p.quiere_estufa);
+      });
+    }
+
+    const elQ = document.getElementById('k_quiere_estufa');
+    if (elQ) elQ.textContent = fmt(totalQuiere);
   }
 
   /* ===================== MAPA ===================== */
@@ -539,7 +597,7 @@ h1, h2, h3, .title, .card h2 {
     if(!map){
       map = L.map('map').setView([22.5,-102],5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-      // IMPORTANTE: usar overlays para evitar "Localidades" duplicado
+      // IMPORTANTE: usar overlays
       layerControl = L.control.layers(null, {}, {collapsed:false}).addTo(map);
       loadMunicipios();
       loadLocalidades();
@@ -815,6 +873,7 @@ h1, h2, h3, .title, .card h2 {
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
+    renderKPIQuiereEstufa(); // <- actualizar KPI de censo
   }
 
   function buildWeeksFromData(){
@@ -834,33 +893,10 @@ h1, h2, h3, .title, .card h2 {
   // Bitácora
   initBitacoraEjemplo();
 
-  // KPI censo (suma columna de censo)
-  function encuentraColumna(headers){
-    const objetivo = 'grupoprioritariosenerrembio';
-    let mejor = null;
-    headers.forEach(h=>{ if(normaliza(h)===objetivo) mejor=h; });
-    if(mejor) return mejor;
-    headers.forEach(h=>{ const n=normaliza(h); if(n.includes('grupo') && n.includes('rembio')) mejor=h; });
-    return mejor;
-  }
-  Papa.parse('Censo_estufas.csv',{
-    download:true, header:true, skipEmptyLines:true,
-    complete:(result)=>{
-      const rows=result.data||[];
-      const headers=result.meta && result.meta.fields? result.meta.fields : Object.keys(rows[0]||{});
-      const col=encuentraColumna(headers);
-      let suma=0;
-      if(col){
-        suma = rows.reduce((acc,r)=>{const v=(r[col]??'').toString().replace(/,/g,'').trim();const n=Number(v);return acc+(isFinite(n)?n:0)},0);
-      }
-      document.getElementById('k_quiere_estufa').textContent = suma.toLocaleString('es-MX');
-    }
-  });
-
-  // Listeners filtros/cascadas
-  document.getElementById('f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  document.getElementById('f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
-  document.getElementById('f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  // Listeners filtros/cascadas (incluye KPI censo)
+  $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
+  $('#f_localidad').addEventListener('change',()=>{ showLocalidadesFiltered(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
   // Leyenda del mapa
