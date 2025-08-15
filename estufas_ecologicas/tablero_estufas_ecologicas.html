@@ -649,64 +649,30 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ========= Bitácora y tablas (omito comentarios para abreviar) ========= */
- let dtBitacora;
-  const BITACORA_DATA = [
-    {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"María Pérez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-29","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Sin novedad"},
-    {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Juan López","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Pendientes","fecha_inicio":"2025-07-30","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Falta entregar accesorios"},
-    {"fecha":"2025-07-30","entidad":"Michoacán","municipio":"Charapan","localidad":"San Felipe","beneficiario":"Rosa García","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-31","funcion":"OK","piezas":"Completas","satisfaccion":"Media","observaciones":"Humo mínimo en arranque"},
-    {"fecha":"2025-08-02","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"Pedro Hernández","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-03","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Capacitación concluida"},
-    {"fecha":"2025-08-02","entidad":"Michoacán","municipio":"Paracho","localidad":"Aranza","beneficiario":"Lucía Martínez","estatus":"Instalación","espacio_listo":"No","materiales":"Parcial","fecha_inicio":"2025-08-05","funcion":"N/A","piezas":"Incompletas","satisfaccion":"N/A","observaciones":"Adecuar salida de humo"},
-    {"fecha":"2025-08-03","entidad":"Michoacán","municipio":"Paracho","localidad":"Cherán","beneficiario":"Miguel Torres","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-04","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Se entregó tríptico"},
-    {"fecha":"2025-08-04","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Ana López","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-04","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Ajuste de campana"},
-    {"fecha":"2025-08-05","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"José Ramírez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-05","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Listo para entrega final"}
-  ];
-
+  let dtBitacora;
+  const BITACORA_DATA=[{"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"María Pérez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-29","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Sin novedad"}, {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Juan López","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Pendientes","fecha_inicio":"2025-07-30","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Falta entregar accesorios"}];
   function initBitacoraEjemplo(){
-    const el = document.getElementById('tablaBitacora');
-    if(!el) return;
-
-    const dtLang = {
-      decimal: ",", thousands: ".",
-      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-      infoEmpty: "Mostrando 0 a 0 de 0 registros",
-      infoFiltered: "(filtrado de _MAX_ en total)",
-      lengthMenu: "Mostrar _MENU_",
-      loadingRecords: "Cargando...",
-      processing: "Procesando...",
-      search: "Buscar:",
-      zeroRecords: "No se encontraron registros",
-      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-    };
-
-    if (dtBitacora) {
-      dtBitacora.clear();
-      dtBitacora.rows.add(BITACORA_DATA).draw();
-    } else {
-      dtBitacora = new DataTable('#tablaBitacora', {
-        data: BITACORA_DATA,
-        columns: [
-          { title: 'Fecha', data: 'fecha' },
-          { title: 'Entidad', data: 'entidad' },
-          { title: 'Municipio', data: 'municipio' },
-          { title: 'Localidad', data: 'localidad' },
-          { title: 'Beneficiario / Hogar', data: 'beneficiario' },
-          { title: 'Estatus', data: 'estatus' },
-          { title: 'Espacio listo', data: 'espacio_listo' },
-          { title: 'Materiales entregados', data: 'materiales' },
-          { title: 'Fecha inicio obra', data: 'fecha_inicio' },
-          { title: 'Funcionamiento', data: 'funcion' },
-          { title: 'Checklist piezas', data: 'piezas' },
-          { title: 'Satisfacción', data: 'satisfaccion' },
-          { title: 'Observaciones', data: 'observaciones' }
-        ],
-        pageLength: 8,
-        responsive: true,
-        language: dtLang,
-        dom: 'ftip'
-      });
-    }
+    const dtLang={decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
+    if (dtBitacora) { dtBitacora.clear(); dtBitacora.rows.add(BITACORA_DATA).draw(); }
+    else { dtBitacora = new DataTable('#tablaBitacora',{data:BITACORA_DATA,columns:[{title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Localidad',data:'localidad'},{title:'Beneficiario / Hogar',data:'beneficiario'},{title:'Estatus',data:'estatus'}],pageLength:8,responsive:true,language:dtLang,dom:'ftip'}); }
   }
 
+  let rowsLocalidadesAll=[], dtLocalidades=null;
+  function initTablasCenso(){
+    const dtLang={decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
+    fetch('estufas_agg_localidad_detalle.json').then(r=>r.json()).then(rows=>{ rows.forEach(r=>{ r.porc_quiere=(Number(r.porc_quiere||0)*100).toFixed(1); }); rowsLocalidadesAll=rows; renderTablaLocalidades(); });
+    fetch('ranking_priorizacion_municipio.json').then(r=>r.json()).then(rows=>{
+      const installedByMun={}; getAllRows().forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio]=(installedByMun[d.municipio]||0)+1; }});
+      rows.forEach(r=>{ const inst=installedByMun[r.MUNICIPIO]||0; r.instaladas=inst; const quiere=Number(r.quiere_estufa||0); r.pct_q_sobre_inst=quiere>0?(inst/quiere)*100:0; });
+      new DataTable('#tablaRanking',{data:rows,columns:[{title:'Entidad',data:'ENTIDAD'},{title:'Municipio',data:'MUNICIPIO'},{title:'Hogares',data:'hogares',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Población Objetivo',data:'quiere_estufa',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Estufas construidas',data:'instaladas',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'% Estufas instaladas',data:'pct_q_sobre_inst',render:d=>`${Number(d||0).toFixed(1)}%`}] ,order:[[5,'desc']],pageLength:8,responsive:true,language:dtLang,dom:'ftip',lengthChange:false});
+    });
+  }
+  function filasLocalidadesFiltradas(){ const f=getFilters(); return rowsLocalidadesAll.filter(r=>eqN(r.ENTIDAD,f.entidad)&&eqN(r.MUNICIPIO,f.municipio)&&eqN(r.LOCALIDAD,f.localidad)); }
+  function renderTablaLocalidades(){
+    const data=filasLocalidadesFiltradas();
+    const cfg={data,columns:[{title:'Entidad',data:'ENTIDAD'},{title:'Municipio',data:'MUNICIPIO'},{title:'Localidad',data:'LOCALIDAD'},{title:'Hogares',data:'hogares',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Población Objetivo',data:'quiere_estufa',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'% Población que requiere estufa',data:'porc_quiere',render:d=>`${Number(d||0).toFixed(1)}%`}] ,pageLength:10,responsive:true,language:{decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}},dom:'ftip'};
+    if(dtLocalidades){ dtLocalidades.clear(); dtLocalidades.rows.add(data).draw(); } else { dtLocalidades=new DataTable('#tablaLocalidades',cfg); }
+  }
 
   /* ========= Refresh general ========= */
   function renderAll(){
