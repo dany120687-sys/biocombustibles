@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <div style="display:grid;grid-template-rows:auto auto;gap:16px">
+    <div style="display:grid;grid-template-rows:auto auto 1fr;gap:16px">
       <div class="card" style="height:220px">
         <h2>Instalaciones por semana</h2>
         <canvas id="chartInstalaciones"></canvas>
@@ -175,14 +175,16 @@
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
-    </div>
-  </section>
-
-  <!-- BITÁCORA (mismo ancho que las tablas inferiores) -->
-  <section class="container" style="max-width:1200px;margin:20px auto;padding:0 0">
-    <div class="card" style="padding:14px">
-      <h2 style="margin:0 0 10px;font-size:16px">Bitácora de actividades</h2>
-      <table id="tablaBitacora" class="display" style="width:100%"></table>
+      <div class="card" style="overflow:auto">
+        <h2>Bitácora de actividades</h2>
+        <table id="tablaBitacora" class="display" style="width:100%"></table>
+      </div>
+      <div id="tab-seg" class="tab-pane active">
+        <table id="tablaSeg" class="display" style="width:100%"></table>
+      </div>
+      <div id="tab-con" class="tab-pane">
+        <table id="tablaCon" class="display" style="width:100%"></table>
+      </div>
     </div>
   </section>
 
