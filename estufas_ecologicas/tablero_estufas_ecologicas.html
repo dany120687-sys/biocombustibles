@@ -106,6 +106,21 @@
     .dataTables_wrapper .dataTables_length select{ border:1px solid var(--borde); border-radius:10px; padding:6px 10px; }
     .dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px !important; border:1px solid var(--borde) !important; background:#fff !important; margin:0 2px !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
+
+    /* ====== Pastel meta — estilos de la tarjeta ====== */
+    .meta-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:16px}
+    @media (max-width:1000px){ .meta-grid{grid-template-columns:1fr} }
+    .detalle{
+      border:1px solid var(--borde); border-radius:14px; padding:14px; background:var(--gris);
+    }
+    .detalle .estado{font-weight:800; color:var(--azul); font-size:1.05rem; margin-bottom:6px}
+    .k-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #dcdfe4}
+    .k-row:last-child{border-bottom:0}
+    .big{font-size:1.2rem; font-weight:800}
+    .leyenda{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .chip{display:flex; align-items:center; gap:6px; font-size:.95rem; cursor:pointer}
+    .dot{width:12px; height:12px; border-radius:50%}
+    #pastelMeta{max-height:420px}
   </style>
 </head>
 <body>
@@ -184,6 +199,24 @@
       </div>
       <div id="tab-con" class="tab-pane">
         <table id="tablaCon" class="display" style="width:100%"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== NUEVA TARJETA: Pastel interactivo ====== -->
+  <section class="card" id="seccion-pastel" style="margin-top:16px">
+    <h2>Meta nacional y avance por estado</h2>
+    <div class="meta-grid">
+      <div>
+        <canvas id="pastelMeta"></canvas>
+        <div class="leyenda" id="legendMeta"></div>
+      </div>
+      <div class="detalle" id="detalleMeta">
+        <div class="estado">Selecciona un estado del gráfico</div>
+        <div class="k-row"><span>Meta del estado</span><span class="big" id="metaEstado">—</span></div>
+        <div class="k-row"><span>Estufas construidas</span><span class="big" id="construidasEstado">—</span></div>
+        <div class="k-row"><span>Faltan para la meta</span><span class="big" id="faltanEstado">—</span></div>
+        <div class="k-row"><span>Avance</span><span class="big" id="avanceEstado">—</span></div>
       </div>
     </div>
   </section>
@@ -876,6 +909,118 @@
   function openLightbox(src,alt){ const img=lightboxEl.querySelector('img'); img.src=src; img.alt=alt||''; lightboxEl.classList.add('open'); }
   lightboxEl.addEventListener('click',e=>{ if(e.target===lightboxEl || e.target.classList.contains('close')) lightboxEl.classList.remove('open'); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightboxEl.classList.remove('open'); });
+
+  /* ====== Pastel interactivo (integrado) ====== */
+  // Datos (modifica cuanto necesites)
+  const ESTADOS = [
+    { nombre: "Michoacán",       meta: 17500, construidas: 8200,  color: "#9F2241" },
+    { nombre: "San Luis Potosí", meta: 12000, construidas: 6400,  color: "#B6864D" },
+    { nombre: "Oaxaca",          meta: 40000, construidas: 21500, color: "#7E8FBD" },
+    { nombre: "Guerrero",        meta: 22000, construidas: 9800,  color: "#8FAB85" },
+    { nombre: "Chiapas",         meta: 35000, construidas: 17600, color: "#E08D79" },
+  ];
+  const META_NACIONAL = 1_000_000;
+
+  // Plugin para texto central
+  const centerTextPlugin = {
+    id: 'centerText',
+    afterDraw(chart, args, opts){
+      const {ctx} = chart;
+      const meta = chart.getDatasetMeta(0);
+      if(!meta || !meta.data || !meta.data.length) return;
+      const {x,y} = meta.data[0];
+      ctx.save();
+      ctx.fillStyle = opts.color || getCss('--azul') || '#10312B';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '700 26px "Noto Sans", sans-serif';
+      ctx.fillText((opts.text || '1,000,000'), x, y - 6);
+      if (opts.subtext){
+        ctx.font = '600 12px "Noto Sans", sans-serif';
+        ctx.fillText(opts.subtext, x, y + 16);
+      }
+      ctx.restore();
+    }
+  };
+  Chart.register(centerTextPlugin);
+
+  const ctxMeta = document.getElementById('pastelMeta');
+  const offsets = ESTADOS.map(()=>0);
+
+  const chartMeta = new Chart(ctxMeta, {
+    type: 'doughnut',
+    data: {
+      labels: ESTADOS.map(e=>e.nombre),
+      datasets: [{
+        label: 'Meta por estado',
+        data: ESTADOS.map(e=>e.meta),
+        backgroundColor: ESTADOS.map(e=>e.color),
+        borderColor: '#fff',
+        borderWidth: 2,
+        hoverOffset: 8,
+        offset: c => offsets[c.dataIndex] || 0,
+        circumference: 360,
+        rotation: -90
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '66%',
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const i = ctx.dataIndex, e = ESTADOS[i];
+              const faltan = Math.max(0, e.meta - e.construidas);
+              const pct = e.meta ? (e.construidas/e.meta*100) : 0;
+              return [
+                `Meta: ${fmt(e.meta)}`,
+                `Construidas: ${fmt(e.construidas)}`,
+                `Faltan: ${fmt(faltan)} (${pct.toFixed(1)}% avance)`
+              ];
+            }
+          }
+        },
+        centerText: { text: META_NACIONAL.toLocaleString('es-MX'), subtext: 'Meta nacional' }
+      },
+      onClick: (evt) => {
+        const hit = chartMeta.getElementsAtEventForMode(evt, 'nearest', {intersect:true}, true);
+        if(!hit.length) return;
+        const idx = hit[0].index;
+        // expandir/cerrar
+        offsets.forEach((_,i)=> offsets[i] = (i===idx ? (offsets[i]?0:20) : 0));
+        chartMeta.update();
+        actualizarPanel(idx);
+      }
+    }
+  });
+
+  // leyenda manual
+  const legendEl = document.getElementById('legendMeta');
+  ESTADOS.forEach((e,i)=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span class="dot" style="background:${e.color}"></span>${e.nombre}`;
+    chip.onclick = ()=>{
+      offsets.forEach((_,j)=> offsets[j] = (j===i ? (offsets[j]?0:20) : 0));
+      chartMeta.update();
+      actualizarPanel(i);
+    };
+    legendEl.appendChild(chip);
+  });
+
+  function actualizarPanel(idx){
+    const e = ESTADOS[idx];
+    const faltan = Math.max(0, e.meta - e.construidas);
+    const pct = e.meta ? (e.construidas/e.meta*100) : 0;
+    document.querySelector('#detalleMeta .estado').textContent = e.nombre;
+    document.getElementById('metaEstado').textContent = fmt(e.meta);
+    document.getElementById('construidasEstado').textContent = fmt(e.construidas);
+    document.getElementById('faltanEstado').textContent = fmt(faltan);
+    document.getElementById('avanceEstado').textContent = `${pct.toFixed(1)}%`;
+  }
 </script>
 </body>
 </html>
