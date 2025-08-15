@@ -925,53 +925,53 @@
 
 
   /* ===================== DONUT META NACIONAL ===================== */
+  <script>
+  /* ===================== DONUT META NACIONAL ===================== */
   const META_NAC = 1000000;
 
   const ESTADOS = [
-    { key:'mich', nombre:'Michoacán',     color:'#0c2f29', meta:17582, built:0 },
-    { key:'slp',  nombre:'San Luis Potosí', color:'#b57c42', meta:12000, built:0 },
-    { key:'oax',  nombre:'Oaxaca',        color:'#90ab84', meta:250000, built:0 },
-    { key:'gro',  nombre:'Guerrero',      color:'#7d7f7f', meta:180000, built:0 },
-    { key:'chi',  nombre:'Chiapas',       color:'#3a5f4a', meta:350000, built:0 }
+    { key:'mich', nombre:'Michoacán',      color:'#0c2f29', meta:17582,  built:0 },
+    { key:'slp',  nombre:'San Luis Potosí',color:'#b57c42', meta:12000,  built:0 },
+    { key:'oax',  nombre:'Oaxaca',         color:'#90ab84', meta:250000, built:0 },
+    { key:'gro',  nombre:'Guerrero',       color:'#7d7f7f', meta:180000, built:0 },
+    { key:'chi',  nombre:'Chiapas',        color:'#3a5f4a', meta:350000, built:0 }
   ];
   const COLOR_OTROS = '#e0e0e3';
 
   let donutChart = null;
   let donutCenter = { value: META_NAC, label: 'Meta nacional' };
-  let selectedKey = null;
+  let selectedIndex = -1; // índice del dataset (sin contar "otros" será 0..4)
 
-  // plugin para texto central
+  // ===== Texto grande al centro (formato anterior) =====
   const centerText = {
     id: 'centerText',
-    afterDraw(chart,args,opts){
+    afterDraw(chart){
       const {ctx, chartArea:{width,height}} = chart;
       ctx.save();
       ctx.textAlign='center';
       ctx.fillStyle='#111';
-      ctx.font='700 20px Noto Sans, Arial';
-      ctx.fillText(fmt(donutCenter.value), width/2, height/2 - 4);
-      ctx.font='400 11px Noto Sans, Arial';
-      ctx.fillText(donutCenter.label, width/2, height/2 + 14);
+      ctx.font='700 26px Noto Sans, Arial';
+      ctx.fillText((donutCenter.value||0).toLocaleString('es-MX'), width/2, height/2 - 6);
+      ctx.font='400 12px Noto Sans, Arial';
+      ctx.fillText(donutCenter.label, width/2, height/2 + 16);
       ctx.restore();
     }
   };
 
   function getBuiltFor(entidadNombre){
-    // cuenta instaladas por entidad
-    return getAllRows().filter(r => eqN(r.entidad, entidadNombre) && r.estatus==='Instalada').length;
+    return getAllRows().filter(r => (r.entidad||'').toLowerCase() === entidadNombre.toLowerCase() && r.estatus==='Instalada').length;
   }
 
+  // Vincula Michoacán a lo que muestre el KPI “Estufas instaladas”
   function linkMichoacanToKPI(){
-    // Leer KPI "Estufas instaladas" y usarlo como meta de Michoacán en la leyenda (según lo solicitado)
-    const k = num($('#k_estufas')?.textContent || '0');
+    const k = Number(String(document.getElementById('k_estufas')?.textContent||'').replace(/[^\d]/g,''));
     const mich = ESTADOS.find(e=>e.key==='mich');
     if(mich && k>0){ mich.meta = k; }
   }
 
   function refreshBuiltValues(){
     ESTADOS.forEach(e=>{
-      // Sólo tenemos datos demo de Michoacán; los otros estados quedarán en 0 (o puedes llenar manualmente si lo deseas)
-      e.built = e.nombre==='Michoacán' ? getBuiltFor('Michoacán') : 0;
+      e.built = (e.nombre==='Michoacán') ? getBuiltFor('Michoacán') : 0;
     });
   }
 
@@ -980,101 +980,142 @@
     return Math.max(0, META_NAC - sumaSel);
   }
 
+  // Leyenda lateral
   function buildStateList(){
-    const UL = $('#stateList');
+    const UL = document.getElementById('stateList');
     UL.innerHTML = '';
-    ESTADOS.forEach((e,idx)=>{
+    ESTADOS.forEach((e,i)=>{
       const li = document.createElement('li');
-      li.dataset.key = e.key;
+      li.dataset.index = i;
       li.innerHTML = `
         <div class="state-left">
           <span class="dot" style="background:${e.color}"></span>
           <span>${e.nombre}</span>
         </div>
-        <strong>${fmt(e.meta)}</strong>
+        <strong>${Number(e.meta||0).toLocaleString('es-MX')}</strong>
       `;
-      li.addEventListener('click', ()=> selectEstado(e.key));
+      li.addEventListener('click', ()=> handleSliceClick(i));
       UL.appendChild(li);
     });
   }
 
+  // Mini panel (sin NaN cuando no hay selección)
   function setMini(meta,built){
-    $('#miniMeta').textContent = fmt(meta);
-    $('#miniBuilt').textContent = fmt(built);
+    const $m = id => document.getElementById(id);
+    if(meta==null || isNaN(Number(meta))){
+      $m('miniMeta').textContent = '—';
+      $m('miniBuilt').textContent = '—';
+      $m('miniMissing').textContent = '—';
+      $m('miniPct').textContent = '—';
+      return;
+    }
+    meta  = Number(meta);
+    built = Number(built||0);
+    $m('miniMeta').textContent    = meta.toLocaleString('es-MX');
+    $m('miniBuilt').textContent   = built.toLocaleString('es-MX');
     const missing = Math.max(0, meta - built);
-    $('#miniMissing').textContent = fmt(missing);
+    $m('miniMissing').textContent = missing.toLocaleString('es-MX');
     const pct = meta>0 ? ((built/meta)*100).toFixed(1)+'%' : '—';
-    $('#miniPct').textContent = pct;
+    $m('miniPct').textContent = pct;
   }
 
-  function selectEstado(key){
-    selectedKey = key;
-    const idx = ESTADOS.findIndex(e=>e.key===key);
-    const e = ESTADOS[idx];
+  // Distribución/orden como en la imagen: arrancar "Otros" arriba (12 en punto)
+  function datasetOrdenado(){
+    const otros = otrosValor();
+    // Orden en el pastel: Otros, Oaxaca, Guerrero, Chiapas, Michoacán, SLP
+    const orderKeys = ['OTROS','oax','gro','chi','mich','slp'];
+    const data=[], colors=[], labels=[];
+    orderKeys.forEach(k=>{
+      if(k==='OTROS'){ data.push(otros); colors.push(COLOR_OTROS); labels.push('Otros'); }
+      else{
+        const e = ESTADOS.find(x=>x.key===k);
+        data.push(e.meta); colors.push(e.color); labels.push(e.nombre);
+      }
+    });
+    return {data, colors, labels};
+  }
 
-    // actualizar texto central: resto nacional sin ese estado
-    donutCenter.value = Math.max(0, META_NAC - e.meta);
+  function drawDonut(){
+    const ctx = document.getElementById('pastelMeta').getContext('2d');
+    const pack = datasetOrdenado();
+
+    donutChart = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels: pack.labels,
+        datasets:[{
+          data: pack.data,
+          backgroundColor: pack.colors,
+          borderWidth: 0,
+          borderRadius: 8,      // bordes redondeados (estilo anterior)
+          hoverOffset: 8,
+          offset: new Array(pack.data.length).fill(0)
+        }]
+      },
+      options:{
+        maintainAspectRatio:false,
+        cutout:'70%',           // aro grueso como el anterior
+        rotation: -Math.PI/2,   // inicia arriba (12 en punto)
+        plugins:{ legend:{ display:false },
+                  tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${Number(ctx.parsed||0).toLocaleString('es-MX')}` } } }
+      },
+      plugins:[centerText]
+    });
+
+    // Click en el pastel
+    document.getElementById('pastelMeta').onclick = (evt)=>{
+      const el = donutChart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+      if(!el.length){ resetSelection(); return; }
+      const idx = el[0].index;        // 0 es "Otros"
+      if(idx===0){ resetSelection(); return; } // clic en otros -> reset
+      handleSliceClick(idx-1);        // mapeamos 1..5 => 0..4 de ESTADOS
+    };
+  }
+
+  function handleSliceClick(estadoIndex){
+    selectedIndex = estadoIndex;              // 0..4 en ESTADOS
+    const e = ESTADOS[selectedIndex];
+
+    // Centro: resto nacional una vez descontada la meta del estado
+    donutCenter.value = Math.max(0, META_NAC - Number(e.meta||0));
     donutCenter.label = 'Resto nacional';
 
-    // resaltar segmento seleccionado con offset
-    const offs = ESTADOS.map((_,i)=> i===idx ? 14 : 0).concat([0]); // último es "otros"
+    // offsets (resalta la rebanada seleccionada)
+    const offs = new Array(ESTADOS.length+1).fill(0);
+    offs[selectedIndex+1] = 14; // +1 porque 0 es "Otros"
     donutChart.data.datasets[0].offset = offs;
 
-    // actualizar mini indicadores
+    // mini panel
     setMini(e.meta, e.built);
 
     // estado activo en lista
     document.querySelectorAll('#stateList li').forEach(li=>{
-      li.classList.toggle('active', li.dataset.key===key);
+      li.classList.toggle('active', Number(li.dataset.index)===selectedIndex);
     });
 
     donutChart.update();
   }
 
-  function resetCenter(){
-    selectedKey = null;
+  function resetSelection(){
+    selectedIndex = -1;
     donutCenter.value = META_NAC;
     donutCenter.label = 'Meta nacional';
-    donutChart.data.datasets[0].offset = ESTADOS.map(_=>0).concat([0]);
-    setMini('—','—');
+    donutChart.data.datasets[0].offset = new Array(ESTADOS.length+1).fill(0);
+    setMini(null,null);
     document.querySelectorAll('#stateList li').forEach(li=>li.classList.remove('active'));
     donutChart.update();
   }
 
   function initDonut(){
-    linkMichoacanToKPI();     // vincula Michoacán con KPI
-    refreshBuiltValues();     // cuenta instaladas (demo: sólo Michoacán)
+    linkMichoacanToKPI();
+    refreshBuiltValues();
     buildStateList();
-
-    const datos = ESTADOS.map(e=>e.meta).concat([otrosValor()]);
-    const colores = ESTADOS.map(e=>e.color).concat([COLOR_OTROS]);
-
-    const ctx = document.getElementById('pastelMeta').getContext('2d');
-    donutChart = new Chart(ctx, {
-      type:'doughnut',
-      data:{ labels: ESTADOS.map(e=>e.nombre).concat(['Otros']),
-            datasets:[{ data: datos, backgroundColor: colores, borderWidth:0, offset: ESTADOS.map(_=>0).concat([0]) }]},
-      options:{
-        maintainAspectRatio:false,
-        cutout:'68%',
-        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${fmt(ctx.parsed)}` } } },
-        onClick:(evt, elems)=>{
-          if(!elems.length){ resetCenter(); return; }
-          const di = elems[0].index;
-          if (di >= ESTADOS.length){ resetCenter(); return; } // clic en "otros"
-          selectEstado( ESTADOS[di].key );
-        }
-      },
-      plugins:[centerText]
-    });
-
-    // Centro por defecto
-    resetCenter();
+    drawDonut();
+    resetSelection();
   }
 
-  // Inicializar donut al final (KPI ya está renderizado)
+  // Inicializar donut
   initDonut();
-
 </script>
 </body>
 </html>
