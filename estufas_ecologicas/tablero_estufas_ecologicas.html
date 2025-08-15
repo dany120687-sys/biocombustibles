@@ -40,31 +40,26 @@
 
     .container{max-width:1200px;margin:24px auto;padding:0 16px}
 
-    /* Filtros */
     .filters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:18px}
     .filters label{font-size:10pt;opacity:.8}
     .filters select{width:100%;padding:10px 12px;border:1px solid var(--borde);border-radius:12px;background:#fff;outline:none}
     .filters select:focus{border-color:var(--guinda);box-shadow:0 0 0 3px #9f22412a}
 
-    /* KPIs */
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 18px}
     .kpi{background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:16px}
     .kpi .label{font-size:10pt;letter-spacing:.3px;color:var(--gris-700)}
     .kpi .value{font-size:24px;font-weight:800;color:var(--azul)}
 
-    /* Layout y tarjetas */
     .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
     .card{background:var(--panel);border:1px solid var(--borde);border-radius:16px;padding:16px}
     h2{margin:0 0 10px;font-size:16pt;color:var(--guinda-osc)}
     #map{height:360px;border-radius:12px;overflow:hidden;border:1px solid var(--borde);background:#fff}
 
-    /* Galería */
     .gallery{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .thumb{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px}
     .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:zoom-in}
     .thumb figcaption{font-size:10pt;margin-top:6px;color:var(--gris-700)}
 
-    /* DataTables */
     table.dataTable thead th{background:#fff;color:var(--azul)}
     table.dataTable tbody tr:hover{background:#fafafa}
 
@@ -79,22 +74,17 @@
 
     .leaflet-container{z-index:0}.info.legend{z-index:400}
 
-    /* Lightbox */
     .lightbox{display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.85); align-items:center; justify-content:center; padding:24px;}
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw; max-height:86vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4)}
     .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
-    .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
 
-    /* ====== Tipografía y colores institucionales ====== */
     :root{ --vino:#7A0019; --oro:#B6864D; --gris:#f6f7f9; --borde:#e3e6ea; --texto:#1c1f23; }
     h1, h2, h3, .title, .card h2 { font-family: 'Patria','Noto Sans',serif; letter-spacing:.2px; }
     .card h2{ font-size:1.35rem; margin:0 0 .75rem 0; color:var(--vino); }
 
-    /* ====== Tarjetas ====== */
     .card{ border:1px solid var(--borde); border-radius:16px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
 
-    /* ====== Tabla Bitácora ====== */
     #tablaBitacora{ width:100% !important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.04); }
     #tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg,var(--vino),#8b0e27); color:#fff; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1; }
     #tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top; }
@@ -107,12 +97,9 @@
     .dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px !important; border:1px solid var(--borde) !important; background:#fff !important; margin:0 2px !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
 
-    /* ====== Pastel meta — estilos de la tarjeta ====== */
     .meta-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:16px}
     @media (max-width:1000px){ .meta-grid{grid-template-columns:1fr} }
-    .detalle{
-      border:1px solid var(--borde); border-radius:14px; padding:14px; background:var(--gris);
-    }
+    .detalle{ border:1px solid var(--borde); border-radius:14px; padding:14px; background:#f6f7f9; }
     .detalle .estado{font-weight:800; color:var(--azul); font-size:1.05rem; margin-bottom:6px}
     .k-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #dcdfe4}
     .k-row:last-child{border-bottom:0}
@@ -203,7 +190,7 @@
     </div>
   </section>
 
-  <!-- ====== NUEVA TARJETA: Pastel interactivo ====== -->
+  <!-- PASTEL INTERACTIVO -->
   <section class="card" id="seccion-pastel" style="margin-top:16px">
     <h2>Meta nacional y avance por estado</h2>
     <div class="meta-grid">
@@ -221,7 +208,7 @@
     </div>
   </section>
 
-  <!-- SECCIÓN DATOS DETALLADOS -->
+  <!-- TABLAS DETALLE -->
   <section class="container" id="seccion-datos" style="max-width:1200px;margin:20px auto;padding:0 0">
     <div class="card" style="padding:14px;margin-bottom:16px">
       <h2 style="margin:0 0 10px;font-size:16px">Tabla de Localidades (Censo)</h2>
@@ -476,7 +463,6 @@
     renderAll();
   }
 
-  /* =================== Aplicación de filtros =================== */
   function getAllRows(){ return DATA.concat(SYNTH); }
 
   function applyFilters(data){
@@ -501,6 +487,7 @@
     const elS = document.getElementById('k_seguimiento'); if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
+  /* ≡≡≡ Enlazar KPI “quiere estufa” con la rebanada de Michoacán ≡≡≡ */
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
@@ -524,6 +511,17 @@
       });
     }
     const elQ = document.getElementById('k_quiere_estufa'); if (elQ) elQ.textContent = fmt(totalQuiere);
+
+    // Actualiza la rebanada de Michoacán con ese mismo número
+    const iMicho = ESTADOS.findIndex(e=> normaliza(e.nombre)==='michoacan');
+    if(iMicho>=0){
+      ESTADOS[iMicho].meta = totalQuiere;
+      if (window.chartMeta){
+        chartMeta.data.datasets[0].data = ESTADOS.map(e=>e.meta);
+        chartMeta.update();
+        if(selectedIdx === iMicho) updateCenterText(); // si está seleccionada, recalcula el centro
+      }
+    }
   }
 
   /* ===================== MAPA ===================== */
@@ -789,51 +787,6 @@
       });
   }
 
-  function filasLocalidadesFiltradas(){
-    const f=getFilters();
-    return rowsLocalidadesAll.filter(r=>{
-      const okE = eqN(r.ENTIDAD, f.entidad);
-      const okM = eqN(r.MUNICIPIO, f.municipio);
-      const okL = eqN(r.LOCALIDAD, f.localidad);
-      return okE && okM && okL;
-    });
-  }
-
-  function renderTablaLocalidades(){
-    const data = filasLocalidadesFiltradas();
-    const cfg = {
-      data,
-      columns: [
-        { title: 'Entidad', data: 'ENTIDAD' },
-        { title: 'Municipio', data: 'MUNICIPIO' },
-        { title: 'Localidad', data: 'LOCALIDAD' },
-        { title: 'Hogares', data: 'hogares', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: 'Población Objetivo', data: 'quiere_estufa', render: d => Number(d||0).toLocaleString('es-MX') },
-        { title: '% Población que requiere estufa', data: 'porc_quiere', render: d => `${Number(d||0).toFixed(1)}%` }
-      ],
-      pageLength: 10, responsive: true, language: {
-        decimal: ",", thousands: ".",
-        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-        infoEmpty: "Mostrando 0 a 0 de 0 registros",
-        infoFiltered: "(filtrado de _MAX_ en total)",
-        lengthMenu: "Mostrar _MENU_",
-        loadingRecords: "Cargando...",
-        processing: "Procesando...",
-        search: "Buscar:",
-        zeroRecords: "No se encontraron registros",
-        paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-      },
-      dom: 'ftip'
-    };
-    if(dtLocalidades){
-      dtLocalidades.clear();
-      dtLocalidades.rows.add(data).draw();
-    }else{
-      dtLocalidades = new DataTable('#tablaLocalidades', cfg);
-    }
-  }
-
-  /* ===================== Tabla simple (legacy) ===================== */
   let dt;
   function renderTable(rows){
     const data=rows.map(r=>({
@@ -846,7 +799,6 @@
     if(dt){ dt.clear(); dt.rows.add(data).draw(); }
   }
 
-  /* ===================== REFRESH GENERAL ===================== */
   function renderAll(){
     const rows=applyFilters(DATA.concat(SYNTH));
     renderKPIs(rows);
@@ -871,13 +823,11 @@
   cargarCensoCSV_yCombos();
   initBitacoraEjemplo();
 
-  // Listeners filtros/cascadas + regeneración sintética
   $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_municipio').addEventListener('change',()=>{ cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
-  // Leyenda
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
@@ -898,10 +848,8 @@
     setTimeout(()=>legend.addTo(map),1000);
   })();
 
-  // Cargar geo
   loadLocalidades();
 
-  // Lightbox
   const lightboxEl = document.createElement('div');
   lightboxEl.className = 'lightbox';
   lightboxEl.innerHTML = `<button class="close" aria-label="Cerrar" title="Cerrar (Esc)">&times;</button><img alt="">`;
@@ -910,8 +858,7 @@
   lightboxEl.addEventListener('click',e=>{ if(e.target===lightboxEl || e.target.classList.contains('close')) lightboxEl.classList.remove('open'); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightboxEl.classList.remove('open'); });
 
-  /* ====== Pastel interactivo (integrado) ====== */
-  // Datos (modifica cuanto necesites)
+  /* ====== Pastel interactivo (solo afecta a su propio chart) ====== */
   const ESTADOS = [
     { nombre: "Michoacán",       meta: 17500, construidas: 8200,  color: "#9F2241" },
     { nombre: "San Luis Potosí", meta: 12000, construidas: 6400,  color: "#B6864D" },
@@ -921,20 +868,22 @@
   ];
   const META_NACIONAL = 1_000_000;
 
-  // Plugin para texto central
+  // Plugin restringido al doughnut y solo si está habilitado
   const centerTextPlugin = {
     id: 'centerText',
     afterDraw(chart, args, opts){
-      const {ctx} = chart;
+      if (chart.config.type !== 'doughnut') return;
+      if (!opts || !opts.enabled || !opts.text) return;
       const meta = chart.getDatasetMeta(0);
-      if(!meta || !meta.data || !meta.data.length) return;
+      if(!meta || !meta.data || !meta.data[0]) return;
+      const {ctx} = chart;
       const {x,y} = meta.data[0];
       ctx.save();
       ctx.fillStyle = opts.color || getCss('--azul') || '#10312B';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = '700 26px "Noto Sans", sans-serif';
-      ctx.fillText((opts.text || '1,000,000'), x, y - 6);
+      ctx.fillText(opts.text, x, y - 6);
       if (opts.subtext){
         ctx.font = '600 12px "Noto Sans", sans-serif';
         ctx.fillText(opts.subtext, x, y + 16);
@@ -946,6 +895,7 @@
 
   const ctxMeta = document.getElementById('pastelMeta');
   const offsets = ESTADOS.map(()=>0);
+  let selectedIdx = null; // estado seleccionado
 
   const chartMeta = new Chart(ctxMeta, {
     type: 'doughnut',
@@ -983,35 +933,51 @@
             }
           }
         },
-        centerText: { text: META_NACIONAL.toLocaleString('es-MX'), subtext: 'Meta nacional' }
+        centerText: { enabled:true, text: META_NACIONAL.toLocaleString('es-MX'), subtext: 'Meta nacional' }
       },
       onClick: (evt) => {
         const hit = chartMeta.getElementsAtEventForMode(evt, 'nearest', {intersect:true}, true);
-        if(!hit.length) return;
+        if(!hit.length){
+          // Click en el centro o fuera -> des-seleccionar
+          selectedIdx = null;
+          offsets.fill(0);
+          updateCenterText();
+          chartMeta.update();
+          return;
+        }
         const idx = hit[0].index;
         // expandir/cerrar
-        offsets.forEach((_,i)=> offsets[i] = (i===idx ? (offsets[i]?0:20) : 0));
+        selectedIdx = (selectedIdx===idx) ? null : idx;
+        offsets.forEach((_,i)=> offsets[i] = (i===selectedIdx ? 20 : 0));
+        actualizarPanel(selectedIdx);
+        updateCenterText();
         chartMeta.update();
-        actualizarPanel(idx);
       }
     }
   });
 
-  // leyenda manual
+  // leyenda manual (también selecciona)
   const legendEl = document.getElementById('legendMeta');
   ESTADOS.forEach((e,i)=>{
     const chip = document.createElement('div');
     chip.className = 'chip';
     chip.innerHTML = `<span class="dot" style="background:${e.color}"></span>${e.nombre}`;
     chip.onclick = ()=>{
-      offsets.forEach((_,j)=> offsets[j] = (j===i ? (offsets[j]?0:20) : 0));
+      selectedIdx = (selectedIdx===i) ? null : i;
+      offsets.forEach((_,j)=> offsets[j] = (j===selectedIdx ? 20 : 0));
+      actualizarPanel(selectedIdx);
+      updateCenterText();
       chartMeta.update();
-      actualizarPanel(i);
     };
     legendEl.appendChild(chip);
   });
 
   function actualizarPanel(idx){
+    if(idx==null){
+      document.querySelector('#detalleMeta .estado').textContent = 'Selecciona un estado del gráfico';
+      ['metaEstado','construidasEstado','faltanEstado','avanceEstado'].forEach(id=> document.getElementById(id).textContent='—');
+      return;
+    }
     const e = ESTADOS[idx];
     const faltan = Math.max(0, e.meta - e.construidas);
     const pct = e.meta ? (e.construidas/e.meta*100) : 0;
@@ -1020,6 +986,19 @@
     document.getElementById('construidasEstado').textContent = fmt(e.construidas);
     document.getElementById('faltanEstado').textContent = fmt(faltan);
     document.getElementById('avanceEstado').textContent = `${pct.toFixed(1)}%`;
+  }
+
+  // Actualiza el texto central (1,000,000 o remanente al seleccionar rebanada)
+  function updateCenterText(){
+    const opts = chartMeta.options.plugins.centerText;
+    if(selectedIdx==null){
+      opts.text = META_NACIONAL.toLocaleString('es-MX');
+      opts.subtext = 'Meta nacional';
+    }else{
+      const restante = META_NACIONAL - (ESTADOS[selectedIdx]?.meta || 0);
+      opts.text = restante.toLocaleString('es-MX');
+      opts.subtext = `Remanente sin ${ESTADOS[selectedIdx].nombre}`;
+    }
   }
 </script>
 </body>
