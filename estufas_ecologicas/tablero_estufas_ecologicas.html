@@ -258,7 +258,7 @@
     {id:"EST-0004", programa:"Bienestar",              proveedor:"HogarLimpio", modelo:"Modelo C", entidad:"Michoacán", municipio:"Nahuatzen",    lat:19.643,  lng:-101.861,  estatus:"Instalada",      fecha_instalacion:"2021-07-22", garantia_fin:"2023-07-22", visita_ult_fecha:"2023-12-01", visita_ult_hallazgo:"OK",            consumo_base:110, consumo_post:65},
     {id:"EST-0005", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo B", entidad:"Michoacán", municipio:"Quiroga",     lat:19.6638, lng:-101.5250, estatus:"Instalada",      fecha_instalacion:"2024-03-05", garantia_fin:"2026-03-05", visita_ult_fecha:"2024-06-18", visita_ult_hallazgo:"OK",            consumo_base:140, consumo_post:75},
     {id:"EST-0006", programa:"Calor Seguro",           proveedor:"BioEstufa MX", modelo:"Modelo C", entidad:"Michoacán", municipio:"Los Reyes",   lat:19.595,  lng:-102.478,  estatus:"Baja",           fecha_instalacion:"2020-05-12", garantia_fin:"2022-05-12", visita_ult_fecha:"2022-06-01", visita_ult_hallazgo:"No operativa",  consumo_base:115, consumo_post:115},
-    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantia_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
+    {id:"EST-0007", programa:"Transición Energética",  proveedor:"EcoCalor SA",  modelo:"Modelo A", entidad:"Michoacán", municipio:"Paracho",     lat:19.670,  lng:-102.089,  estatus:"Instalada",      fecha_instalacion:"2023-12-30", garantía_fin:"2025-12-30", visita_ult_fecha:"2024-05-10", visita_ult_hallazgo:"OK",            consumo_base:118, consumo_post:62}
   ];
 </script>
 
@@ -923,9 +923,6 @@
   lightboxEl.addEventListener('click',e=>{ if(e.target===lightboxEl || e.target.classList.contains('close')) lightboxEl.classList.remove('open'); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightboxEl.classList.remove('open'); });
 
-
-  /* ===================== DONUT META NACIONAL ===================== */
-  <script>
   /* ===================== DONUT META NACIONAL ===================== */
   const META_NAC = 1000000;
 
@@ -940,12 +937,12 @@
 
   let donutChart = null;
   let donutCenter = { value: META_NAC, label: 'Meta nacional' };
-  let selectedIndex = -1; // índice del dataset (sin contar "otros" será 0..4)
+  let selectedIndex = -1;
 
-  // ===== Texto grande al centro (formato anterior) =====
   const centerText = {
     id: 'centerText',
     afterDraw(chart){
+      if(!chart.chartArea) return;
       const {ctx, chartArea:{width,height}} = chart;
       ctx.save();
       ctx.textAlign='center';
@@ -962,7 +959,6 @@
     return getAllRows().filter(r => (r.entidad||'').toLowerCase() === entidadNombre.toLowerCase() && r.estatus==='Instalada').length;
   }
 
-  // Vincula Michoacán a lo que muestre el KPI “Estufas instaladas”
   function linkMichoacanToKPI(){
     const k = Number(String(document.getElementById('k_estufas')?.textContent||'').replace(/[^\d]/g,''));
     const mich = ESTADOS.find(e=>e.key==='mich');
@@ -980,7 +976,6 @@
     return Math.max(0, META_NAC - sumaSel);
   }
 
-  // Leyenda lateral
   function buildStateList(){
     const UL = document.getElementById('stateList');
     UL.innerHTML = '';
@@ -999,7 +994,6 @@
     });
   }
 
-  // Mini panel (sin NaN cuando no hay selección)
   function setMini(meta,built){
     const $m = id => document.getElementById(id);
     if(meta==null || isNaN(Number(meta))){
@@ -1019,10 +1013,8 @@
     $m('miniPct').textContent = pct;
   }
 
-  // Distribución/orden como en la imagen: arrancar "Otros" arriba (12 en punto)
   function datasetOrdenado(){
     const otros = otrosValor();
-    // Orden en el pastel: Otros, Oaxaca, Guerrero, Chiapas, Michoacán, SLP
     const orderKeys = ['OTROS','oax','gro','chi','mich','slp'];
     const data=[], colors=[], labels=[];
     orderKeys.forEach(k=>{
@@ -1047,48 +1039,43 @@
           data: pack.data,
           backgroundColor: pack.colors,
           borderWidth: 0,
-          borderRadius: 8,      // bordes redondeados (estilo anterior)
+          borderRadius: 8,
           hoverOffset: 8,
           offset: new Array(pack.data.length).fill(0)
         }]
       },
       options:{
         maintainAspectRatio:false,
-        cutout:'70%',           // aro grueso como el anterior
-        rotation: -Math.PI/2,   // inicia arriba (12 en punto)
+        cutout:'70%',
+        rotation: -Math.PI/2,
         plugins:{ legend:{ display:false },
                   tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${Number(ctx.parsed||0).toLocaleString('es-MX')}` } } }
       },
       plugins:[centerText]
     });
 
-    // Click en el pastel
     document.getElementById('pastelMeta').onclick = (evt)=>{
       const el = donutChart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
       if(!el.length){ resetSelection(); return; }
       const idx = el[0].index;        // 0 es "Otros"
-      if(idx===0){ resetSelection(); return; } // clic en otros -> reset
-      handleSliceClick(idx-1);        // mapeamos 1..5 => 0..4 de ESTADOS
+      if(idx===0){ resetSelection(); return; }
+      handleSliceClick(idx-1);
     };
   }
 
   function handleSliceClick(estadoIndex){
-    selectedIndex = estadoIndex;              // 0..4 en ESTADOS
+    selectedIndex = estadoIndex;
     const e = ESTADOS[selectedIndex];
 
-    // Centro: resto nacional una vez descontada la meta del estado
     donutCenter.value = Math.max(0, META_NAC - Number(e.meta||0));
     donutCenter.label = 'Resto nacional';
 
-    // offsets (resalta la rebanada seleccionada)
     const offs = new Array(ESTADOS.length+1).fill(0);
-    offs[selectedIndex+1] = 14; // +1 porque 0 es "Otros"
+    offs[selectedIndex+1] = 14; // +1 por "Otros"
     donutChart.data.datasets[0].offset = offs;
 
-    // mini panel
     setMini(e.meta, e.built);
 
-    // estado activo en lista
     document.querySelectorAll('#stateList li').forEach(li=>{
       li.classList.toggle('active', Number(li.dataset.index)===selectedIndex);
     });
@@ -1116,7 +1103,6 @@
 
   // Inicializar donut
   initDonut();
-  </script>
 </script>
 </body>
 </html>
