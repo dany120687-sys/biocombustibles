@@ -64,7 +64,7 @@
     .thumb img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:zoom-in}
     .thumb figcaption{font-size:10pt;margin-top:6px;color:var(--gris-700)}
 
-    /* DataTables */
+    /* DataTables generales */
     table.dataTable thead th{background:#fff;color:var(--azul)}
     table.dataTable tbody tr:hover{background:#fafafa}
 
@@ -98,7 +98,7 @@
     #tablaBitacora{ width:100% !important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.04); }
     #tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg,var(--vino),#8b0e27); color:#fff; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1; }
     #tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top; }
-    #tablaBitacora tbody tr:nth-child(even){ background:var(--gris); }
+    #tablaBitacora tbody tr:nth-child(even){ background:#f6f7f9; }
     #tablaBitacora tbody tr:hover{ background:#eef3ff; }
 
     .dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0; }
@@ -111,8 +111,8 @@
     #seccion-meta{ padding:14px !important; }
     .meta-grid{
       display:grid;
-      grid-template-columns:minmax(420px,1fr) 320px; /* mantiene tamaño del contenedor, pero acerca el panel */
-      gap:8px;                      /* más cerca del donut */
+      grid-template-columns:minmax(420px,1fr) 320px; /* acerca el panel al donut sin cambiar el ancho exterior */
+      gap:8px;
       align-items:center;
     }
     #pastelMeta{ height:300px !important; max-height:320px; display:block; }
@@ -200,9 +200,10 @@
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
-      <div class="card" style="overflow:auto">
-        <h2>Bitácora de actividades</h2>
-        <table id="tablaBitacora" class="display" style="width:100%"></table>
+      <!-- Espacio reservado donde estaba la Bitácora -->
+      <div class="card" style="min-height:220px">
+        <h2>Espacio reservado</h2>
+        <p style="color:var(--gris-700);margin:6px 0 0">Módulo en preparación.</p>
       </div>
       <div id="tab-seg" class="tab-pane active">
         <table id="tablaSeg" class="display" style="width:100%"></table>
@@ -229,6 +230,12 @@
         </div>
       </aside>
     </div>
+  </section>
+
+  <!-- ===== NUEVA UBICACIÓN: Bitácora debajo del pastel ===== -->
+  <section class="card" id="seccion-bitacora">
+    <h2>Bitácora de actividades</h2>
+    <table id="tablaBitacora" class="display" style="width:100%"></table>
   </section>
 
   <!-- SECCIÓN DATOS DETALLADOS -->
@@ -648,15 +655,63 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
-  /* ========= Bitácora y tablas (omito comentarios para abreviar) ========= */
+  /* ========= Bitácora (debajo del pastel) ========= */
   let dtBitacora;
-  const BITACORA_DATA=[{"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","beneficiario":"María Pérez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-07-29","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Sin novedad"}, {"fecha":"2025-07-28","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","beneficiario":"Juan López","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Pendientes","fecha_inicio":"2025-07-30","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Falta entregar accesorios"}];
+  const BITACORA_DATA = [
+    {"fecha":"28/07/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","promotor":"Juan Pablo","beneficiario":"María Pérez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"29/07/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Sin novedad"},
+    {"fecha":"28/07/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","promotor":"Ariana","beneficiario":"Juan López","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Pendientes","fecha_inicio":"30/07/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Falta entregar accesorios"},
+    {"fecha":"30/07/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"San Felipe","promotor":"Ernesto","beneficiario":"Rosa García","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"31/07/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Media","observaciones":"Humo mínimo en arranque"},
+    {"fecha":"02/08/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","promotor":"Teresa","beneficiario":"Pedro Hernández","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"03/08/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Capacitación concluida"},
+    {"fecha":"02/08/2025","entidad":"Michoacán","municipio":"Paracho","localidad":"Aranza","promotor":"Guadalupe","beneficiario":"Lucía Martínez","estatus":"Instalación","espacio_listo":"No","materiales":"Parcial","fecha_inicio":"05/08/2025","funcion":"N/A","piezas":"Incompletas","satisfaccion":"N/A","observaciones":"Adecuar salida de humo"},
+    {"fecha":"03/08/2025","entidad":"Michoacán","municipio":"Paracho","localidad":"Cherán","promotor":"José","beneficiario":"Miguel Torres","estatus":"Capacitación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"04/08/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Se entregó tríptico"},
+    {"fecha":"04/08/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"Cocucho","promotor":"Paola","beneficiario":"Ana López","estatus":"Seguimiento","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"04/08/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Ajuste de campana"},
+    {"fecha":"05/08/2025","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","promotor":"María","beneficiario":"José Ramírez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"05/08/2025","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Listo para entrega final"}
+  ];
   function initBitacoraEjemplo(){
-    const dtLang={decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
-    if (dtBitacora) { dtBitacora.clear(); dtBitacora.rows.add(BITACORA_DATA).draw(); }
-    else { dtBitacora = new DataTable('#tablaBitacora',{data:BITACORA_DATA,columns:[{title:'Fecha',data:'fecha'},{title:'Entidad',data:'entidad'},{title:'Municipio',data:'municipio'},{title:'Localidad',data:'localidad'},{title:'Beneficiario / Hogar',data:'beneficiario'},{title:'Estatus',data:'estatus'}],pageLength:8,responsive:true,language:dtLang,dom:'ftip'}); }
+    const dtLang = {
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    };
+
+    if (dtBitacora) {
+      dtBitacora.clear();
+      dtBitacora.rows.add(BITACORA_DATA).draw();
+    } else {
+      dtBitacora = new DataTable('#tablaBitacora', {
+        data: BITACORA_DATA,
+        columns: [
+          { title: 'Fecha', data: 'fecha' },
+          { title: 'Entidad', data: 'entidad' },
+          { title: 'Municipio', data: 'municipio' },
+          { title: 'Localidad', data: 'localidad' },
+          { title: 'Promotor', data: 'promotor' },
+          { title: 'Beneficiario', data: 'beneficiario' },
+          { title: 'Estatus', data: 'estatus' },
+          { title: 'Espacio listo', data: 'espacio_listo' },
+          { title: 'Materiales', data: 'materiales' },
+          { title: 'Fecha inicio', data: 'fecha_inicio' },
+          { title: 'Funcionamiento', data: 'funcion' },
+          { title: 'Checklist piezas', data: 'piezas' },
+          { title: 'Satisfacción', data: 'satisfaccion' },
+          { title: 'Observaciones', data: 'observaciones' }
+        ],
+        pageLength: 8,
+        responsive: true,
+        language: dtLang,
+        dom: 'ftip'
+      });
+    }
   }
 
+  /* ========= Tablas Censo ========= */
   let rowsLocalidadesAll=[], dtLocalidades=null;
   function initTablasCenso(){
     const dtLang={decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
@@ -672,21 +727,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const data=filasLocalidadesFiltradas();
     const cfg={data,columns:[{title:'Entidad',data:'ENTIDAD'},{title:'Municipio',data:'MUNICIPIO'},{title:'Localidad',data:'LOCALIDAD'},{title:'Hogares',data:'hogares',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Población Objetivo',data:'quiere_estufa',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'% Población que requiere estufa',data:'porc_quiere',render:d=>`${Number(d||0).toFixed(1)}%`}] ,pageLength:10,responsive:true,language:{decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}},dom:'ftip'};
     if(dtLocalidades){ dtLocalidades.clear(); dtLocalidades.rows.add(data).draw(); } else { dtLocalidades=new DataTable('#tablaLocalidades',cfg); }
-  }
-
-  /* ========= Refresh general ========= */
-  function renderAll(){
-    const rows=applyFilters(getAllRows());
-    renderKPIs(rows);
-    renderMap(rows);
-    renderCharts(rows);
-    renderKPIQuiereEstufa();
-    renderTable(rows);
-    updateDonut(); // <-- asegura que el donut se pinte
-  }
-  function buildWeeksFromData(){
-    const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
-    if($('#f_week') && $('#f_week').options.length<=1){ weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);}); }
   }
 
   /* ========= Donut Meta ========= */
@@ -760,9 +800,24 @@ window.addEventListener('DOMContentLoaded', () => {
   /* ========= Tabla simple (stub para compatibilidad) ========= */
   let dt; function renderTable(rows){ /* opcional */ }
 
-  /* ========= INIT ========= */
-  function buildWeeksFromData(){ const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys); if($('#f_week') && $('#f_week').options.length<=1){ weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);}); } }
+  /* ========= Render general ========= */
+  function renderAll(){
+    const rows=applyFilters(getAllRows());
+    renderKPIs(rows);
+    renderMap(rows);
+    renderCharts(rows);
+    renderKPIQuiereEstufa();
+    renderTable(rows);
+    updateDonut();
+  }
+  function buildWeeksFromData(){
+    const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
+    if($('#f_week') && $('#f_week').options.length<=1){
+      weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);});
+    }
+  }
 
+  /* ========= INIT ========= */
   bootstrapFiltersSimple(); buildWeeksFromData(); renderAll(); initTablasCenso(); cargarCensoCSV_yCombos(); initBitacoraEjemplo();
 
   // listeners
