@@ -28,6 +28,7 @@
       --guinda:#9F2241; --guinda-osc:#691C32; --azul:#10312B;
       --dorado:#BC955C; --beige:#DDC9A3; --gris-700:#6F7271; --gris-500:#98989A;
       --verde:#8FAB85; --fondo:#ffffff; --panel:#f6f7f8; --borde:#eaecf0; --texto:#1b1f29;
+      --vino:#7A0019; --oro:#B6864D; --gris:#f6f7f9;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:11pt;line-height:1.35;color:var(--texto);background:var(--fondo)}
@@ -84,43 +85,39 @@
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw; max-height:86vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4)}
     .lightbox .close{position:absolute; top:16px; right:20px; color:#fff; font-size:32px; line-height:1; cursor:pointer; background:transparent; border:0; padding:6px 10px;}
-    .lightbox .close:focus{ outline:2px solid #fff3; outline-offset:2px; border-radius:6px; }
 
-    /* ====== Tipografía y colores institucionales ====== */
-    :root{ --vino:#7A0019; --oro:#B6864D; --gris:#f6f7f9; --borde:#e3e6ea; --texto:#1c1f23; }
+    /* Títulos */
     h1, h2, h3, .title, .card h2 { font-family: 'Patria','Noto Sans',serif; letter-spacing:.2px; }
     .card h2{ font-size:1.35rem; margin:0 0 .75rem 0; color:var(--vino); }
+    .card{ box-shadow:0 4px 14px rgba(0,0,0,.05); }
 
-    /* ====== Tarjetas ====== */
-    .card{ border:1px solid var(--borde); border-radius:16px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
-
-    /* ====== Tabla Bitácora ====== */
+    /* Bitácora */
     #tablaBitacora{ width:100% !important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.04); }
     #tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg,var(--vino),#8b0e27); color:#fff; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1; }
     #tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top; }
     #tablaBitacora tbody tr:nth-child(even){ background:var(--gris); }
     #tablaBitacora tbody tr:hover{ background:#eef3ff; }
-
     .dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0; }
     .dataTables_wrapper .dataTables_filter input{ border:1px solid var(--borde); border-radius:999px; padding:8px 12px; outline:none; }
     .dataTables_wrapper .dataTables_length select{ border:1px solid var(--borde); border-radius:10px; padding:6px 10px; }
     .dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px !important; border:1px solid var(--borde) !important; background:#fff !important; margin:0 2px !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
 
-    /* ====== Pastel meta — estilos de la tarjeta ====== */
-    .meta-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:16px}
+    /* ===== Donut: Meta nacional y avance por estado ===== */
+    .meta-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:16px; align-items:stretch}
     @media (max-width:1000px){ .meta-grid{grid-template-columns:1fr} }
-    .detalle{
-      border:1px solid var(--borde); border-radius:14px; padding:14px; background:var(--gris);
-    }
-    .detalle .estado{font-weight:800; color:var(--azul); font-size:1.05rem; margin-bottom:6px}
-    .k-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #dcdfe4}
-    .k-row:last-child{border-bottom:0}
-    .big{font-size:1.2rem; font-weight:800}
-    .leyenda{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
-    .chip{display:flex; align-items:center; gap:6px; font-size:.95rem; cursor:pointer}
-    .dot{width:12px; height:12px; border-radius:50%}
-    #pastelMeta{max-height:420px}
+    #pastelMeta{min-height:360px; display:block}
+    .sidecard{background:#f3f4f6; border:1px solid var(--borde); border-radius:14px; padding:12px}
+    .sidecard h3{margin:2px 0 8px 0; font-size:1rem; color:var(--vino)}
+    .state-list{list-style:none; margin:0; padding:0}
+    .state-list li{display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid #e9ebef; cursor:pointer}
+    .state-list li:last-child{border-bottom:0}
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block}
+    .state-list li.active{background:#fff}
+    .legend-mini{margin-top:10px; font-size:.95rem}
+    .legend-mini div{display:flex; justify-content:space-between; padding:6px 8px; border-bottom:1px dashed #e5e7eb}
+    .legend-mini div:last-child{border-bottom:0}
+    .muted{color:#6b7280}
   </style>
 </head>
 <body>
@@ -203,20 +200,22 @@
     </div>
   </section>
 
-  <!-- ====== NUEVA TARJETA: Pastel interactivo ====== -->
-  <section class="card" id="seccion-pastel" style="margin-top:16px">
+  <!-- ======= META NACIONAL Y AVANCE POR ESTADO (DONUT) ======= -->
+  <section class="card" id="seccion-meta">
     <h2>Meta nacional y avance por estado</h2>
     <div class="meta-grid">
-      <div>
-        <canvas id="pastelMeta"></canvas>
-        <div class="leyenda" id="legendMeta"></div>
-      </div>
-      <div class="detalle" id="detalleMeta">
-        <div class="estado">Selecciona un estado del gráfico</div>
-        <div class="k-row"><span>Meta del estado</span><span class="big" id="metaEstado">—</span></div>
-        <div class="k-row"><span>Estufas construidas</span><span class="big" id="construidasEstado">—</span></div>
-        <div class="k-row"><span>Faltan para la meta</span><span class="big" id="faltanEstado">—</span></div>
-        <div class="k-row"><span>Avance</span><span class="big" id="avanceEstado">—</span></div>
+      <canvas id="pastelMeta"></canvas>
+      <div class="sidecard">
+        <h3>Selecciona un estado del gráfico</h3>
+        <ul class="state-list" id="stateList">
+          <!-- dinámico -->
+        </ul>
+        <div class="legend-mini">
+          <div><span>Meta del estado</span><strong id="meta_estado_lbl" class="muted">—</strong></div>
+          <div><span>Estufas construidas</span><strong id="construidas_lbl" class="muted">—</strong></div>
+          <div><span>Faltan para la meta</span><strong id="faltan_lbl" class="muted">—</strong></div>
+          <div><span>Avance</span><strong id="avance_lbl" class="muted">—</strong></div>
+        </div>
       </div>
     </div>
   </section>
@@ -252,7 +251,7 @@
 <script>
   /* =================== Helpers & estado =================== */
   const $ = s=>document.querySelector(s);
-  const fmt = n=> n.toLocaleString('es-MX');
+  const fmt = n=> Number(n||0).toLocaleString('es-MX');
   const getCss = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   function normaliza(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
   const gProp = (p, ...keys) => { for (const k of keys){ if (p && p[k]!=null && p[k]!=='') return p[k]; } return ''; };
@@ -474,6 +473,7 @@
     regenerateSyntheticByMunicipio();
     buildWeeksFromData();
     renderAll();
+    updateConstruidasPorEstado(); // << para el donut
   }
 
   /* =================== Aplicación de filtros =================== */
@@ -501,6 +501,7 @@
     const elS = document.getElementById('k_seguimiento'); if (elS) elS.textContent = seg + " (" + (total ? Math.round(seg/total*100) : 0) + "%)";
   }
 
+  // ====== KPI “Quiere estufa” y enlace a rebanada Michoacán del donut ======
   function renderKPIQuiereEstufa(){
     const f = getFilters();
     let totalQuiere = 0;
@@ -524,6 +525,22 @@
       });
     }
     const elQ = document.getElementById('k_quiere_estufa'); if (elQ) elQ.textContent = fmt(totalQuiere);
+
+    // Si ya existe el donut, actualiza la rebanada de Michoacán con este valor
+    if (window.ESTADOS) {
+      const iMicho = ESTADOS.findIndex(e => normaliza(e.nombre) === 'michoacan');
+      if (iMicho >= 0) {
+        ESTADOS[iMicho].meta = totalQuiere;
+        if (window.chartMeta) {
+          chartMeta.data.datasets[0].data = ESTADOS.map(e => e.meta);
+          chartMeta.update();
+          if (typeof selectedIdx !== 'undefined' && selectedIdx === iMicho) {
+            updateCenterText();
+          }
+          renderStateList();
+        }
+      }
+    }
   }
 
   /* ===================== MAPA ===================== */
@@ -846,6 +863,192 @@
     if(dt){ dt.clear(); dt.rows.add(data).draw(); }
   }
 
+  /* ===================== DONUT: Meta Nacional ===================== */
+  const META_NACIONAL = 1000000;
+
+  // Paleta de colores para las rebanadas
+  const SLICE_COLORS = ['#9F2241','#B6864D','#8FAB85','#6F7271','#10312B'];
+
+  // Estados iniciales (la meta de Michoacán se sobreescribe con el KPI de “quiere estufa”)
+  let ESTADOS = [
+    { nombre:'Michoacán',        meta:17582, construidas:0 },
+    { nombre:'San Luis Potosí',  meta:12000, construidas:0 },
+    { nombre:'Oaxaca',           meta:250000, construidas:0 },
+    { nombre:'Guerrero',         meta:180000, construidas:0 },
+    { nombre:'Chiapas',          meta:350000, construidas:0 }
+  ];
+
+  let chartMeta = null;
+  let selectedIdx = null;
+
+  function updateConstruidasPorEstado(){
+    const rows = getAllRows();
+    // Cuenta construidas por ENTIDAD (del demo solo hay Michoacán)
+    const installedByEnt = {};
+    rows.forEach(r => {
+      if (r.estatus === 'Instalada') {
+        installedByEnt[r.entidad] = (installedByEnt[r.entidad] || 0) + 1;
+      }
+    });
+    ESTADOS.forEach(e => { e.construidas = installedByEnt[e.nombre] || 0; });
+    if (chartMeta){
+      // No movemos las metas aquí, solo refrescamos los labels laterales si hay selección
+      if (selectedIdx !== null) updateCenterText();
+      renderStateList();
+    }
+  }
+
+  // Renderiza lista lateral (para ver datos y resaltar el seleccionado)
+  function renderStateList(){
+    const ul = $('#stateList'); if(!ul) return;
+    ul.innerHTML = '';
+    ESTADOS.forEach((e, i) => {
+      const li = document.createElement('li');
+      li.className = (selectedIdx===i ? 'active':'');
+      li.innerHTML = `<span class="dot" style="background:${SLICE_COLORS[i%SLICE_COLORS.length]}"></span>
+                      <span style="flex:1">${e.nombre}</span>
+                      <strong>${fmt(e.meta)}</strong>`;
+      li.onclick = ()=> selectSlice(i);
+      ul.appendChild(li);
+    });
+  }
+
+  // Plugin local para el texto central y el “arco de avance” interno
+  const CenterAndProgressPlugin = {
+    id: 'CenterAndProgressPlugin',
+    afterDatasetsDraw(chart, args, pluginOptions){
+      if (chart.canvas.id !== 'pastelMeta') return;
+      const {ctx, chartArea:{width,height}, _metasets} = chart;
+
+      // Texto central
+      ctx.save();
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+
+      const centerX = chart.getDatasetMeta(0).data[0].x;
+      const centerY = chart.getDatasetMeta(0).data[0].y;
+
+      let big = META_NACIONAL, small1='Meta nacional', small2='';
+      if (selectedIdx!==null){
+        const e = ESTADOS[selectedIdx];
+        big = e.meta;
+        const faltan = Math.max(0, e.meta - e.construidas);
+        small1 = `Construidas: ${fmt(e.construidas)} · Faltan: ${fmt(faltan)}`;
+        const pct = e.meta>0 ? ((e.construidas/e.meta)*100).toFixed(1) : '0.0';
+        small2 = `Avance: ${pct}%`;
+      }
+
+      ctx.fillStyle = '#0b0f17';
+      ctx.font = '700 26px Noto Sans, system-ui, Arial';
+      ctx.fillText(fmt(big), centerX, centerY - 8);
+      ctx.fillStyle = '#4b5563';
+      ctx.font = '400 12px Noto Sans, system-ui, Arial';
+      ctx.fillText(small1, centerX, centerY + 14);
+      if (small2) ctx.fillText(small2, centerX, centerY + 30);
+      ctx.restore();
+
+      // Arco interno de avance (solo si hay seleccionado)
+      if (selectedIdx!==null){
+        const meta0 = chart.getDatasetMeta(0);
+        const el = meta0.data[selectedIdx];
+        if (!el) return;
+
+        const e = ESTADOS[selectedIdx];
+        const frac = e.meta>0 ? Math.min(1, Math.max(0, e.construidas/e.meta)) : 0;
+
+        const sa = el.startAngle;
+        const ea = el.endAngle;
+        const ang = sa + (ea-sa)*frac;
+
+        const inner = el.innerRadius + 2;
+        const outer = inner + 8;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(el.x, el.y, (inner+outer)/2, sa, ang, false);
+        ctx.lineWidth = (outer-inner);
+        ctx.strokeStyle = SLICE_COLORS[selectedIdx % SLICE_COLORS.length];
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+
+  function selectSlice(i){
+    selectedIdx = (selectedIdx===i ? null : i);
+    if (chartMeta){
+      chartMeta.update();
+      updateCenterText();
+      // desplazar visualmente la rebanada seleccionada
+      chartMeta.options.plugins.tooltip.enabled = (selectedIdx===null);
+      renderStateList();
+    }
+  }
+
+  function updateCenterText(){
+    const e = (selectedIdx===null? null : ESTADOS[selectedIdx]);
+    const metaLbl = $('#meta_estado_lbl'), consLbl = $('#construidas_lbl'),
+          faltLbl = $('#faltan_lbl'),  avcLbl = $('#avance_lbl');
+    if (!e){
+      metaLbl.textContent = fmt(META_NACIONAL);
+      consLbl.textContent = '—';
+      faltLbl.textContent = '—';
+      avcLbl.textContent   = '—';
+      metaLbl.classList.add('muted'); consLbl.classList.add('muted');
+      faltLbl.classList.add('muted'); avcLbl.classList.add('muted');
+      return;
+    }
+    const faltan = Math.max(0, e.meta - e.construidas);
+    const pct = e.meta>0 ? ((e.construidas/e.meta)*100).toFixed(1)+'%' : '0.0%';
+    metaLbl.textContent = fmt(e.meta);
+    consLbl.textContent = fmt(e.construidas);
+    faltLbl.textContent = fmt(faltan);
+    avcLbl.textContent  = pct;
+    metaLbl.classList.remove('muted'); consLbl.classList.remove('muted');
+    faltLbl.classList.remove('muted'); avcLbl.classList.remove('muted');
+  }
+
+  function initDonutMeta(){
+    const ctx = $('#pastelMeta');
+    if (!ctx) return;
+
+    chartMeta = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels: ESTADOS.map(e=>e.nombre),
+        datasets:[{
+          data: ESTADOS.map(e=>e.meta),
+          backgroundColor: SLICE_COLORS,
+          borderColor:'#fff',
+          borderWidth:2,
+          offset: (ctx)=> (ctx.dataIndex===selectedIdx? 12:0)
+        }]
+      },
+      options:{
+        maintainAspectRatio:false,
+        cutout: '62%',
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:true}
+        },
+        onClick:(evt, els)=>{
+          if (els && els.length){
+            const i = els[0].index;
+            selectSlice(i);
+          } else {
+            // click en el hueco: deseleccionar
+            selectSlice(null);
+          }
+        }
+      },
+      plugins:[CenterAndProgressPlugin] // <- sólo para ESTE gráfico
+    });
+
+    renderStateList();
+    updateCenterText();
+  }
+
   /* ===================== REFRESH GENERAL ===================== */
   function renderAll(){
     const rows=applyFilters(DATA.concat(SYNTH));
@@ -853,7 +1056,8 @@
     renderMap(rows);
     renderCharts(rows);
     renderTable(rows);
-    renderKPIQuiereEstufa();
+    renderKPIQuiereEstufa();     // <- esto ahora también actualiza la rebanada de Michoacán
+    updateConstruidasPorEstado(); // <- refresca “construidas” por estado para el donut
   }
 
   function buildWeeksFromData(){
@@ -870,6 +1074,7 @@
   initTablasCenso();
   cargarCensoCSV_yCombos();
   initBitacoraEjemplo();
+  initDonutMeta();
 
   // Listeners filtros/cascadas + regeneración sintética
   $('#f_entidad').addEventListener('change',()=>{ cascadeMunicipios(); cascadeLocalidades(); regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
@@ -909,118 +1114,6 @@
   function openLightbox(src,alt){ const img=lightboxEl.querySelector('img'); img.src=src; img.alt=alt||''; lightboxEl.classList.add('open'); }
   lightboxEl.addEventListener('click',e=>{ if(e.target===lightboxEl || e.target.classList.contains('close')) lightboxEl.classList.remove('open'); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightboxEl.classList.remove('open'); });
-
-  /* ====== Pastel interactivo (integrado) ====== */
-  // Datos (modifica cuanto necesites)
-  const ESTADOS = [
-    { nombre: "Michoacán",       meta: 17500, construidas: 8200,  color: "#9F2241" },
-    { nombre: "San Luis Potosí", meta: 12000, construidas: 6400,  color: "#B6864D" },
-    { nombre: "Oaxaca",          meta: 40000, construidas: 21500, color: "#7E8FBD" },
-    { nombre: "Guerrero",        meta: 22000, construidas: 9800,  color: "#8FAB85" },
-    { nombre: "Chiapas",         meta: 35000, construidas: 17600, color: "#E08D79" },
-  ];
-  const META_NACIONAL = 1_000_000;
-
-  // Plugin para texto central
-  const centerTextPlugin = {
-    id: 'centerText',
-    afterDraw(chart, args, opts){
-      const {ctx} = chart;
-      const meta = chart.getDatasetMeta(0);
-      if(!meta || !meta.data || !meta.data.length) return;
-      const {x,y} = meta.data[0];
-      ctx.save();
-      ctx.fillStyle = opts.color || getCss('--azul') || '#10312B';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '700 26px "Noto Sans", sans-serif';
-      ctx.fillText((opts.text || '1,000,000'), x, y - 6);
-      if (opts.subtext){
-        ctx.font = '600 12px "Noto Sans", sans-serif';
-        ctx.fillText(opts.subtext, x, y + 16);
-      }
-      ctx.restore();
-    }
-  };
-  Chart.register(centerTextPlugin);
-
-  const ctxMeta = document.getElementById('pastelMeta');
-  const offsets = ESTADOS.map(()=>0);
-
-  const chartMeta = new Chart(ctxMeta, {
-    type: 'doughnut',
-    data: {
-      labels: ESTADOS.map(e=>e.nombre),
-      datasets: [{
-        label: 'Meta por estado',
-        data: ESTADOS.map(e=>e.meta),
-        backgroundColor: ESTADOS.map(e=>e.color),
-        borderColor: '#fff',
-        borderWidth: 2,
-        hoverOffset: 8,
-        offset: c => offsets[c.dataIndex] || 0,
-        circumference: 360,
-        rotation: -90
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      cutout: '66%',
-      plugins: {
-        legend: { display:false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const i = ctx.dataIndex, e = ESTADOS[i];
-              const faltan = Math.max(0, e.meta - e.construidas);
-              const pct = e.meta ? (e.construidas/e.meta*100) : 0;
-              return [
-                `Meta: ${fmt(e.meta)}`,
-                `Construidas: ${fmt(e.construidas)}`,
-                `Faltan: ${fmt(faltan)} (${pct.toFixed(1)}% avance)`
-              ];
-            }
-          }
-        },
-        centerText: { text: META_NACIONAL.toLocaleString('es-MX'), subtext: 'Meta nacional' }
-      },
-      onClick: (evt) => {
-        const hit = chartMeta.getElementsAtEventForMode(evt, 'nearest', {intersect:true}, true);
-        if(!hit.length) return;
-        const idx = hit[0].index;
-        // expandir/cerrar
-        offsets.forEach((_,i)=> offsets[i] = (i===idx ? (offsets[i]?0:20) : 0));
-        chartMeta.update();
-        actualizarPanel(idx);
-      }
-    }
-  });
-
-  // leyenda manual
-  const legendEl = document.getElementById('legendMeta');
-  ESTADOS.forEach((e,i)=>{
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.innerHTML = `<span class="dot" style="background:${e.color}"></span>${e.nombre}`;
-    chip.onclick = ()=>{
-      offsets.forEach((_,j)=> offsets[j] = (j===i ? (offsets[j]?0:20) : 0));
-      chartMeta.update();
-      actualizarPanel(i);
-    };
-    legendEl.appendChild(chip);
-  });
-
-  function actualizarPanel(idx){
-    const e = ESTADOS[idx];
-    const faltan = Math.max(0, e.meta - e.construidas);
-    const pct = e.meta ? (e.construidas/e.meta*100) : 0;
-    document.querySelector('#detalleMeta .estado').textContent = e.nombre;
-    document.getElementById('metaEstado').textContent = fmt(e.meta);
-    document.getElementById('construidasEstado').textContent = fmt(e.construidas);
-    document.getElementById('faltanEstado').textContent = fmt(faltan);
-    document.getElementById('avanceEstado').textContent = `${pct.toFixed(1)}%`;
-  }
 </script>
 </body>
 </html>
