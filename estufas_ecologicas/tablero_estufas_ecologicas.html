@@ -107,9 +107,17 @@
     .dataTables_wrapper .dataTables_paginate .paginate_button{ border-radius:10px !important; border:1px solid var(--borde) !important; background:#fff !important; margin:0 2px !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
 
-    /* ====== Donut Meta (estilo base, compacto como las tablas) ====== */
-    .meta-grid{ display:grid; grid-template-columns:1.2fr .8fr; gap:16px; align-items:center; }
-    .sidecard{ background:#f3f5f7; border:1px solid var(--borde); border-radius:14px; padding:14px 16px; }
+    /* ====== Donut Meta ====== */
+    #seccion-meta{ padding:14px !important; }
+    .meta-grid{
+      display:grid;
+      grid-template-columns:minmax(420px,1fr) 320px; /* mantiene tamaño del contenedor, pero acerca el panel */
+      gap:8px;                      /* más cerca del donut */
+      align-items:center;
+    }
+    #pastelMeta{ height:300px !important; max-height:320px; display:block; }
+    .sidecard{ background:#f3f5f7; border:1px solid var(--borde); border-radius:14px; padding:12px; }
+    .sidecard h3{ margin:0 0 8px 0; font-size:1rem; }
     .state-list{ list-style:none; padding:0; margin:6px 0 12px 0; display:grid; gap:6px; }
     .state-list li{ display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid var(--borde); border-radius:10px; padding:8px 10px; cursor:pointer; }
     .state-list li.active{ outline:2px solid var(--vino); }
@@ -118,14 +126,6 @@
     .legend-mini{ background:#fff; border:1px dashed var(--borde); border-radius:10px; padding:8px; display:grid; gap:6px; }
     .legend-mini div{ display:flex; justify-content:space-between; padding:6px 8px; border-radius:8px; }
     .legend-mini div span.value{ font-weight:800; }
-
-    #seccion-meta{ padding:14px !important; }
-    #pastelMeta{ height:300px !important; max-height:320px; display:block; }
-    .meta-grid{ grid-template-columns: 1fr .85fr; gap:12px; }
-    .sidecard{ padding:10px 12px; }
-    .sidecard h3{ margin:2px 0 6px 0; font-size:1rem; }
-    .state-list li{ padding:6px 8px; }
-    .legend-mini div{ padding:5px 6px; }
 
     @media (max-width:1000px){
       #pastelMeta{ height:260px !important; }
@@ -360,9 +360,6 @@
 
         csvReady = true;
         tryRegenerateSynthetic();
-
-        // <-- actualizar meta de Michoacán con censo
-        updateMichoacanMetaAndRefresh();
       },
       error:(e)=>{ console.warn('No se pudo leer Censo_estufas.csv', e); }
     });
@@ -629,9 +626,6 @@
 
       geoReady = true;
       tryRegenerateSynthetic();
-
-      // <-- actualizar meta de Michoacán con respaldo de geo si no hay CSV
-      updateMichoacanMetaAndRefresh();
     }catch(err){
       console.error(err);
       alert('No se pudo cargar la capa de Localidades.\nVerifica nombre/ubicación del archivo.');
@@ -870,6 +864,7 @@
     renderCharts(rows);
     renderTable(rows);
     renderKPIQuiereEstufa();
+    updateDonut();               // <-- refresca/crea donut después de KPI de censo
   }
 
   function buildWeeksFromData(){
@@ -893,7 +888,7 @@
   $('#f_localidad').addEventListener('change',()=>{ regenerateSyntheticByMunicipio(); renderAll(); renderTablaLocalidades(); });
   ['#f_modelo','#f_estatus','#f_week'].forEach(s=>$(s).addEventListener('change',()=>{ renderAll(); }));
 
-  // Leyenda
+  // Leyenda del mapa
   (function addLegend(){
     if(!window.L) return;
     const legend = L.control({position: 'bottomright'});
@@ -926,35 +921,36 @@
   lightboxEl.addEventListener('click',e=>{ if(e.target===lightboxEl || e.target.classList.contains('close')) lightboxEl.classList.remove('open'); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightboxEl.classList.remove('open'); });
 
-
-  /* ===================== DONUT META NACIONAL (sin “Otros”) ===================== */
+  /* ===================== DONUT META NACIONAL ===================== */
   const META_NAC = 1000000;
 
+  // Orden y colores fijos
   const ESTADOS = [
-    { key:'mich', nombre:'Michoacán',       color:'#0c2f29', meta:0,      built:0 }, // se carga del censo
-    { key:'slp',  nombre:'San Luis Potosí', color:'#b57c42', meta:12000,  built:0 },
-    { key:'oax',  nombre:'Oaxaca',          color:'#90ab84', meta:250000, built:0 },
-    { key:'gro',  nombre:'Guerrero',        color:'#7d7f7f', meta:180000, built:0 },
-    { key:'chi',  nombre:'Chiapas',         color:'#3a5f4a', meta:350000, built:0 }
+    { key:'mich', nombre:'Michoacán',      color:'#0c2f29', meta:17582,  built:0 },
+    { key:'slp',  nombre:'San Luis Potosí',color:'#b57c42', meta:12000,  built:0 },
+    { key:'oax',  nombre:'Oaxaca',         color:'#90ab84', meta:250000, built:0 },
+    { key:'gro',  nombre:'Guerrero',       color:'#7d7f7f', meta:180000, built:0 },
+    { key:'chi',  nombre:'Chiapas',        color:'#3a5f4a', meta:350000, built:0 }
   ];
+  const ORDER = ['mich','slp','oax','gro','chi']; // mismo orden para lista y dataset
 
   let donutChart = null;
   let donutCenter = { value: META_NAC, label: 'Meta nacional' };
-  let selectedIndex = -1;
+  let selectedIndex = -1; // 0..4, -1 = sin selección
 
-  // Texto centrado
+  // Texto al centro del donut
   const centerText = {
     id: 'centerText',
     afterDraw(chart){
-      if(!chart.chartArea) return;
-      const {ctx, chartArea:{width,height}} = chart;
+      const {ctx, chartArea:{left,right,top,bottom}} = chart;
+      const x=(left+right)/2, y=(top+bottom)/2;
       ctx.save();
       ctx.textAlign='center';
       ctx.fillStyle='#111';
       ctx.font='700 26px Noto Sans, Arial';
-      ctx.fillText((donutCenter.value||0).toLocaleString('es-MX'), width/2, height/2 - 6);
+      ctx.fillText((donutCenter.value||0).toLocaleString('es-MX'), x, y-6);
       ctx.font='400 12px Noto Sans, Arial';
-      ctx.fillText(donutCenter.label, width/2, height/2 + 16);
+      ctx.fillText(donutCenter.label, x, y+16);
       ctx.restore();
     }
   };
@@ -962,55 +958,25 @@
   function getBuiltFor(entidadNombre){
     return getAllRows().filter(r => (r.entidad||'').toLowerCase() === entidadNombre.toLowerCase() && r.estatus==='Instalada').length;
   }
+
+  // Meta de Michoacán = Hogares que quieren estufa (KPI censo)
+  function linkMichoacanToCenso(){
+    const k = Number(String(document.getElementById('k_quiere_estufa')?.textContent||'').replace(/[^\d]/g,''));
+    const mich = ESTADOS.find(e=>e.key==='mich');
+    if(mich && k>0){ mich.meta = k; }
+  }
+
   function refreshBuiltValues(){
     ESTADOS.forEach(e=>{
       e.built = (e.nombre==='Michoacán') ? getBuiltFor('Michoacán') : 0;
     });
   }
 
-  // Michoacán: meta desde CENSO (hogares que quieren estufa)
-  function metaCensoMichoacan(){
-    let total = 0;
-    if (CENSO_ROWS && CENSO_ROWS.length){
-      CENSO_ROWS.forEach(r=>{
-        if (normaliza(r.ENTIDAD||r.entidad)==='michoacan'){
-          total += num(r[QUIERE_COL] ?? r.quiere_estufa);
-        }
-      });
-    } else if (LOC_GEO){
-      (LOC_GEO.features||[]).forEach(({properties:p={}})=>{
-        if (normaliza(gProp(p,'ENTIDAD','entidad'))==='michoacan'){
-          total += num(p[QUIERE_COL] ?? p.quiere_estufa);
-        }
-      });
-    }
-    return total;
-  }
-
-  function updateMichoacanMetaAndRefresh(){
-    const mich = ESTADOS.find(e=>e.key==='mich');
-    const val  = metaCensoMichoacan();
-    if(mich && val>0){
-      mich.meta = val;
-      refreshDonutData(true);
-    }
-  }
-
-  // Orden (como la imagen): Oaxaca, Guerrero, Chiapas, Michoacán, SLP
-  function datasetOrdenado(){
-    const orderKeys = ['oax','gro','chi','mich','slp'];
-    const data=[], colors=[], labels=[];
-    orderKeys.forEach(k=>{
-      const e = ESTADOS.find(x=>x.key===k);
-      data.push(e.meta); colors.push(e.color); labels.push(e.nombre);
-    });
-    return {data, colors, labels};
-  }
-
   function buildStateList(){
     const UL = document.getElementById('stateList');
     UL.innerHTML = '';
-    ESTADOS.forEach((e,i)=>{
+    ORDER.forEach((k,i)=>{
+      const e = ESTADOS.find(x=>x.key===k);
       const li = document.createElement('li');
       li.dataset.index = i;
       li.innerHTML = `
@@ -1044,70 +1010,57 @@
     $m('miniPct').textContent = pct;
   }
 
+  function datasetPack(){
+    const data  = ORDER.map(k => ESTADOS.find(e=>e.key===k).meta);
+    const colors= ORDER.map(k => ESTADOS.find(e=>e.key===k).color);
+    const labels= ORDER.map(k => ESTADOS.find(e=>e.key===k).nombre);
+    return {data, colors, labels};
+  }
+
   function drawDonut(){
     const ctx = document.getElementById('pastelMeta').getContext('2d');
-    const pack = datasetOrdenado();
+    const pack = datasetPack();
 
     donutChart = new Chart(ctx, {
       type:'doughnut',
-      data:{
-        labels: pack.labels,
-        datasets:[{
-          data: pack.data,
-          backgroundColor: pack.colors,
-          borderWidth: 0,
-          borderRadius: 8,
-          hoverOffset: 8,
-          offset: new Array(pack.data.length).fill(0)
-        }]
-      },
+      data:{ labels: pack.labels, datasets:[{ data: pack.data, backgroundColor: pack.colors, borderWidth: 0, borderRadius: 8, hoverOffset: 8, offset: new Array(pack.data.length).fill(0) }] },
       options:{
         maintainAspectRatio:false,
         cutout:'70%',
         rotation: -Math.PI/2,
-        plugins:{
-          legend:{ display:false },
-          tooltip:{ callbacks:{ label:(c)=> `${c.label}: ${Number(c.parsed||0).toLocaleString('es-MX')}` } }
-        }
+        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=> `${c.label}: ${Number(c.parsed||0).toLocaleString('es-MX')}` } } }
       },
       plugins:[centerText]
     });
 
+    // Click en el pastel
     document.getElementById('pastelMeta').onclick = (evt)=>{
       const el = donutChart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
       if(!el.length){ resetSelection(); return; }
-      const idx = el[0].index;          // 0..4
+      const idx = el[0].index; // 0..4 en mismo orden
       handleSliceClick(idx);
     };
   }
 
-  function refreshDonutData(rebuildList=false){
-    const pack = datasetOrdenado();
-    if (donutChart){
-      donutChart.data.labels = pack.labels;
-      donutChart.data.datasets[0].data = pack.data;
-      donutChart.data.datasets[0].backgroundColor = pack.colors;
-      donutChart.data.datasets[0].offset = new Array(pack.data.length).fill(0);
-      donutChart.update();
-    }
-    if (rebuildList) buildStateList();
-  }
+  function handleSliceClick(i){
+    selectedIndex = i;
+    const e = ESTADOS.find(x=>x.key===ORDER[i]);
 
-  function handleSliceClick(estadoIndex){
-    selectedIndex = estadoIndex;
-    const e = ESTADOS[selectedIndex];
-
-    donutCenter.value = Math.max(0, META_NAC - Number(e.meta||0)); // resta al millón
+    // Centro: resto nacional
+    donutCenter.value = Math.max(0, META_NAC - Number(e.meta||0));
     donutCenter.label = 'Resto nacional';
 
-    const offs = new Array(ESTADOS.length).fill(0);
-    offs[selectedIndex] = 14;
+    // offsets
+    const offs = new Array(ORDER.length).fill(0);
+    offs[i] = 14;
     donutChart.data.datasets[0].offset = offs;
 
+    // mini panel
     setMini(e.meta, e.built);
 
+    // estado activo en lista
     document.querySelectorAll('#stateList li').forEach(li=>{
-      li.classList.toggle('active', Number(li.dataset.index)===selectedIndex);
+      li.classList.toggle('active', Number(li.dataset.index)===i);
     });
 
     donutChart.update();
@@ -1117,20 +1070,33 @@
     selectedIndex = -1;
     donutCenter.value = META_NAC;
     donutCenter.label = 'Meta nacional';
-    donutChart.data.datasets[0].offset = new Array(ESTADOS.length).fill(0);
+    donutChart.data.datasets[0].offset = new Array(ORDER.length).fill(0);
     setMini(null,null);
     document.querySelectorAll('#stateList li').forEach(li=>li.classList.remove('active'));
     donutChart.update();
   }
 
-  function initDonut(){
+  function updateDonut(){
+    // Vincular valores dinámicos
+    linkMichoacanToCenso();
     refreshBuiltValues();
+
+    if(!donutChart){
+      buildStateList();
+      drawDonut();
+      resetSelection();
+      return;
+    }
+    // actualizar dataset y lista
+    const pack = datasetPack();
+    donutChart.data.labels = pack.labels;
+    donutChart.data.datasets[0].data = pack.data;
+    donutChart.data.datasets[0].backgroundColor = pack.colors;
+    donutChart.update();
+
     buildStateList();
-    drawDonut();
-    resetSelection();
-    updateMichoacanMetaAndRefresh(); // por si ya hay datos cargados
+    if(selectedIndex>=0) handleSliceClick(selectedIndex); else resetSelection();
   }
-  initDonut();
 </script>
 </body>
 </html>
