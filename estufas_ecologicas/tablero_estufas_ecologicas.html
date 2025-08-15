@@ -95,11 +95,10 @@
     .card{ border:1px solid var(--borde); border-radius:16px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.05); padding:18px 20px; }
 
     /* ====== Tabla Bitácora ====== */
-    .section-bitacora .card{padding:14px}
     #tablaBitacora{ width:100% !important; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.04); }
     #tablaBitacora thead th{ position:sticky; top:0; background:linear-gradient(0deg,var(--vino),#8b0e27); color:#fff; font-weight:600; padding:10px 12px; border-bottom:0; z-index:1; }
     #tablaBitacora tbody td{ padding:10px 12px; border-bottom:1px solid var(--borde); vertical-align:top; }
-    #tablaBitacora tbody tr:nth-child(even){ background:#f6f7f9; }
+    #tablaBitacora tbody tr:nth-child(even){ background:var(--gris); }
     #tablaBitacora tbody tr:hover{ background:#eef3ff; }
 
     .dataTables_wrapper .dataTables_filter{ float:right; text-align:right; margin:12px 0; }
@@ -109,14 +108,14 @@
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{ background:var(--oro) !important; color:#fff !important; border-color:var(--oro) !important; }
 
     /* ====== Donut Meta ====== */
-    #seccion-meta{ padding:14px !important; margin-top:8px; }
+    #seccion-meta{ padding:14px !important; }
     .meta-grid{
       display:grid;
-      grid-template-columns:minmax(420px,1fr) 320px;
+      grid-template-columns:minmax(420px,1fr) 320px; /* mantiene tamaño del contenedor, pero acerca el panel */
       gap:8px;
       align-items:center;
     }
-    #pastelMeta{ height:280px !important; max-height:300px; display:block; }
+    #pastelMeta{ height:300px !important; max-height:320px; display:block; }
     .sidecard{ background:#f3f5f7; border:1px solid var(--borde); border-radius:14px; padding:12px; }
     .sidecard h3{ margin:0 0 8px 0; font-size:1rem; }
     .state-list{ list-style:none; padding:0; margin:6px 0 12px 0; display:grid; gap:6px; }
@@ -127,6 +126,9 @@
     .legend-mini{ background:#fff; border:1px dashed var(--borde); border-radius:10px; padding:8px; display:grid; gap:6px; }
     .legend-mini div{ display:flex; justify-content:space-between; padding:6px 8px; border-radius:8px; }
     .legend-mini div span.value{ font-weight:800; }
+
+    /* ====== Altura segura para las gráficas pequeñas ====== */
+    #chartInstalaciones, #chartAhorro{ height:160px !important; width:100% !important; display:block; }
 
     @media (max-width:1000px){
       #pastelMeta{ height:260px !important; }
@@ -201,7 +203,7 @@
         <h2>Ahorro de leña (kg/mes) promedio por modelo</h2>
         <canvas id="chartAhorro"></canvas>
       </div>
-      <div class="card" style="min-height:220px;display:flex;align-items:center;justify-content:center;color:var(--gris-700);font-style:italic">
+      <div class="card" style="height:220px;display:flex;align-items:center;justify-content:center;color:#9aa0a6">
         Espacio reservado
       </div>
     </div>
@@ -225,12 +227,10 @@
     </div>
   </section>
 
-  <!-- ===== Bitácora (debajo del pastel) ===== -->
-  <section class="section-bitacora">
-    <div class="card">
-      <h2 style="margin:0 0 10px">Bitácora de actividades</h2>
-      <table id="tablaBitacora" class="display" style="width:100%"></table>
-    </div>
+  <!-- ===== Bitácora debajo del donut ===== -->
+  <section class="card">
+    <h2>Bitácora de actividades</h2>
+    <table id="tablaBitacora" class="display" style="width:100%"></table>
   </section>
 
   <!-- SECCIÓN DATOS DETALLADOS -->
@@ -645,8 +645,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!chart1){ chart1=new Chart($('#chartInstalaciones'),cfg1);} else { chart1.data.labels=labels; chart1.data.datasets[0].data=counts; chart1.update(); }
 
     const byModel={}; rows.forEach(r=>{const ah=Math.max(0,r.consumo_base-r.consumo_post); if(!byModel[r.modelo]) byModel[r.modelo]={s:0,c:0}; byModel[r.modelo].s+=ah; byModel[r.modelo].c++;});
-    const ml=Object.keys(byModel).sort(); const av=ml.map(m=>(byModel[m].s/byModel[m].c).toFixed(1));
-    const cfg2={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}};
+    const ml=Object.keys(byModel).sort(); const av=ml.map(m=> Number((byModel[m].s/byModel[m].c).toFixed(1)));
+    const cfg2={type:'bar',data:{labels:ml,datasets:[{label:'Ahorro promedio (kg/mes)',data:av,backgroundColor:getCss('--dorado')}]},options:{maintainAspectRatio:false,layout:{padding:{top:4,right:6,bottom:4,left:6}},scales:{y:{beginAtZero:true}}}};
     if(!chart2){ chart2=new Chart($('#chartAhorro'),cfg2);} else { chart2.data.labels=ml; chart2.data.datasets[0].data=av; chart2.update(); }
   }
 
@@ -663,48 +663,31 @@ window.addEventListener('DOMContentLoaded', () => {
     {"fecha":"2025-08-05","entidad":"Michoacán","municipio":"Charapan","localidad":"Ocumicho","promotor":"María","beneficiario":"José Ramírez","estatus":"Instalación","espacio_listo":"Sí","materiales":"Entregados","fecha_inicio":"2025-08-05","funcion":"OK","piezas":"Completas","satisfaccion":"Alta","observaciones":"Listo para entrega final"}
   ];
   function initBitacoraEjemplo(){
-    const el = document.getElementById('tablaBitacora');
-    if(!el) return;
-
-    const dtLang = {
-      decimal: ",", thousands: ".",
-      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-      infoEmpty: "Mostrando 0 a 0 de 0 registros",
-      infoFiltered: "(filtrado de _MAX_ en total)",
-      lengthMenu: "Mostrar _MENU_",
-      loadingRecords: "Cargando...",
-      processing: "Procesando...",
-      search: "Buscar:",
-      zeroRecords: "No se encontraron registros",
-      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
-    };
-
-    const columnas = [
-      { title: 'Entidad', data: 'entidad' },
-      { title: 'Municipio', data: 'municipio' },
-      { title: 'Localidad', data: 'localidad' },
-      { title: 'Promotor', data: 'promotor' },
-      { title: 'Beneficiario', data: 'beneficiario' },
-      { title: 'Espacio listo', data: 'espacio_listo' },
-      { title: 'Materiales', data: 'materiales' },
-      { title: 'Fecha inicio', data: 'fecha_inicio' },
-      { title: 'Funcionamiento', data: 'funcion' },
-      { title: 'Checklist piezas', data: 'piezas' },
-      { title: 'Satisfacción', data: 'satisfaccion' },
-      { title: 'Observaciones', data: 'observaciones' }
-    ];
-
+    const dtLang={decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}};
     if (dtBitacora) {
       dtBitacora.clear();
       dtBitacora.rows.add(BITACORA_DATA).draw();
     } else {
-      dtBitacora = new DataTable('#tablaBitacora', {
-        data: BITACORA_DATA,
-        columns: columnas,
-        pageLength: 8,
-        responsive: true,
-        language: dtLang,
-        dom: 'ftip'
+      dtBitacora = new DataTable('#tablaBitacora',{
+        data:BITACORA_DATA,
+        columns:[
+          { title:'Entidad', data:'entidad' },
+          { title:'Municipio', data:'municipio' },
+          { title:'Localidad', data:'localidad' },
+          { title:'Promotor', data:'promotor' },
+          { title:'Beneficiario', data:'beneficiario' },
+          /* Columna "Espacio listo" eliminada */
+          { title:'Materiales', data:'materiales' },
+          { title:'Fecha inicio', data:'fecha_inicio' },
+          { title:'Funcionamiento', data:'funcion' },
+          { title:'Checklist piezas', data:'piezas' },
+          { title:'Satisfacción', data:'satisfaccion' },
+          { title:'Observaciones', data:'observaciones' }
+        ],
+        pageLength:8,
+        responsive:true,
+        language:dtLang,
+        dom:'ftip'
       });
     }
   }
@@ -717,13 +700,45 @@ window.addEventListener('DOMContentLoaded', () => {
     fetch('ranking_priorizacion_municipio.json').then(r=>r.json()).then(rows=>{
       const installedByMun={}; getAllRows().forEach(d=>{ if(d.estatus==='Instalada'){ installedByMun[d.municipio]=(installedByMun[d.municipio]||0)+1; }});
       rows.forEach(r=>{ const inst=installedByMun[r.MUNICIPIO]||0; r.instaladas=inst; const quiere=Number(r.quiere_estufa||0); r.pct_q_sobre_inst=quiere>0?(inst/quiere)*100:0; });
-      new DataTable('#tablaRanking',{data:rows,columns:[{title:'Entidad',data:'ENTIDAD'},{title:'Municipio',data:'MUNICIPIO'},{title:'Hogares',data:'hogares',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Población Objetivo',data:'quiere_estufa',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Estufas construidas',data:'instaladas',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'% Estufas instaladas',data:'pct_q_sobre_inst',render:d=>`${Number(d||0).toFixed(1)}%`}] ,order:[[5,'desc']],pageLength:8,responsive:true,language:dtLang,dom:'ftip',lengthChange:false});
+      new DataTable('#tablaRanking',{
+        data:rows,
+        columns:[
+          { title:'Entidad', data:'ENTIDAD' },
+          { title:'Municipio', data:'MUNICIPIO' },
+          { title:'Hogares', data:'hogares', render:d=>Number(d||0).toLocaleString('es-MX') },
+          { title:'Población Objetivo', data:'quiere_estufa', render:d=>Number(d||0).toLocaleString('es-MX') },
+          { title:'Estufas construidas', data:'instaladas', render:d=>Number(d||0).toLocaleString('es-MX') },
+          { title:'% Estufas instaladas', data:'pct_q_sobre_inst', render:d=>`${Number(d||0).toFixed(1)}%` }
+        ],
+        order:[[5,'desc']],
+        pageLength:8, responsive:true, language:dtLang, dom:'ftip', lengthChange:false
+      });
     });
   }
   function filasLocalidadesFiltradas(){ const f=getFilters(); return rowsLocalidadesAll.filter(r=>eqN(r.ENTIDAD,f.entidad)&&eqN(r.MUNICIPIO,f.municipio)&&eqN(r.LOCALIDAD,f.localidad)); }
   function renderTablaLocalidades(){
     const data=filasLocalidadesFiltradas();
-    const cfg={data,columns:[{title:'Entidad',data:'ENTIDAD'},{title:'Municipio',data:'MUNICIPIO'},{title:'Localidad',data:'LOCALIDAD'},{title:'Hogares',data:'hogares',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'Población Objetivo',data:'quiere_estufa',render:d=>Number(d||0).toLocaleString('es-MX')},{title:'% Población que requiere estufa',data:'porc_quiere',render:d=>`${Number(d||0).toFixed(1)}%`}] ,pageLength:10,responsive:true,language:{decimal:",",thousands:".",info:"Mostrando _START_ a _END_ de _TOTAL_ registros",infoEmpty:"Mostrando 0 a 0 de 0 registros",infoFiltered:"(filtrado de _MAX_ en total)",lengthMenu:"Mostrar _MENU_",loadingRecords:"Cargando...",processing:"Procesando...",search:"Buscar:",zeroRecords:"No se encontraron registros",paginate:{first:"Primera",last:"Última",next:"Siguiente",previous:"Anterior"}},dom:'ftip'};
+    const cfg={data,columns:[
+      { title:'Entidad', data:'ENTIDAD' },
+      { title:'Municipio', data:'MUNICIPIO' },
+      { title:'Localidad', data:'LOCALIDAD' },
+      { title:'Hogares', data:'hogares', render:d=>Number(d||0).toLocaleString('es-MX') },
+      { title:'Población Objetivo', data:'quiere_estufa', render:d=>Number(d||0).toLocaleString('es-MX') },
+      { title:'% Población que requiere estufa', data:'porc_quiere', render:d=>`${Number(d||0).toFixed(1)}%` }
+    ],
+    pageLength:10, responsive:true, language:{
+      decimal: ",", thousands: ".",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      infoEmpty: "Mostrando 0 a 0 de 0 registros",
+      infoFiltered: "(filtrado de _MAX_ en total)",
+      lengthMenu: "Mostrar _MENU_",
+      loadingRecords: "Cargando...",
+      processing: "Procesando...",
+      search: "Buscar:",
+      zeroRecords: "No se encontraron registros",
+      paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+    },
+    dom:'ftip'};
     if(dtLocalidades){ dtLocalidades.clear(); dtLocalidades.rows.add(data).draw(); } else { dtLocalidades=new DataTable('#tablaLocalidades',cfg); }
   }
 
@@ -738,9 +753,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function buildWeeksFromData(){
     const weeks=[...new Set(getAllRows().map(d=>isoWeekKey(d.fecha_instalacion)))].sort(sortWeekKeys);
-    if($('#f_week') && $('#f_week').options.length<=1){
-      weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);});
-    }
+    if($('#f_week') && $('#f_week').options.length<=1){ weeks.forEach(w=>{const op=document.createElement('option');op.value=op.textContent=w;$('#f_week').appendChild(op);}); }
   }
 
   /* ========= Donut Meta ========= */
